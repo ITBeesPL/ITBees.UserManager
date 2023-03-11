@@ -1,19 +1,21 @@
 ﻿using System;
-using ITBees.UserManager.Interfaces;
-using RestfullApi;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
+using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Interfaces.Models;
+using ITBees.UserManager.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Controllers
 {
     [Controller]
     [Route("[Controller]")]
-    public class LoginController : RestfulControllerBase
+    public class LoginController : RestfulControllerBase<LoginController>
     {
         private readonly ILoginService _loginService;
 
-        public LoginController(ILoginService loginService)
+        public LoginController(ILoginService loginService, ILogger<LoginController> logger) : base(logger)
         {
             _loginService = loginService;
         }

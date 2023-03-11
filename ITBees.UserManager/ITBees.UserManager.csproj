@@ -6,11 +6,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <Folder Include="Interfaces\Models\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RestfulApi" Version="1.0.33" />
+    <PackageReference Include="ITBees.Interfaces" Version="5.0.4" />
+    <PackageReference Include="ITBees.Models" Version="5.0.10" />
+    <PackageReference Include="ITBees.RestfulApiControllers" Version="5.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ITBees.Interfaces\ITBees.Interfaces\ITBees.Interfaces.csproj" />
+    <ProjectReference Include="..\..\ITBees.Models\ITBees.Models\ITBees.Models.csproj" />
+    <ProjectReference Include="..\..\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ITBees.UserManager.Interfaces
+namespace ITBees.UserManager.Interfaces.Models
 {
     /// <summary>
     /// Login input model

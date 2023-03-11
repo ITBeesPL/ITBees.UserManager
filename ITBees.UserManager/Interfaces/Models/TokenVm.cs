@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ITBees.UserManager.Interfaces
+namespace ITBees.UserManager.Interfaces.Models
 {
     public class TokenVm
     {

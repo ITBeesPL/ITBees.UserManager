@@ -1,4 +1,4 @@
-﻿namespace ITBees.UserManager.Interfaces
+﻿namespace ITBees.UserManager.Interfaces.Models
 {
     /// <summary>
     /// Model responsible for creation of new user in platform
