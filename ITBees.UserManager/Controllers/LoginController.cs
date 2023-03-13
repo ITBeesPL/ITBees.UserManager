@@ -1,25 +1,33 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace ITBees.UserManager.Controllers
 {
-    [Controller]
-    [Route("[Controller]")]
-    public class LoginController : RestfulControllerBase<LoginController>
+    [ApiController]
+    [GenericRestControllerNameConvention]
+    [Route("/Login")]
+    public class LoginController<T> : RestfulControllerBase<LoginController<T>> where T: IdentityUser
     {
-        private readonly ILoginService _loginService;
+        private readonly ILoginService<T> _loginService;
 
-        public LoginController(ILoginService loginService, ILogger<LoginController> logger) : base(logger)
+        public LoginController(ILoginService<T> loginService, ILogger<LoginController<T>> logger) : base(logger)
         {
             _loginService = loginService;
         }
 
+        [HttpGet]
+        public IActionResult Get()
+        {
+            Console.WriteLine("test");
+            return Ok();
+        }
         /// <summary>
         /// Allows the user to log in, by returning valid token with expiration date
         /// </summary>
@@ -33,9 +41,7 @@ namespace ITBees.UserManager.Controllers
             {
                 if (!TryValidateModel(loginIm))
                 {
-                    //_logger.LogError(
-                    //    $"Error thrown while running Post on LoginTokenController, inputModel validation failed. User email: {inputModel.Username}, message: {this.ModelState.Values.Select(x => x.Errors[0].ErrorMessage)}");
-                    return BadRequest(this.ModelState.Values.Select(x => x.Errors[0].ErrorMessage));
+                    return base.CreateBaseErrorResponse(ModelState,string.Empty);
                 }
 
                 var token = await _loginService.Login(loginIm.Username, loginIm.Password);
@@ -45,6 +51,21 @@ namespace ITBees.UserManager.Controllers
             {
                 return BadRequest(e.Message);
             }
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class GenericRestControllerNameConvention : Attribute, IControllerModelConvention
+    {
+        public void Apply(ControllerModel controller)
+        {
+            if (!controller.ControllerType.IsGenericType || controller.ControllerType.GetGenericTypeDefinition() != typeof(ILoginService<>))
+            {
+                return;
+            }
+            var entityType = controller.ControllerType.GenericTypeArguments[0];
+            controller.ControllerName = entityType.Name;
+            controller.RouteValues["Controller"] = entityType.Name;
         }
     }
 }
