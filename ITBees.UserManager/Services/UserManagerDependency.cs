@@ -21,7 +21,7 @@ namespace ITBees.UserManager.Services
 {
     public class UserManagerDependency
     {
-        public static void RegisterDefaultFASImplementation<TContext, TIdentityUser>(IServiceCollection services, IConfigurationRoot configurationRoot) where TContext : DbContext where TIdentityUser : IdentityUser
+        public static void RegisterDefaultFASImplementation<TContext, TIdentityUser>(IServiceCollection services, IConfigurationRoot configurationRoot) where TContext : DbContext where TIdentityUser : IdentityUser, new()
         {
             TinyMapperSetup.ConfigureMappings();
             services
@@ -32,6 +32,7 @@ namespace ITBees.UserManager.Services
                     c.FeatureProviders.Add(new GenericRestControllerFeatureProvider<TIdentityUser>());
                 });
 
+            services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser>));
             services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
             services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));
             services.AddScoped(typeof(UserManager<TIdentityUser>));

@@ -7,13 +7,13 @@
 
   <ItemGroup>
     <Folder Include="Interfaces\Models\" />
+    <Folder Include="DbMigrations\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.4" />
     <PackageReference Include="ITBees.Interfaces" Version="5.0.4" />
-    <PackageReference Include="ITBees.Models" Version="5.0.10" />
-    <PackageReference Include="ITBees.RestfulApiControllers" Version="5.0.2" />
+    <PackageReference Include="ITBees.Models" Version="5.0.11" />
     <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.17" />
@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\InheritedMapper\InheritedMapper\InheritedMapper.csproj" />
     <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />
-    <ProjectReference Include="..\..\ITBees.Models\ITBees.Models\ITBees.Models.csproj" />
     <ProjectReference Include="..\..\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers.csproj" />
   </ItemGroup>
 
