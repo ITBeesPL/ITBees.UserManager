@@ -16,6 +16,7 @@ using System.Reflection;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Models.MyAccount;
 using Nelibur.ObjectMapper;
+using ITBees.UserManager.Interfaces;
 
 namespace ITBees.UserManager.Services
 {
@@ -31,7 +32,7 @@ namespace ITBees.UserManager.Services
                 {
                     c.FeatureProviders.Add(new GenericRestControllerFeatureProvider<TIdentityUser>());
                 });
-
+            services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser>));
             services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
             services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));

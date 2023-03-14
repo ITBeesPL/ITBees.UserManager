@@ -11,22 +11,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ITBees.BaseServices" Version="5.0.5" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.4" />
     <PackageReference Include="ITBees.Interfaces" Version="5.0.4" />
     <PackageReference Include="ITBees.Models" Version="5.0.11" />
-    <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.3" />
+    <PackageReference Include="ITBees.RestfulApiControllers" Version="5.0.3" />
+    <PackageReference Include="ITBees.Translations" Version="1.0.8" />
+    <PackageReference Include="ITBeesPL.InheritedMapper" Version="5.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.17" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.17" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="5.0.17" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.17" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\InheritedMapper\InheritedMapper\InheritedMapper.csproj" />
-    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />
-    <ProjectReference Include="..\..\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers.csproj" />
   </ItemGroup>
 
 </Project>
