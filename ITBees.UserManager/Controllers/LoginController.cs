@@ -22,12 +22,6 @@ namespace ITBees.UserManager.Controllers
             _loginService = loginService;
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            Console.WriteLine("test");
-            return Ok();
-        }
         /// <summary>
         /// Allows the user to log in, by returning valid token with expiration date
         /// </summary>

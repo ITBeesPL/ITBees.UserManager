@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 using InheritedMapper;
-using ITBees.BaseServices.Platforms.Interfaces;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Companies;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
+using ITBees.Translations;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services
 {
@@ -19,27 +20,24 @@ namespace ITBees.UserManager.Services
         private readonly IReadOnlyRepository<UserAccount> _userAccountReadOnlyRepository;
         private readonly IWriteOnlyRepository<Company> _companyWoRepository;
         private readonly IReadOnlyRepository<Company> _companyRoRepository;
-        private readonly IAspCurrentUserService _aspCurrentUserService;
         private readonly IWriteOnlyRepository<UsersInCompany> _usersInCompanyWoRepo;
-        private readonly ITranslator _translator;
+        private readonly ILogger<NewUserRegistrationService<T>> _logger;
 
         public NewUserRegistrationService(IUserManager userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
             IReadOnlyRepository<UserAccount> userAccountReadOnlyRepository,
             IWriteOnlyRepository<Company> companyWoRepository,
             IReadOnlyRepository<Company> companyRoRepository,
-            IAspCurrentUserService aspCurrentUserService,
             IWriteOnlyRepository<UsersInCompany> usersInCompanyWoRepo,
-            ITranslator translator)
+            ILogger<NewUserRegistrationService<T>> logger)
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
             _userAccountReadOnlyRepository = userAccountReadOnlyRepository;
             _companyWoRepository = companyWoRepository;
             _companyRoRepository = companyRoRepository;
-            _aspCurrentUserService = aspCurrentUserService;
             _usersInCompanyWoRepo = usersInCompanyWoRepo;
-            _translator = translator;
+            _logger = logger;
         }
 
         public async Task<Guid> RegisterNewUser(NewUserRegistrationIm newUserRegistrationIm)
@@ -59,7 +57,7 @@ namespace ITBees.UserManager.Services
             if(string.IsNullOrEmpty(newUserRegistrationIm.Language))
                 newUserRegistrationIm.Language = "en";
 
-            var languageId = new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language);
+            var userLanguage = new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language);
             try
             {
                 userSavedData = _userAccountWriteOnlyRepository.InsertData(
@@ -70,20 +68,22 @@ namespace ITBees.UserManager.Services
                         Phone = newUserRegistrationIm.Phone,
                         FirstName = newUserRegistrationIm.FirstName,
                         LastName = newUserRegistrationIm.LastName,
-                        LanguageId = languageId.Id
+                        LanguageId = userLanguage.Id
                     });
 
                 if (newUserRegistrationIm.CompanyGuid == null)
                 {
-                    CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, Guid.Parse(currentUserGuid.Id), userSavedData);
+                    CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, Guid.Parse(currentUserGuid.Id), userSavedData, userLanguage);
                 }
                 else
                 {
-                    CheckIfCurrentUserIsOwnerOfCompanyAndAddNewUserToThisCompany(newUserRegistrationIm, Guid.Parse(currentUserGuid.Id), userSavedData);
+                    CheckIfCurrentUserIsOwnerOfCompanyAndAddNewUserToThisCompany(newUserRegistrationIm,
+                        Guid.Parse(currentUserGuid.Id), userSavedData, userLanguage);
                 }
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 var user = new UserAccount()
                 {
                     Email = newUserRegistrationIm.Email,
@@ -97,7 +97,7 @@ namespace ITBees.UserManager.Services
         }
 
         private void CheckIfCurrentUserIsOwnerOfCompanyAndAddNewUserToThisCompany(
-            NewUserRegistrationIm newUserRegistrationIm, Guid? currentUserGuid, UserAccount userSavedData)
+            NewUserRegistrationIm newUserRegistrationIm, Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
         {
             if (currentUserGuid.HasValue)
             {
@@ -115,21 +115,23 @@ namespace ITBees.UserManager.Services
                 }
                 else
                 {
-                    throw new Exception("To add new user You must be company owner!");
+                    throw new Exception(Translate.Get(
+                        () => Translations.FAS.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner,
+                        userLanguage));
                 }
             }
             else
             {
-                throw new Exception("If You want to add new user to company, you have to be authenticated!");
+                throw new Exception(Translate.Get(() => Translations.FAS.UserManager.NewUserRegistration.IfYouWantToAddNewUserToCompany, userLanguage));
             }
         }
 
         private void CreateCompanyAndAddCurrentUser(NewUserRegistrationIm newUserRegistrationIm, T newUser,
-            Guid? currentUserGuid, UserAccount userSavedData)
+            Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
         {
             if (string.IsNullOrEmpty(newUserRegistrationIm.CompanyName))
             {
-                newUserRegistrationIm.CompanyName = "Private";
+                newUserRegistrationIm.CompanyName = Translate.Get(()=> Translations.FAS.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
             }
 
             var company = _companyWoRepository.InsertData(new Company()
