@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using InheritedMapper;
 using ITBees.Interfaces.Repository;
@@ -17,30 +18,30 @@ namespace ITBees.UserManager.Services
     {
         private readonly IUserManager _userManager;
         private readonly IWriteOnlyRepository<UserAccount> _userAccountWriteOnlyRepository;
-        private readonly IReadOnlyRepository<UserAccount> _userAccountReadOnlyRepository;
         private readonly IWriteOnlyRepository<Company> _companyWoRepository;
         private readonly IReadOnlyRepository<Company> _companyRoRepository;
         private readonly IWriteOnlyRepository<UsersInCompany> _usersInCompanyWoRepo;
         private readonly ILogger<NewUserRegistrationService<T>> _logger;
+        private readonly IAspCurrentUserService _aspCurrentUserService;
 
         public NewUserRegistrationService(IUserManager userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
-            IReadOnlyRepository<UserAccount> userAccountReadOnlyRepository,
             IWriteOnlyRepository<Company> companyWoRepository,
             IReadOnlyRepository<Company> companyRoRepository,
             IWriteOnlyRepository<UsersInCompany> usersInCompanyWoRepo,
-            ILogger<NewUserRegistrationService<T>> logger)
+            ILogger<NewUserRegistrationService<T>> logger,
+            IAspCurrentUserService aspCurrentUserService)
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
-            _userAccountReadOnlyRepository = userAccountReadOnlyRepository;
             _companyWoRepository = companyWoRepository;
             _companyRoRepository = companyRoRepository;
             _usersInCompanyWoRepo = usersInCompanyWoRepo;
             _logger = logger;
+            _aspCurrentUserService = aspCurrentUserService;
         }
 
-        public async Task<Guid> RegisterNewUser(NewUserRegistrationIm newUserRegistrationIm)
+        public async Task<NewUserRegistrationResult> RegisterNewUser(NewUserRegistrationIm newUserRegistrationIm)
         {
             var newUser = new T()
             {
@@ -49,15 +50,22 @@ namespace ITBees.UserManager.Services
             };
 
             var result = await _userManager.CreateAsync(newUser, newUserRegistrationIm.Password);
-            if (!result.Succeeded) throw new Exception("User Creation Failed");
+            var userLanguage = GetUserLanguage(newUserRegistrationIm);
 
-            UserAccount userSavedData;
-            var currentUserGuid = await _userManager.FindByEmailAsync(newUser.Email);
+            if (!result.Succeeded)
+            {
+                if (result.Errors.Any(x => x.Code == "DuplicateUserName"))
+                    throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered, userLanguage));
+
+                throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.Errors.ErrorWhileRegisteringAUserAccount, userLanguage));
+            }
+
+            UserAccount userSavedData = null;
+            var currentUserGuid = _aspCurrentUserService.GetCurrentUserGuid();
             
-            if(string.IsNullOrEmpty(newUserRegistrationIm.Language))
-                newUserRegistrationIm.Language = "en";
+            if (currentUserGuid == null)
+                currentUserGuid = new Guid((await _userManager.FindByEmailAsync(newUserRegistrationIm.Email)).Id);
 
-            var userLanguage = new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language);
             try
             {
                 userSavedData = _userAccountWriteOnlyRepository.InsertData(
@@ -73,12 +81,13 @@ namespace ITBees.UserManager.Services
 
                 if (newUserRegistrationIm.CompanyGuid == null)
                 {
-                    CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, Guid.Parse(currentUserGuid.Id), userSavedData, userLanguage);
+                    CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid, 
+                        userSavedData, userLanguage);
                 }
                 else
                 {
                     CheckIfCurrentUserIsOwnerOfCompanyAndAddNewUserToThisCompany(newUserRegistrationIm,
-                        Guid.Parse(currentUserGuid.Id), userSavedData, userLanguage);
+                        currentUserGuid, userSavedData, userLanguage);
                 }
             }
             catch (Exception e)
@@ -90,10 +99,23 @@ namespace ITBees.UserManager.Services
                     Guid = new Guid(newUser.Id)
                 };
 
-                userSavedData = _userAccountWriteOnlyRepository.InsertData(user);
+                if (userSavedData == null)
+                {
+                    throw new Exception(e.Message);
+                }
+
+                return new NewUserRegistrationResult(userSavedData.Guid, e.Message);
             }
 
-            return userSavedData.Guid;
+            return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
+        }
+
+        private Language GetUserLanguage(NewUserRegistrationIm newUserRegistrationIm)
+        {
+            Language userLanguage = null;
+            userLanguage = newUserRegistrationIm.Language != null ? new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language) : new En();
+
+            return userLanguage;
         }
 
         private void CheckIfCurrentUserIsOwnerOfCompanyAndAddNewUserToThisCompany(
@@ -102,7 +124,13 @@ namespace ITBees.UserManager.Services
             if (currentUserGuid.HasValue)
             {
                 var company =
-                    _companyRoRepository.GetFirst(x => x.Guid == newUserRegistrationIm.CompanyGuid);
+                    _companyRoRepository.GetData(x => x.Guid == newUserRegistrationIm.CompanyGuid).FirstOrDefault();
+
+                if (company == null)
+                    throw new Exception(Translate.Get(
+                        () => Translations.UserManager.NewUserRegistration.CouldNotFindCompanyWithSpecifiedGuid,
+                        userLanguage));
+
                 if (company.OwnerGuid == currentUserGuid)
                 {
                     _usersInCompanyWoRepo.InsertData(new UsersInCompany()
@@ -116,13 +144,13 @@ namespace ITBees.UserManager.Services
                 else
                 {
                     throw new Exception(Translate.Get(
-                        () => Translations.FAS.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner,
+                        () => Translations.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner,
                         userLanguage));
                 }
             }
             else
             {
-                throw new Exception(Translate.Get(() => Translations.FAS.UserManager.NewUserRegistration.IfYouWantToAddNewUserToCompany, userLanguage));
+                throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.IfYouWantToAddNewUserToCompany, userLanguage));
             }
         }
 
@@ -131,7 +159,7 @@ namespace ITBees.UserManager.Services
         {
             if (string.IsNullOrEmpty(newUserRegistrationIm.CompanyName))
             {
-                newUserRegistrationIm.CompanyName = Translate.Get(()=> Translations.FAS.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
+                newUserRegistrationIm.CompanyName = Translate.Get(() => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
             }
 
             var company = _companyWoRepository.InsertData(new Company()

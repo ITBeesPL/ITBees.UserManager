@@ -1,4 +1,5 @@
-﻿using ITBees.RestfulApiControllers;
+﻿using System.Threading.Tasks;
+using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,10 @@ namespace ITBees.UserManager.Controllers
 
         [HttpGet]
         [Produces(typeof(CheckEmailStatusVm))]
-        public IActionResult Get(string email, string language)
+        public async Task<IActionResult> Get(string email, string language)
         {
-            _emailAvailabilityService.Check(email, language);
-            return Ok();
+            var result = await _emailAvailabilityService.Check(email, language);
+            return Ok(result);
         }
     }
 }

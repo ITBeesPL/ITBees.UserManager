@@ -1,6 +1,8 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
+using ITBees.Translations;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 
@@ -9,20 +11,30 @@ namespace ITBees.UserManager.Services
     public class EmailAvailabilityAndConfirmationStatusCheckingService : IEmailAvailabilityAndConfirmationStatusCheckingService
     {
         private readonly IReadOnlyRepository<UserAccount> _userAccountRoRepository;
+        private readonly IUserManager _userManager;
 
-        public EmailAvailabilityAndConfirmationStatusCheckingService(IReadOnlyRepository<UserAccount> userAccountRoRepository)
+        public EmailAvailabilityAndConfirmationStatusCheckingService(IReadOnlyRepository<UserAccount> userAccountRoRepository,
+            IUserManager userManager)
         {
             _userAccountRoRepository = userAccountRoRepository;
+            _userManager = userManager;
         }
 
-        public CheckEmailStatusVm Check(string email, string lang)
+        public async Task<CheckEmailStatusVm> Check(string email, string lang)
         {
             var firstOrDefault = _userAccountRoRepository.GetData(x => x.Email == email).FirstOrDefault();
             if (firstOrDefault == null)
             {
-                return new CheckEmailStatusVm() { Email = email, CheckStatus = "Email is not registerd", EmailAllowedToRegister = true, Message = string.Empty};
+                return new CheckEmailStatusVm() { Email = email, CheckStatus = CheckStatus.EmailNotRegistered, EmailAllowedToRegister = true, Message = string.Empty};
             }
-            return new CheckEmailStatusVm() { Email = email, CheckStatus = "Email already registerd", EmailAllowedToRegister = false, Message = "Email already registered on platform"};
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user.EmailConfirmed)
+            {
+                return new CheckEmailStatusVm() { Email = email, CheckStatus = CheckStatus.EmailAlreadyRegistered, EmailAllowedToRegister = false, Message = Translate.Get(() => ITBees.UserManager.Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered, lang) };
+            }
+
+            return new CheckEmailStatusVm() { Email = email, CheckStatus = CheckStatus.EmailAlreadyRegisteredButNotConfirmed, EmailAllowedToRegister = false, Message = Translate.Get(() => ITBees.UserManager.Translations.UserManager.NewUserRegistration.EmailAlreadyRegisteredButNotConfirmed, lang) };
         }
     }
 }

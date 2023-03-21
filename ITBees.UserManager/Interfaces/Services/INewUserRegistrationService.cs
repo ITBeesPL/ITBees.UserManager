@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ITBees.UserManager.Interfaces.Models;
+using ITBees.UserManager.Services;
 
 namespace ITBees.UserManager.Interfaces.Services
 {
     public interface INewUserRegistrationService
     {
-        Task<Guid> RegisterNewUser(NewUserRegistrationIm newUserRegistrationInputDto);
+        Task<NewUserRegistrationResult> RegisterNewUser(NewUserRegistrationIm newUserRegistrationInputDto);
     }
 }

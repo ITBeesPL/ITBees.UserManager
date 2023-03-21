@@ -36,6 +36,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser>));
             services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
             services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));
+            services.AddScoped<IEmailAvailabilityAndConfirmationStatusCheckingService, EmailAvailabilityAndConfirmationStatusCheckingService>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             services.AddIdentity<TIdentityUser, IdentityRole>(options =>
             {
@@ -90,15 +91,21 @@ namespace ITBees.UserManager.Services
     {
         public static void ConfigureMappings()
         {
-            TinyMapper.Bind<MyAccount, MyAccountVm>();
+            var m = new MyAccount();
+
+            TinyMapper.Bind<MyAccount, MyAccountVm>(config =>
+            {
+                config.Ignore(x => x.Language);
+                config.Bind(x => x.Language, y => y.Language);
+            });
         }
     }
 
-    public class GenericRestControllerFeatureProvider<T> : IApplicationFeatureProvider<ControllerFeature> where T: IdentityUser
+    public class GenericRestControllerFeatureProvider<T> : IApplicationFeatureProvider<ControllerFeature> where T : IdentityUser
     {
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
         {
-            
+
             var controller_type = typeof(LoginController<>).MakeGenericType(typeof(T)).GetTypeInfo();
             feature.Controllers.Add(controller_type);
             return;
