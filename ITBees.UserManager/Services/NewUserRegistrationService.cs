@@ -78,8 +78,8 @@ namespace ITBees.UserManager.Services
             }
 
             UserAccount userSavedData = null;
-            var currentUserGuid = new Guid((await _userManager.FindByEmailAsync(newUserRegistrationIm.Email)).Id);
-            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(result);
+            var currentUserGuid = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
+            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(currentUserGuid);
 
             try
             {
@@ -95,7 +95,7 @@ namespace ITBees.UserManager.Services
                     });
 
 
-                CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid,
+                CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, new Guid(currentUserGuid.Id),
                     userSavedData, userLanguage);
 
                 var emailMessage =

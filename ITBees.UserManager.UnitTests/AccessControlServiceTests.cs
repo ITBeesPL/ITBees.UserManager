@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text.Json;
-using ITBees.FAS.ApiInterfaces.Modules;
 using ITBees.Models.Users;
-using ITBees.UserManager.Interfaces.Services;
 using ITBees.UserManager.Services;
 using ITBees.UserManager.Services.Acl;
 using Microsoft.AspNetCore.Identity;
