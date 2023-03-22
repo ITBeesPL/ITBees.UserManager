@@ -12,11 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ITBees.BaseServices" Version="5.0.6" />
-    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.7" />
-    <PackageReference Include="ITBees.Interfaces" Version="5.0.4" />
-    <PackageReference Include="ITBees.Mailing" Version="5.0.10" />
-    <PackageReference Include="ITBees.Models" Version="5.0.13" />
+    <PackageReference Include="ITBees.BaseServices" Version="5.0.9" />
+    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.9" />
+    <PackageReference Include="ITBees.Interfaces" Version="5.0.7" />
+    <PackageReference Include="ITBees.Mailing" Version="5.0.13" />
+    <PackageReference Include="ITBees.Models" Version="5.0.15" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="5.0.3" />
     <PackageReference Include="ITBees.Translations" Version="5.0.20" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="5.0.9" />

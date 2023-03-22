@@ -32,7 +32,8 @@ namespace ITBees.UserManager.Services
                 LastName = usersInCompany.First().UserAccount.LastName,
                 Companies = usersInCompany.Select(x=>x.Company).ToList(),
                 LastUsedCompanyGuid = currentUserGuid.LastUsedCompanyGuid,
-                Language = currentUserGuid.Language
+                Language = currentUserGuid.Language,
+                
             };
         }
     }

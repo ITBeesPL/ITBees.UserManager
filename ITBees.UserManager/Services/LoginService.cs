@@ -78,7 +78,7 @@ namespace ITBees.UserManager.Services
             UserAccount userAccount;
             try
             {
-                userAccount = _userReadOnlyRepository.GetFirst(x => x.Email == email);
+                userAccount = _userReadOnlyRepository.GetFirst(x => x.Email == email, x=>x.Language);
                 if (userAccount.LastUsedCompanyGuid == null)
                 {
                     var usersInCompanies = _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);

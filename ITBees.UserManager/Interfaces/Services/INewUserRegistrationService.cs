@@ -6,6 +6,7 @@ namespace ITBees.UserManager.Interfaces.Services
 {
     public interface INewUserRegistrationService
     {
-        Task<NewUserRegistrationResult> RegisterNewUser(NewUserRegistrationIm newUserRegistrationInputDto);
+        Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationInputDto);
+        Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(NewUserRegistrationWithInvitationIm newUserRegistrationIm);
     }
 }

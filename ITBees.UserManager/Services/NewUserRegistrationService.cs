@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using InheritedMapper;
+using ITBees.Interfaces.Platforms;
 using ITBees.Interfaces.Repository;
+using ITBees.Mailing.Interfaces;
 using ITBees.Models.Companies;
+using ITBees.Models.EmailMessages;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
 using ITBees.Translations;
@@ -28,6 +30,8 @@ namespace ITBees.UserManager.Services
         private readonly IAspCurrentUserService _aspCurrentUserService;
         private readonly IRegistrationEmailComposer _registrationEmailComposer;
         private readonly IAccessControlService _accessControlService;
+        private readonly IEmailSendingService _emailSendingService;
+        private readonly IPlatformSettingsService _platformSettingsService;
 
         public NewUserRegistrationService(IUserManager userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
@@ -37,7 +41,9 @@ namespace ITBees.UserManager.Services
             ILogger<NewUserRegistrationService<T>> logger,
             IAspCurrentUserService aspCurrentUserService,
             IRegistrationEmailComposer registrationEmailComposer,
-            IAccessControlService accessControlService)
+            IAccessControlService accessControlService,
+            IEmailSendingService emailSendingService,
+            IPlatformSettingsService platformSettingsService)
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
@@ -48,9 +54,11 @@ namespace ITBees.UserManager.Services
             _aspCurrentUserService = aspCurrentUserService;
             _registrationEmailComposer = registrationEmailComposer;
             _accessControlService = accessControlService;
+            _emailSendingService = emailSendingService;
+            _platformSettingsService = platformSettingsService;
         }
 
-        public async Task<NewUserRegistrationResult> RegisterNewUser(NewUserRegistrationIm newUserRegistrationIm)
+        public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm)
         {
             var newUser = new T()
             {
@@ -89,6 +97,12 @@ namespace ITBees.UserManager.Services
 
                 CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid,
                     userSavedData, userLanguage);
+
+                var emailMessage =
+                    _registrationEmailComposer.ComposeEmailConfirmation(newUserRegistrationIm, emailConfirmationToken);
+                var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
+                
+                _emailSendingService.SendEmail(platformEmailAccount, emailMessage);
             }
             catch (Exception e)
             {
@@ -142,11 +156,18 @@ namespace ITBees.UserManager.Services
             var result = await _userManager.CreateAsync(newUser, Guid.NewGuid().ToString()); //create temporary passowrd, which should be changed after email confirmation
             var emailConfirmationToken = string.Empty;
 
+            EmailMessage emailMessage = null;
+            var platformDefaultEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
+
             if (result.Succeeded == false)
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName")) // user has account already created on platoform, so we can send only invitation for him
                 {
-                    var emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.Guid.ToString()); //todo  repalce currentUserGuid wiht name after nuget update
+                    emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.DisplayName);
+                    _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
+                    var alreadyRegisteredUser = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
+
+                    return new NewUserRegistrationResult(new Guid(alreadyRegisteredUser.Id), string.Empty);
                 }
                 else
                 {
@@ -175,7 +196,7 @@ namespace ITBees.UserManager.Services
                         LanguageId = userLanguage.Id
                     });
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
-                var emailMessage  = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token);
+                emailMessage  = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token);
             }
             catch (Exception e)
             {

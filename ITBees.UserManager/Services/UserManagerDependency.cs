@@ -13,11 +13,9 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using System.Collections.Generic;
 using System.Reflection;
-using ITBees.FAS.ApiInterfaces.MyAccounts;
-using ITBees.Models.MyAccount;
-using Nelibur.ObjectMapper;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
+using ITBees.UserManager.Services.Mailing;
 
 namespace ITBees.UserManager.Services
 {
@@ -38,6 +36,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
             services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));
             services.AddScoped<IEmailAvailabilityAndConfirmationStatusCheckingService, EmailAvailabilityAndConfirmationStatusCheckingService>();
+            services.AddScoped<IRegistrationEmailComposer, RegistrationEmailComposer>();
             services.AddScoped<IAccessControlService, AccessControlService>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             services.AddIdentity<TIdentityUser, IdentityRole>(options =>
@@ -86,20 +85,6 @@ namespace ITBees.UserManager.Services
                         }
                     };
                 });
-        }
-    }
-
-    public class TinyMapperSetup
-    {
-        public static void ConfigureMappings()
-        {
-            var m = new MyAccount();
-
-            TinyMapper.Bind<MyAccount, MyAccountVm>(config =>
-            {
-                config.Ignore(x => x.Language);
-                config.Bind(x => x.Language, y => y.Language);
-            });
         }
     }
 
