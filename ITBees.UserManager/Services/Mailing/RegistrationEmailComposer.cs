@@ -23,8 +23,8 @@ namespace ITBees.UserManager.Services.Mailing
         {
             return new EmailMessage()
             {
-                Subject = "You have been invited to company : {}",
-                BodyHtml = "<h1>Test</h1>",
+                Subject = $"{nameOfInviter} has invited You to company : {companyCompanyName}",
+                BodyHtml = "<h1>Accept invitation in Your panel}</h1>",
                 BodyText = "Test",
                 Recipients = userSavedData.Email
             };
@@ -35,8 +35,8 @@ namespace ITBees.UserManager.Services.Mailing
         {
             return new EmailMessage()
             {
-                Subject = "You have been invited to company : {}",
-                BodyHtml = "<h1>Test</h1>",
+                Subject = $"You have been invited to company : {companyCompanyName}",
+                BodyHtml = $"<h1>Token : {token}</h1>",
                 BodyText = "Test",
                 Recipients = userSavedData.Email
             };
@@ -46,8 +46,8 @@ namespace ITBees.UserManager.Services.Mailing
         {
             return new EmailMessage()
             {
-                Subject = "You have create account",
-                BodyHtml = "<h1>Test</h1>",
+                Subject = "Account created confirmation.",
+                BodyHtml = $"<h1>Token : {token}</h1>",
                 BodyText = "Test",
                 Recipients = newUser.Email
             };
