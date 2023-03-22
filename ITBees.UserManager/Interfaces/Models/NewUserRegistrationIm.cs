@@ -1,15 +1,14 @@
-﻿using System;
-
-namespace ITBees.UserManager.Interfaces.Models
+﻿namespace ITBees.UserManager.Interfaces.Models
 {
-    public class NewUserRegistrationIm
+    public class NewUserRegistrationIm : IVmWithLanguageDefined
     {
         public string Email { get; set; }
 
         public string Password { get; set; }
 
-        public Guid? CompanyGuid { get; set; }
-
+        /// <summary>
+        /// Optional company (contex) name, if not set default name will be used like "Private" defined in Translation, path to this value > Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName
+        /// </summary>
         public string CompanyName { get; set; }
 
         public string FirstName { get; set; }

@@ -17,6 +17,7 @@ using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Models.MyAccount;
 using Nelibur.ObjectMapper;
 using ITBees.UserManager.Interfaces;
+using ITBees.UserManager.Services.Acl;
 
 namespace ITBees.UserManager.Services
 {
@@ -37,6 +38,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
             services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));
             services.AddScoped<IEmailAvailabilityAndConfirmationStatusCheckingService, EmailAvailabilityAndConfirmationStatusCheckingService>();
+            services.AddScoped<IAccessControlService, AccessControlService>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             services.AddIdentity<TIdentityUser, IdentityRole>(options =>
             {

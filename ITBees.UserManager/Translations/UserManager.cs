@@ -23,6 +23,10 @@ namespace ITBees.UserManager.Translations
 
             public static readonly string EmailAlreadyRegistered = "Email already registered";
 
+            public static readonly string ToInviteNewUserYouMustSpecifyTargetCompany = "To invite new user You must specify target company";
+
+            public static readonly string YouMustBeLoggedInToAddNewUser = "You must be logged in to add new user";
+
             public static readonly string EmailAlreadyRegisteredButNotConfirmed = "Email already registered, but not confirmed";
 
             public class Errors : ITranslate

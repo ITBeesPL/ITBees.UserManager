@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System;
 using System.Linq;
+using ITBees.Models.Languages;
 using ITBees.UserManager.Interfaces.Services;
 
 namespace ITBees.UserManager.Services
@@ -40,8 +41,15 @@ namespace ITBees.UserManager.Services
             {
                 var claim = claimsIdentity.Claims.First();
                 var LastUsedCompanyGuid = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "LastUsedCompanyGuid").Value;
+                var displayName = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "LastUsedCompanyGuid").Value;
+                var language = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "Language").Value;
                 return new CurrentUser()
-                { Guid = new Guid(claim.Value), LastUsedCompanyGuid = new Guid(LastUsedCompanyGuid) };
+                {
+                    Guid = new Guid(claim.Value), 
+                    LastUsedCompanyGuid = new Guid(LastUsedCompanyGuid), 
+                    Language = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language),
+                    //DisplayName = displayName
+                };
             }
             else
             {

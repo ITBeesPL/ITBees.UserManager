@@ -40,16 +40,20 @@ namespace ITBees.UserManager.Services
 
         public async Task<TokenVm> Login(string email, string pass)
         {
-            var userId = await GetUserIdAfterThePasswordCheck(email, pass);
+            var userAccount = await GetUserIdAfterThePasswordCheck(email, pass);
 
             var expiryInMinutes = Convert.ToInt32((string) _configurationRoot.GetSection("TokenLifeTime").Value);
             var tokenSecretKey = _configurationRoot.GetSection("TokenSecretKey").Value;
             var tokenIssuer = _configurationRoot.GetSection("TokenIssuer").Value;
             var tokenAudience = _configurationRoot.GetSection("TokenAudience").Value;
 
-            Dictionary<string, string> claims = new Dictionary<string, string>() { { "LastUsedCompanyGuid", userId.LastUsedCompanyGuid?.ToString() } };
+            Dictionary<string, string> claims = new Dictionary<string, string>()
+            {
+                { "LastUsedCompanyGuid", userAccount.LastUsedCompanyGuid?.ToString() },
+                { "Language", userAccount.Language.Code },
+                { "DisplayName", userAccount.DisplayName },
 
-            var userAccount = _userReadOnlyRepository.GetFirst(u => u.Email == email);
+            };
 
             _userWriteOnlyRepository.UpdateData(u => u.Email == email, userAccountUpdate =>
             {
@@ -58,7 +62,7 @@ namespace ITBees.UserManager.Services
             });
             var token = new JwtTokenBuilder()
                 .AddSecurityKey(JwtSecurityKey.Create(tokenSecretKey))
-                .AddSubject(userId.Guid.ToString())
+                .AddSubject(userAccount.Guid.ToString())
                 .AddIssuer(tokenIssuer)
                 .AddAudience(tokenAudience)
                 .AddExpiry(expiryInMinutes)

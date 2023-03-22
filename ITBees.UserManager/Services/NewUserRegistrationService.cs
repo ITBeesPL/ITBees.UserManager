@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using InheritedMapper;
 using ITBees.Interfaces.Repository;
@@ -9,6 +10,8 @@ using ITBees.Models.Users;
 using ITBees.Translations;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
+using ITBees.UserManager.Services.Acl;
+using ITBees.UserManager.Services.Mailing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
@@ -23,6 +26,8 @@ namespace ITBees.UserManager.Services
         private readonly IWriteOnlyRepository<UsersInCompany> _usersInCompanyWoRepo;
         private readonly ILogger<NewUserRegistrationService<T>> _logger;
         private readonly IAspCurrentUserService _aspCurrentUserService;
+        private readonly IRegistrationEmailComposer _registrationEmailComposer;
+        private readonly IAccessControlService _accessControlService;
 
         public NewUserRegistrationService(IUserManager userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
@@ -30,7 +35,9 @@ namespace ITBees.UserManager.Services
             IReadOnlyRepository<Company> companyRoRepository,
             IWriteOnlyRepository<UsersInCompany> usersInCompanyWoRepo,
             ILogger<NewUserRegistrationService<T>> logger,
-            IAspCurrentUserService aspCurrentUserService)
+            IAspCurrentUserService aspCurrentUserService,
+            IRegistrationEmailComposer registrationEmailComposer,
+            IAccessControlService accessControlService)
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
@@ -39,6 +46,8 @@ namespace ITBees.UserManager.Services
             _usersInCompanyWoRepo = usersInCompanyWoRepo;
             _logger = logger;
             _aspCurrentUserService = aspCurrentUserService;
+            _registrationEmailComposer = registrationEmailComposer;
+            _accessControlService = accessControlService;
         }
 
         public async Task<NewUserRegistrationResult> RegisterNewUser(NewUserRegistrationIm newUserRegistrationIm)
@@ -52,7 +61,7 @@ namespace ITBees.UserManager.Services
             var result = await _userManager.CreateAsync(newUser, newUserRegistrationIm.Password);
             var userLanguage = GetUserLanguage(newUserRegistrationIm);
 
-            if (!result.Succeeded)
+            if (result.Succeeded == false)
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName"))
                     throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered, userLanguage));
@@ -61,10 +70,8 @@ namespace ITBees.UserManager.Services
             }
 
             UserAccount userSavedData = null;
-            var currentUserGuid = _aspCurrentUserService.GetCurrentUserGuid();
-            
-            if (currentUserGuid == null)
-                currentUserGuid = new Guid((await _userManager.FindByEmailAsync(newUserRegistrationIm.Email)).Id);
+            var currentUserGuid = new Guid((await _userManager.FindByEmailAsync(newUserRegistrationIm.Email)).Id);
+            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(result);
 
             try
             {
@@ -79,16 +86,9 @@ namespace ITBees.UserManager.Services
                         LanguageId = userLanguage.Id
                     });
 
-                if (newUserRegistrationIm.CompanyGuid == null)
-                {
-                    CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid, 
-                        userSavedData, userLanguage);
-                }
-                else
-                {
-                    CheckIfCurrentUserIsOwnerOfCompanyAndAddNewUserToThisCompany(newUserRegistrationIm,
-                        currentUserGuid, userSavedData, userLanguage);
-                }
+
+                CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid,
+                    userSavedData, userLanguage);
             }
             catch (Exception e)
             {
@@ -110,7 +110,94 @@ namespace ITBees.UserManager.Services
             return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
         }
 
-        private Language GetUserLanguage(NewUserRegistrationIm newUserRegistrationIm)
+        public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(NewUserRegistrationWithInvitationIm newUserRegistrationIm)
+        {
+            var companyGuid = newUserRegistrationIm.CompanyGuid;
+            var userLanguage = GetUserLanguage(newUserRegistrationIm);
+            if (companyGuid == null)
+            {
+                throw new Exception(Translate.Get(() => ITBees.UserManager.Translations.UserManager.NewUserRegistration.ToInviteNewUserYouMustSpecifyTargetCompany, userLanguage));
+            }
+
+            var currentUser = _aspCurrentUserService.GetCurrentUser();
+            if (currentUser == null)
+            {
+                throw new YouMustBeLoggedInToCreateNewUserInvitationException(Translate.Get(() => ITBees.UserManager.Translations.UserManager.NewUserRegistration.YouMustBeLoggedInToAddNewUser, newUserRegistrationIm.Language));
+            }
+
+            var accessControlResult = _accessControlService.CanDo(currentUser, typeof(NewUserRegistrationService<>),
+                nameof(this.CreateAndInviteNewUserToCompany), companyGuid.Value); //Todo security implementation
+
+            if (accessControlResult.CanDoResult == false)
+                throw new Exception(accessControlResult.Message);
+
+            var newUser = new T()
+            {
+                UserName = newUserRegistrationIm.Email,
+                Email = newUserRegistrationIm.Email
+            };
+
+            var company = _companyRoRepository.GetFirst(x => x.Guid == companyGuid);
+
+            var result = await _userManager.CreateAsync(newUser, Guid.NewGuid().ToString()); //create temporary passowrd, which should be changed after email confirmation
+            var emailConfirmationToken = string.Empty;
+
+            if (result.Succeeded == false)
+            {
+                if (result.Errors.Any(x => x.Code == "DuplicateUserName")) // user has account already created on platoform, so we can send only invitation for him
+                {
+                    var emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.Guid.ToString()); //todo  repalce currentUserGuid wiht name after nuget update
+                }
+                else
+                {
+                    throw new Exception(Translate.Get(
+                        () => Translations.UserManager.NewUserRegistration.Errors.ErrorWhileRegisteringAUserAccount,
+                        userLanguage));
+                }
+            }
+            else
+            {
+                emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(result);
+            }
+
+            UserAccount userSavedData = null;
+
+            try
+            {
+                userSavedData = _userAccountWriteOnlyRepository.InsertData(
+                    new UserAccount()
+                    {
+                        Email = newUserRegistrationIm.Email,
+                        Guid = new Guid(newUser.Id),
+                        Phone = newUserRegistrationIm.Phone,
+                        FirstName = newUserRegistrationIm.FirstName,
+                        LastName = newUserRegistrationIm.LastName,
+                        LanguageId = userLanguage.Id
+                    });
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
+                var emailMessage  = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                var user = new UserAccount()
+                {
+                    Email = newUserRegistrationIm.Email,
+                    Guid = new Guid(newUser.Id)
+                };
+
+                if (userSavedData == null)
+                {
+                    throw new Exception(e.Message);
+                }
+
+                return new NewUserRegistrationResult(userSavedData.Guid, e.Message);
+            }
+
+            return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
+        }
+
+        private Language GetUserLanguage(IVmWithLanguageDefined newUserRegistrationIm)
         {
             Language userLanguage = null;
             userLanguage = newUserRegistrationIm.Language != null ? new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language) : new En();
@@ -118,8 +205,8 @@ namespace ITBees.UserManager.Services
             return userLanguage;
         }
 
-        private void CheckIfCurrentUserIsOwnerOfCompanyAndAddNewUserToThisCompany(
-            NewUserRegistrationIm newUserRegistrationIm, Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
+        private void AddNewUserToCompany(
+            NewUserRegistrationWithInvitationIm newUserRegistrationIm, Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
         {
             if (currentUserGuid.HasValue)
             {
@@ -178,6 +265,14 @@ namespace ITBees.UserManager.Services
                 AddedDate = DateTime.Now,
                 UserAccountGuid = userSavedData.Guid
             });
+        }
+    }
+
+    public class YouMustBeLoggedInToCreateNewUserInvitationException : Exception
+    {
+        public YouMustBeLoggedInToCreateNewUserInvitationException(string message) : base(message)
+        {
+
         }
     }
 }
