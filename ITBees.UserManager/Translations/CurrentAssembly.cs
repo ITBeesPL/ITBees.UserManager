@@ -7,7 +7,7 @@ namespace ITBees.UserManager.Translations
     {
         public static List<ITranslate> GetTranslationClasses()
         {
-            return new List<ITranslate>() { new UserManager() };
+            return new List<ITranslate>() { new UserManager() , new NewUserRegistrationEmail()};
         }
     }
 }

@@ -12,7 +12,11 @@ using ITBees.UserManager.Controllers;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using ITBees.Interfaces.Platforms;
+using ITBees.Mailing;
+using ITBees.Mailing.Interfaces;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.Mailing;
@@ -39,6 +43,26 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IRegistrationEmailComposer, RegistrationEmailComposer>();
             services.AddScoped<IAccessControlService, AccessControlService>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
+            if(services.Any(descriptor =>
+                   descriptor.ServiceType == typeof(IEmailSendingService)) == false)
+            {
+                Console.WriteLine($"Using default implementation for EmailSendingService in UserManager.");
+                services.AddScoped<IEmailSendingService, EmailSendingService>();
+            };
+            if (services.Any(descriptor =>
+                    descriptor.ServiceType == typeof(IUserManagerSettings)) == false)
+            {
+                var message = $"Please create class with IUserManagerSettings for proper configuration in UserManager module";
+                Console.WriteLine(message);
+                throw new Exception(message);
+            };
+            if (services.Any(descriptor =>
+                    descriptor.ServiceType == typeof(IPlatformSettingsService)) == false)
+            {
+                var message = $"Please register IPlatformSettingsService in DI container";
+                throw new Exception(message);
+            };
+
             services.AddIdentity<TIdentityUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = false;

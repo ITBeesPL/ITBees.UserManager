@@ -153,7 +153,7 @@ namespace ITBees.UserManager.Services
 
             var company = _companyRoRepository.GetFirst(x => x.Guid == companyGuid);
 
-            var result = await _userManager.CreateAsync(newUser, Guid.NewGuid().ToString()); //create temporary passowrd, which should be changed after email confirmation
+            var result = await _userManager.CreateAsync(newUser, Guid.NewGuid().ToString()); //create temporary password, which should be changed after email confirmation
             var emailConfirmationToken = string.Empty;
 
             EmailMessage emailMessage = null;
@@ -161,7 +161,7 @@ namespace ITBees.UserManager.Services
 
             if (result.Succeeded == false)
             {
-                if (result.Errors.Any(x => x.Code == "DuplicateUserName")) // user has account already created on platoform, so we can send only invitation for him
+                if (result.Errors.Any(x => x.Code == "DuplicateUserName")) // user has account already created on platform, so we can send only invitation for him
                 {
                     emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.DisplayName);
                     _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);

@@ -1,4 +1,6 @@
-﻿using ITBees.Models.Languages;
+﻿using ITBees.Models.Companies;
+using ITBees.Models.EmailAccounts;
+using ITBees.Models.Languages;
 using ITBees.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,9 @@ namespace ITBees.UserManager.Services
         public static void Register(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserAccount>().HasKey(x => x.Guid);
+            modelBuilder.Entity<EmailAccount>();
+            modelBuilder.Entity<Company>().HasKey(x => x.Guid);
+            modelBuilder.Entity<UsersInCompany>().HasKey(x => x.Guid);
             modelBuilder.Entity<Language>().HasKey(x => x.Id);
             modelBuilder.Entity<Language>().HasDiscriminator<string>("LanguageType")
                 .HasValue<Aa>(nameof(Aa) + "Type")
