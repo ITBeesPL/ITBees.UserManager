@@ -64,10 +64,10 @@ namespace ITBees.UserManager.Services.Mailing
 
             var transformedSubject = ReplaceableValues.Process(translatedSubject, _userManagerSettings);
             var transformedBody = ReplaceableValues.Process(
-                translatedSubject, 
+                translatedBody, 
                 _userManagerSettings, 
-                new ReplaceableField("[[CONFIRMATION_PARAMETERS]]", 
-                    $"emailConfirmation?token={HttpUtility.HtmlEncode(token)}&email={HttpUtility.HtmlEncode(newUser.Email)}"));
+                new ReplaceableField("CONFIRMATION_PARAMETERS", 
+                    $"?token={HttpUtility.HtmlEncode(token)}&email={HttpUtility.HtmlEncode(newUser.Email)}"));
 
             return new EmailMessage()
             {
