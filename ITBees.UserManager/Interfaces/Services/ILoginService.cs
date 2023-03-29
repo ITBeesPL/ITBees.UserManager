@@ -7,5 +7,6 @@ namespace ITBees.UserManager.Interfaces.Services
     public interface ILoginService<T> where T : IdentityUser
     {
         Task<TokenVm> Login(string email, string pass);
+        Task<TokenVm> LoginAfterEmailConfirmation(string email);
     }
 }

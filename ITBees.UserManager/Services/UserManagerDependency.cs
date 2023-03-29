@@ -38,6 +38,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser>));
             services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
+            services.AddScoped(typeof(IConfirmRegistrationService<>), typeof(ConfirmRegistrationService<>));
             services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));
             services.AddScoped<IEmailAvailabilityAndConfirmationStatusCheckingService, EmailAvailabilityAndConfirmationStatusCheckingService>();
             services.AddScoped<IRegistrationEmailComposer, RegistrationEmailComposer>();
@@ -119,6 +120,7 @@ namespace ITBees.UserManager.Services
 
             var controller_type = typeof(LoginController<>).MakeGenericType(typeof(T)).GetTypeInfo();
             feature.Controllers.Add(controller_type);
+            feature.Controllers.Add(typeof(ConfirmRegistrationController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             return;
         }
     }

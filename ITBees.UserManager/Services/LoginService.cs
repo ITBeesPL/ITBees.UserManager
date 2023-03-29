@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using ITBees.BaseServices.Platforms.Interfaces;
 using ITBees.Interfaces.Repository;
+using ITBees.Models.Languages;
 using ITBees.Models.Users;
+using ITBees.Translations;
 using ITBees.UserManager.Helpers;
 using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
@@ -38,10 +40,26 @@ namespace ITBees.UserManager.Services
             _currentDateTimeService = currentDateTimeService;
         }
 
+        /// <summary>
+        /// Use this method very carefully, it allows to get token without password so, You have to be sure that You know what are You doing.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public async Task<TokenVm> LoginAfterEmailConfirmation(string email)
+        {
+            var userAccount = GetUserAccount(email);
+            return GetTokenVm(email, userAccount);
+        }
+
         public async Task<TokenVm> Login(string email, string pass)
         {
             var userAccount = await GetUserIdAfterThePasswordCheck(email, pass);
 
+            return GetTokenVm(email, userAccount);
+        }
+
+        private TokenVm GetTokenVm(string email, UserAccount userAccount)
+        {
             var expiryInMinutes = Convert.ToInt32((string) _configurationRoot.GetSection("TokenLifeTime").Value);
             var tokenSecretKey = _configurationRoot.GetSection("TokenSecretKey").Value;
             var tokenIssuer = _configurationRoot.GetSection("TokenIssuer").Value;
@@ -49,10 +67,9 @@ namespace ITBees.UserManager.Services
 
             Dictionary<string, string> claims = new Dictionary<string, string>()
             {
-                { "LastUsedCompanyGuid", userAccount.LastUsedCompanyGuid?.ToString() },
-                { "Language", userAccount.Language.Code },
-                { "DisplayName", userAccount.DisplayName },
-
+                {"LastUsedCompanyGuid", userAccount.LastUsedCompanyGuid?.ToString()},
+                {"Language", userAccount.Language.Code},
+                {"DisplayName", userAccount.DisplayName},
             };
 
             _userWriteOnlyRepository.UpdateData(u => u.Email == email, userAccountUpdate =>
@@ -69,37 +86,44 @@ namespace ITBees.UserManager.Services
                 .AddClaims(claims)
                 .Build();
 
-            var tokenVm = new TokenVm() { TokenExpirationDate = token.ValidTo, Value = token.Value };
+            var tokenVm = new TokenVm() {TokenExpirationDate = token.ValidTo, Value = token.Value};
             return tokenVm;
         }
 
         private async Task<UserAccount> GetUserIdAfterThePasswordCheck(string email, string pass)
         {
+            UserAccount userAccount = GetUserAccount(email);
+            
+            var identityUser = await _userManager.FindByEmailAsync(email);
+
+            if (!await _userManager.CheckPasswordAsync((T) identityUser, pass)) throw new UnauthorizedAccessException(Translate.Get(()=>Translations.UserManager.UserLogin.IncorrectEmailOrPassword, userAccount.Language));
+            if (identityUser.EmailConfirmed) return userAccount;
+            if (identityUser.EmailConfirmed == false) throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, userAccount.Language));
+
+            var tmpToken = await _userManager.GenerateEmailConfirmationTokenAsync((T) identityUser);
+
+            await _userManager.ConfirmEmailAsync((T) identityUser, tmpToken);
+
+            return userAccount;
+        }
+
+        private UserAccount GetUserAccount(string email)
+        {
             UserAccount userAccount;
             try
             {
-                userAccount = _userReadOnlyRepository.GetFirst(x => x.Email == email, x=>x.Language);
+                userAccount = _userReadOnlyRepository.GetFirst(x => x.Email == email, x => x.Language);
                 if (userAccount.LastUsedCompanyGuid == null)
                 {
-                    var usersInCompanies = _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
+                    var usersInCompanies =
+                        _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
                     userAccount.LastUsedCompanyGuid = usersInCompanies.First().CompanyGuid;
                 }
             }
             catch (Exception e)
             {
-                throw new Exception($"There is no active account for an email address: {email} , {e.Message}");
+                throw new Exception($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, new En())} { email} , {e.Message}");
             }
-
-
-            var identityUser = await _userManager.FindByEmailAsync(email);
-
-            if (!await _userManager.CheckPasswordAsync((T) identityUser, pass)) throw new UnauthorizedAccessException("Incorrect email or password");
-            if (identityUser.EmailConfirmed) return userAccount;
-            // if (!userAccount.Activated) throw new Exception("Email not confirmed");
-
-            var tmpToken = await _userManager.GenerateEmailConfirmationTokenAsync((T) identityUser);
-
-            await _userManager.ConfirmEmailAsync((T) identityUser, tmpToken);
 
             return userAccount;
         }

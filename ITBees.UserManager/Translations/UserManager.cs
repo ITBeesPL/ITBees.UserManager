@@ -4,6 +4,14 @@ namespace ITBees.UserManager.Translations
 {
     public class UserManager : ITranslate
     {
+        public class UserLogin : ITranslate
+        {
+            public static readonly string IncorrectEmailOrPassword = "Incorrect email or password!";
+            public static readonly string EmailNotConfirmed = "Email not confirmed!";
+            public static readonly string EmailNotRegisterd = "Email not registered!";
+            public static readonly string ErrorOnConfirmationEmailAddress = "Unfortunately there was an error while email confirmation ";
+            public static readonly string ThereIsNoActiveAccountForAnEmailAddress = "There is no active account for an email address: ";
+        }
         public class NewUserRegistration : ITranslate
         {
             public static  readonly string CouldNotFindCompanyWithSpecifiedGuid = "Could not find the company with the given ID to which you want to assign the user";

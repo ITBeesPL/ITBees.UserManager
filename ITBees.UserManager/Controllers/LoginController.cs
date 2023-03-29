@@ -6,7 +6,6 @@ using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace ITBees.UserManager.Controllers
 {
@@ -45,21 +44,6 @@ namespace ITBees.UserManager.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class GenericRestControllerNameConvention : Attribute, IControllerModelConvention
-    {
-        public void Apply(ControllerModel controller)
-        {
-            if (!controller.ControllerType.IsGenericType || controller.ControllerType.GetGenericTypeDefinition() != typeof(ILoginService<>))
-            {
-                return;
-            }
-            var entityType = controller.ControllerType.GenericTypeArguments[0];
-            controller.ControllerName = entityType.Name;
-            controller.RouteValues["Controller"] = entityType.Name;
         }
     }
 }
