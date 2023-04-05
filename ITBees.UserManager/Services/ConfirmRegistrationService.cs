@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.Translations;
@@ -34,7 +35,8 @@ namespace ITBees.UserManager.Services
                 return result;
             }
 
-            throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress, new Ee())+ "("+ string.Join(";", confirmResult.Errors) +")");
+            var errors = string.Join(";", confirmResult.Errors.Select(x=>x.Description));
+            throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress, new Ee())+ "("+ errors +")");
         }
     }
 

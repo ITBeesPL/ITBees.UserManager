@@ -67,7 +67,7 @@ namespace ITBees.UserManager.Services.Mailing
                 translatedBody, 
                 _userManagerSettings, 
                 new ReplaceableField("CONFIRMATION_PARAMETERS", 
-                    $"?token={HttpUtility.HtmlEncode(token)}&email={HttpUtility.HtmlEncode(newUser.Email)}"));
+                    $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}"));
 
             return new EmailMessage()
             {

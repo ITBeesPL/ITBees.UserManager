@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using ITBees.Interfaces.Repository;
+using ITBees.Models.Companies;
 using ITBees.Models.Users;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Services;
@@ -20,9 +21,10 @@ namespace ITBees.UserManager.Services
         {
             var currentUserGuid = _aspCurrentUserService.GetCurrentUser();
             var usersInCompany = _usersInCompanyRepository
-                .GetData(x => x.UserAccountGuid == currentUserGuid.Guid, 
-                    x => x.Company, 
+                .GetData(x => x.UserAccountGuid == currentUserGuid.Guid,
+                    x => x.Company,
                     x => x.UserAccount).ToList();
+            string displayName = string.IsNullOrEmpty(usersInCompany.First().UserAccount.FirstName) ? usersInCompany.First().UserAccount.Email : $"{usersInCompany.First().UserAccount.FirstName} {usersInCompany.First().UserAccount.LastName}";
             return new ITBees.Models.MyAccount.MyAccount()
             {
                 Guid = usersInCompany.First().UserAccount.Guid,
@@ -30,10 +32,18 @@ namespace ITBees.UserManager.Services
                 Phone = usersInCompany.First().UserAccount.Phone,
                 FirstName = usersInCompany.First().UserAccount.FirstName,
                 LastName = usersInCompany.First().UserAccount.LastName,
-                Companies = usersInCompany.Select(x=>x.Company).ToList(),
+                Companies = usersInCompany.Select(x => x.Company).ToList(),
                 LastUsedCompanyGuid = currentUserGuid.LastUsedCompanyGuid,
+                LastUsedCompany = new Company()
+                {
+                    CompanyName = usersInCompany.First().Company.CompanyName,
+                    Created = usersInCompany.First().Company.Created,
+                    CreatedByGuid = usersInCompany.First().Company.CreatedByGuid,
+                    Guid = usersInCompany.First().Company.Guid,
+                    IsActive = usersInCompany.First().Company.IsActive
+                },
                 Language = currentUserGuid.Language,
-                
+                DisplayName = displayName
             };
         }
     }
