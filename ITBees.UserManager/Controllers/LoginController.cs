@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Controllers
 {
+    [CustomControllerName("Login")]
     [ApiController]
     [GenericRestControllerNameConvention]
     [Route("/Login")]

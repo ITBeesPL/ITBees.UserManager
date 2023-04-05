@@ -17,6 +17,7 @@ using System.Reflection;
 using ITBees.Interfaces.Platforms;
 using ITBees.Mailing;
 using ITBees.Mailing.Interfaces;
+using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.Mailing;

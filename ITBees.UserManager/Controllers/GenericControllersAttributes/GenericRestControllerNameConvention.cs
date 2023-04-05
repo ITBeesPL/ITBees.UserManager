@@ -3,7 +3,7 @@ using ITBees.UserManager.Interfaces.Services;
 using ITBees.UserManager.Services;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace ITBees.UserManager.Controllers
+namespace ITBees.UserManager.Controllers.GenericControllersAttributes
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class GenericRestControllerNameConvention : Attribute, IControllerModelConvention
