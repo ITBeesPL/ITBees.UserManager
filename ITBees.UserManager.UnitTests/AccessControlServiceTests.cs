@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using ITBees.Models.Users;
-using ITBees.UserManager.Services;
 using ITBees.UserManager.Services.Acl;
+using ITBees.UserManager.Services.Registration;
 using Microsoft.AspNetCore.Identity;
 using NUnit.Framework;
 

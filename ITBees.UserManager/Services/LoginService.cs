@@ -12,6 +12,7 @@ using ITBees.UserManager.Helpers;
 using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using ITBees.UserManager.Controllers;
 
 namespace ITBees.UserManager.Services
 {
