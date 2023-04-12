@@ -11,6 +11,7 @@ namespace ITBees.UserManager.Translations
             public static readonly string EmailNotRegisterd = "Email not registered!";
             public static readonly string ErrorOnConfirmationEmailAddress = "Unfortunately there was an error while email confirmation ";
             public static readonly string ThereIsNoActiveAccountForAnEmailAddress = "There is no active account for an email address: ";
+            public static readonly string PlatformInternalErrorMissingUserData = "Platform internal error - missing user data";
         }
         public class NewUserRegistration : ITranslate
         {
