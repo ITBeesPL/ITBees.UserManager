@@ -48,6 +48,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IEmailAvailabilityAndConfirmationStatusCheckingService, EmailAvailabilityAndConfirmationStatusCheckingService>();
             services.AddScoped<IRegistrationEmailComposer, RegistrationEmailComposer>();
             services.AddScoped<IAccessControlService, AccessControlService>();
+            services.AddScoped<IRoleAddingService, RoleAddingService>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             if(services.Any(descriptor =>
                    descriptor.ServiceType == typeof(IEmailSendingService)) == false)
@@ -79,7 +80,8 @@ namespace ITBees.UserManager.Services
                 options.Password.RequiredLength = 8;
             })
                 .AddEntityFrameworkStores<TContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddRoles<IdentityRole>();
 
             services.AddAuthentication(o =>
             {

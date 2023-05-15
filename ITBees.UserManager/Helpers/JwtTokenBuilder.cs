@@ -62,7 +62,7 @@ namespace ITBees.UserManager.Helpers
             return this;
         }
 
-        public JwtToken Build()
+        public JwtToken Build(IList<string> roles)
         {
             EnsureArguments();
 
@@ -72,6 +72,10 @@ namespace ITBees.UserManager.Helpers
               new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             }
             .Union(this.claims.Select(item => new Claim(item.Key, item.Value)));
+
+            var claimsWithRoles = roles.Select(role => new Claim(ClaimTypes.Role, role));
+
+            claims = claims.Concat(claimsWithRoles);
 
             var token = new JwtSecurityToken(
                               issuer: this.issuer,
