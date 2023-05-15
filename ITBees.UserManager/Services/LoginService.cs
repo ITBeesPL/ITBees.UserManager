@@ -49,17 +49,17 @@ namespace ITBees.UserManager.Services
         public async Task<TokenVm> LoginAfterEmailConfirmation(string email)
         {
             var userAccount = GetUserAccount(email);
-            return GetTokenVm(email, userAccount);
+            return await GetTokenVm(email, userAccount);
         }
 
         public async Task<TokenVm> Login(string email, string pass)
         {
             var userAccount = await GetUserIdAfterThePasswordCheck(email, pass);
 
-            return GetTokenVm(email, userAccount);
+            return await GetTokenVm(email, userAccount);
         }
 
-        private TokenVm GetTokenVm(string email, UserAccount userAccount)
+        private async Task<TokenVm> GetTokenVm(string email, UserAccount userAccount)
         {
             var expiryInMinutes = Convert.ToInt32((string)_configurationRoot.GetSection("TokenLifeTime").Value);
             var tokenSecretKey = _configurationRoot.GetSection("TokenSecretKey").Value;
@@ -78,6 +78,10 @@ namespace ITBees.UserManager.Services
                 userAccountUpdate.LastLoginDateTime = _currentDateTimeService.GetCurrentDate();
                 userAccountUpdate.LoginsCount = userAccount.LoginsCount + 1;
             });
+
+            var owinUser = await _userManager.FindByEmailAsync(email);
+            var roles = await _userManager.GetRolesAsync(owinUser);
+
             var token = new JwtTokenBuilder()
                 .AddSecurityKey(JwtSecurityKey.Create(tokenSecretKey))
                 .AddSubject(userAccount.Guid.ToString())
@@ -85,7 +89,7 @@ namespace ITBees.UserManager.Services
                 .AddAudience(tokenAudience)
                 .AddExpiry(expiryInMinutes)
                 .AddClaims(claims)
-                .Build();
+                .Build(roles);
 
             var tokenVm = new TokenVm() { TokenExpirationDate = token.ValidTo, Value = token.Value };
             return tokenVm;
