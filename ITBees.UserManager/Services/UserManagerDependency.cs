@@ -22,7 +22,6 @@ using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.Mailing;
 using ITBees.UserManager.Services.Registration;
-using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace ITBees.UserManager.Services
 {
