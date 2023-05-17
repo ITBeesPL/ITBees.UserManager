@@ -12,7 +12,6 @@ using ITBees.UserManager.Helpers;
 using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using ITBees.UserManager.Controllers;
 
 namespace ITBees.UserManager.Services
 {
@@ -66,11 +65,16 @@ namespace ITBees.UserManager.Services
             var tokenIssuer = _configurationRoot.GetSection("TokenIssuer").Value;
             var tokenAudience = _configurationRoot.GetSection("TokenAudience").Value;
 
+            var owinUser = await _userManager.FindByEmailAsync(email);
+            var roles = await _userManager.GetRolesAsync(owinUser);
+
             Dictionary<string, string> claims = new Dictionary<string, string>()
             {
                 {"LastUsedCompanyGuid", userAccount.LastUsedCompanyGuid?.ToString()},
                 {"Language", userAccount.Language.Code},
                 {"DisplayName", userAccount.DisplayName},
+                {"UserAccountModules", FormatUserAccountModulesForJwtToken(userAccount)},
+                { "Roles" ,FormatRolesForJwtToken(roles)}
             };
 
             _userWriteOnlyRepository.UpdateData(u => u.Email == email, userAccountUpdate =>
@@ -78,9 +82,6 @@ namespace ITBees.UserManager.Services
                 userAccountUpdate.LastLoginDateTime = _currentDateTimeService.GetCurrentDate();
                 userAccountUpdate.LoginsCount = userAccount.LoginsCount + 1;
             });
-
-            var owinUser = await _userManager.FindByEmailAsync(email);
-            var roles = await _userManager.GetRolesAsync(owinUser);
 
             var token = new JwtTokenBuilder()
                 .AddSecurityKey(JwtSecurityKey.Create(tokenSecretKey))
@@ -93,6 +94,17 @@ namespace ITBees.UserManager.Services
 
             var tokenVm = new TokenVm() { TokenExpirationDate = token.ValidTo, Value = token.Value };
             return tokenVm;
+        }
+
+        private string FormatRolesForJwtToken(IList<string> roles)
+        {
+            return string.Join(";", roles);
+        }
+
+        private string FormatUserAccountModulesForJwtToken(UserAccount userAccount)
+        {
+            var formatUserAccountModulesForJwtToken = string.Join(";", userAccount.UserAccountModules.Select(x => $"{x.ModuleType}-{x.ModuleName}-{x.MethodName}-{x.AllowedTypeOfOperation}"));
+            return formatUserAccountModulesForJwtToken;
         }
 
         private async Task<UserAccount> GetUserIdAfterThePasswordCheck(string email, string pass)
@@ -116,7 +128,7 @@ namespace ITBees.UserManager.Services
         {
             UserAccount userAccount;
 
-            userAccount = _userReadOnlyRepository.GetFirst(x => x.Email == email, x => x.Language);
+            userAccount = _userReadOnlyRepository.GetFirst(x => x.Email == email, x => x.Language, x => x.UserAccountModules);
 
             if (userAccount == null)
             {
