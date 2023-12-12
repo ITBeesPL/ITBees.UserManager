@@ -81,8 +81,14 @@ namespace ITBees.UserManager.Services.Registration
             var currentUserGuid = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
             var emailConfirmationToken = string.Empty;
 
-            if(sendConfirmationEmail) 
+            if (sendConfirmationEmail)
+            {
                 emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(currentUserGuid);
+            }
+            else
+            {
+                
+            }
 
             try
             {

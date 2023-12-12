@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
 using ITBees.UserManager.Controllers;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;

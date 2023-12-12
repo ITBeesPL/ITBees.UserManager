@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using ITBees.UserManager.Controllers;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
 

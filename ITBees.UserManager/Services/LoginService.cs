@@ -51,6 +51,26 @@ namespace ITBees.UserManager.Services
             return await GetTokenVm(email, userAccount);
         }
 
+        /// <summary>
+        /// Use with caution, it will confirm any specified email account
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public async Task<ConfirmEmailResult> ConfirmEmail(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                await _userManager.ConfirmEmailAsync(user, token);
+                return new ConfirmEmailResult() { Success = true };
+            }
+            catch (Exception e)
+            {
+                return new ConfirmEmailResult() { Success = false, Message = e.Message };
+            }
+        }
+
         public async Task<TokenVm> Login(string email, string pass)
         {
             var userAccount = await GetUserIdAfterThePasswordCheck(email, pass);
@@ -151,5 +171,11 @@ namespace ITBees.UserManager.Services
 
             return userAccount;
         }
+    }
+
+    public class ConfirmEmailResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
     }
 }

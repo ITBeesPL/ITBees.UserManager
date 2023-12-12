@@ -26,7 +26,7 @@ namespace ITBees.UserManager.Services
             var user = await _userManager.FindByEmailAsync(confirmRegistrationIm.Email);
             if (user == null)
             {
-                throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegisterd, new Ee()));
+                throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegisterd, new En()));
             }
             var confirmResult = await _userManager.ConfirmEmailAsync(user, confirmRegistrationIm.Token);
             if (confirmResult.Succeeded)
@@ -36,7 +36,7 @@ namespace ITBees.UserManager.Services
             }
 
             var errors = string.Join(";", confirmResult.Errors.Select(x=>x.Description));
-            throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress, new Ee())+ "("+ errors +")");
+            throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress, new En())+ "("+ errors +")");
         }
     }
 

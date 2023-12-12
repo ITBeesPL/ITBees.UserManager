@@ -13,9 +13,22 @@ namespace ITBees.UserManager.Translations
             public static readonly string ThereIsNoActiveAccountForAnEmailAddress = "There is no active account for an email address: ";
             public static readonly string PlatformInternalErrorMissingUserData = "Platform internal error - missing user data";
         }
+
+        public class ResetPassword : ITranslate
+        {
+            public static readonly string EmailNotRegisterd = "Email not registered!";
+            public static readonly string CurrentPasswordIsIncorrect = "Current password is incorrect";
+            public static readonly string CurrentUserNotExits = "Current user not exists!";
+            public static readonly string UnableToGenerateNewPasswordResetToken = "Unable to generate new password reset Token";
+            public static readonly string ResetPasswordErrorWithAdditionalMessages = "Resetting password error, additional messages : ";
+            public static readonly string DefaultEmailSubjectForPasswordResetStarted = "Password reset started";
+            public static readonly string DefaultEmailBodyForPasswordResetStarted = "<!DOCTYPE html><html><body><p>To reset your password click the link below:</p><a href='[[resetUrl]]' class='button'>Reset Password</a><p>---</p><p>[[site.Url]]</p></body></html>";
+            public static readonly string ErrorWhileTryingToResetPassword = "There was an error while creating reset password email. Additional messages : ";
+        }
+
         public class NewUserRegistration : ITranslate
         {
-            public static  readonly string CouldNotFindCompanyWithSpecifiedGuid = "Could not find the company with the given ID to which you want to assign the user";
+            public static readonly string CouldNotFindCompanyWithSpecifiedGuid = "Could not find the company with the given ID to which you want to assign the user";
 
             /// <summary>
             /// Error message shown when user tries to add different user when he is not owner of this company

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
@@ -46,6 +47,26 @@ namespace ITBees.UserManager.Services
         public async Task<IList<string>> GetRolesAsync(object user)
         {
             return await _userManager.GetRolesAsync((T)user);
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(object user, string token, string newPassword)
+        {
+            return await _userManager.ResetPasswordAsync((T)user, token, newPassword);
+        }
+
+        public async Task<string> GeneratePasswordResetTokenAsync(object user)
+        {
+            return await _userManager.GeneratePasswordResetTokenAsync((T)user);
+        }
+
+        public async Task<IdentityUser> FindByIdAsync(string userIDGuid)
+        {
+            return await _userManager.FindByIdAsync(userIDGuid);
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass)
+        {
+            return await _userManager.ChangePasswordAsync((T)user, currentPass, newPass);
         }
     }
 }

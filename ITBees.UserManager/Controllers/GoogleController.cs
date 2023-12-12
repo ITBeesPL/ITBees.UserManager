@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Google.Apis.Auth;
-using ITBees.Models.Languages;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Services.Registration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
@@ -70,31 +70,5 @@ namespace ITBees.UserManager.Controllers
 
             return null;
         }
-    }
-
-    public class GooglePayload
-    {
-        public GooglePayload(GoogleJsonWebSignature.Payload payload)
-        {
-            var language = payload.Locale == null ? new En() : new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(payload.Locale.Substring(0, 2));
-
-            Email = payload.Email;
-            FirstName = payload.GivenName;
-            LastName = payload.FamilyName;
-            Picture= payload.Picture;
-            EmailVerified = payload.EmailVerified;
-            Language = language;
-        }
-        public bool EmailVerified { get; set; }
-        public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Picture { get; set; }
-        public Language Language { get; set; }
-    }
-
-    public class GoogleSignInModel
-    {
-        public string IdToken { get; set; }
     }
 }

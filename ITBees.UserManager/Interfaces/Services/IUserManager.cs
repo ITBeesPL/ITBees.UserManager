@@ -20,5 +20,9 @@ namespace ITBees.UserManager.Interfaces.Services
 
         Task<IList<string>> GetRolesAsync(object user);
 
+        Task<IdentityResult> ResetPasswordAsync(object user, string token, string newPassword);
+        Task<string> GeneratePasswordResetTokenAsync(object user);
+        Task<IdentityUser> FindByIdAsync(string userIDGuid);
+        Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass);
     }
 }

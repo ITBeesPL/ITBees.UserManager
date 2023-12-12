@@ -21,6 +21,7 @@ using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.Mailing;
+using ITBees.UserManager.Services.Passwords;
 using ITBees.UserManager.Services.Registration;
 
 namespace ITBees.UserManager.Services
@@ -48,6 +49,9 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IRegistrationEmailComposer, RegistrationEmailComposer>();
             services.AddScoped<IAccessControlService, AccessControlService>();
             services.AddScoped<IRoleAddingService, RoleAddingService>();
+            services.AddScoped<IPasswordResettingService, PasswordResettingService>();
+            services.AddScoped<IResetPasswordEmailConstructorService, ResetPasswordEmailConstructorService>();
+            services.AddScoped<IChangePasswordService, ChangePasswordService>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             if(services.Any(descriptor =>
                    descriptor.ServiceType == typeof(IEmailSendingService)) == false)

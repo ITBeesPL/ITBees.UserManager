@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
-using ITBees.UserManager.Controllers;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
@@ -32,7 +32,9 @@ namespace ITBees.UserManager.Services.Registration
                     Language = googlePayload.Language.Code,
                     Password = RandomPasswordGenerator.GenerateRandomPassword(30)
                 }, false);
-            return await _loginService.LoginAfterEmailConfirmation(googlePayload.Email);
+            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(googlePayload.Email);
+            await _loginService.ConfirmEmail(googlePayload.Email);
+            return loginAfterEmailConfirmation;
         }
     }
     public static class RandomPasswordGenerator
