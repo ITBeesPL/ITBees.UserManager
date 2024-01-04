@@ -42,19 +42,19 @@ namespace ITBees.UserManager.Services.Mailing
             string companyCompanyName, string nameOfInviter, Language userLanguage)
         {
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithInvitationToOrganizationSubject, userSavedData.Language);
-            translatedSubject
+            translatedSubject = translatedSubject
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
-                .Replace("[[NameOfInviter]]", nameOfInviter)
+                .Replace("[[INVITING_NAME]]", nameOfInviter)
                 ;
             var translatedBody = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithInvitationToOrganizationBody, userSavedData.Language);
-            translatedBody
+            translatedBody = translatedBody
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
-                .Replace("[[COMPANY_NAME]]", _userManagerSettings.EMAIL_CONFIRMATION_URL)
+                .Replace("[[COMPANY_NAME]]", companyCompanyName)
+                .Replace("[[EMAIL_CONFIRMATION_URL]]", _platformSettingsService.GetSetting("DefaultApiUrl"))
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
-                    $"?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&company={HttpUtility.UrlEncode(companyCompanyName)}")
+                    $"acceptInvitation?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&company={HttpUtility.UrlEncode(companyCompanyName)}")
                 ;
             ;
-
 
             return new EmailMessage()
             {
@@ -68,13 +68,13 @@ namespace ITBees.UserManager.Services.Mailing
             string companyCompanyName, string token, Language userLanguage)
         {
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationSubject, userSavedData.Language);
-            translatedSubject
+            translatedSubject = translatedSubject
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
                 .Replace("[[INVITING_NAME]]", companyCompanyName)
                 ;
 
             var translatedBodyHtml = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationBody, userSavedData.Language); ;
-            translatedBodyHtml
+            translatedBodyHtml = translatedBodyHtml
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
                 .Replace("[[EMAIL_CONFIRMATION_URL]]", _platformSettingsService.GetSetting("DefaultApiUrl"))
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
@@ -100,7 +100,7 @@ namespace ITBees.UserManager.Services.Mailing
                 _userManagerSettings,
                 new ReplaceableField("CONFIRMATION_PARAMETERS",
                     $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}"));
-            transformedBody.Replace("[[EMAIL_CONFIRMATION_URL]]", _userManagerSettings.EMAIL_CONFIRMATION_URL);
+            transformedBody = transformedBody.Replace("[[EMAIL_CONFIRMATION_URL]]", _userManagerSettings.EMAIL_CONFIRMATION_URL);
 
             return new EmailMessage()
             {

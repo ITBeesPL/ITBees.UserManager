@@ -32,7 +32,9 @@ namespace ITBees.UserManager.Services.Registration
         private readonly IAccessControlService _accessControlService;
         private readonly IEmailSendingService _emailSendingService;
         private readonly IPlatformSettingsService _platformSettingsService;
-        
+        private readonly IReadOnlyRepository<UsersInvitationsToCompanies> _usersInvitationsToCompaniesRoRepo;
+        private readonly IWriteOnlyRepository<UsersInvitationsToCompanies> _usersInvitationsToCompaniesRwRepo;
+
         public NewUserRegistrationService(IUserManager userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
             IWriteOnlyRepository<Company> companyWoRepository,
@@ -43,7 +45,10 @@ namespace ITBees.UserManager.Services.Registration
             IRegistrationEmailComposer registrationEmailComposer,
             IAccessControlService accessControlService,
             IEmailSendingService emailSendingService,
-            IPlatformSettingsService platformSettingsService)
+            IPlatformSettingsService platformSettingsService,
+            IReadOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRoRepo,
+            IWriteOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRwRepo
+            )
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
@@ -56,6 +61,8 @@ namespace ITBees.UserManager.Services.Registration
             _accessControlService = accessControlService;
             _emailSendingService = emailSendingService;
             _platformSettingsService = platformSettingsService;
+            _usersInvitationsToCompaniesRoRepo = usersInvitationsToCompaniesRoRepo;
+            _usersInvitationsToCompaniesRwRepo = usersInvitationsToCompaniesRwRepo;
         }
 
         public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm, bool sendConfirmationEmail = true)
@@ -166,7 +173,7 @@ namespace ITBees.UserManager.Services.Registration
 
             var company = _companyRoRepository.GetFirst(x => x.Guid == companyGuid);
 
-            var result = await _userManager.CreateAsync(newUser, Guid.NewGuid().ToString()); //create temporary password, which should be changed after email confirmation
+            IdentityResult result = await _userManager.CreateAsync(newUser, Guid.NewGuid().ToString()); //create temporary password, which should be changed after email confirmation
             var emailConfirmationToken = string.Empty;
 
             EmailMessage emailMessage = null;
@@ -176,9 +183,21 @@ namespace ITBees.UserManager.Services.Registration
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName")) // user has account already created on platform, so we can send only invitation for him
                 {
-                    emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage);
-                    _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
                     var alreadyRegisteredUser = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
+
+                    var usersInvitationsToCompaniesList = _usersInvitationsToCompaniesRoRepo.GetData(x =>
+                        x.UserAccountGuid == Guid.Parse(alreadyRegisteredUser.Id) && x.CompanyGuid == companyGuid).ToList();
+                    if (usersInvitationsToCompaniesList.Any())
+                    {
+                        //TODO implement logic responsible for update existing invitaion
+                    }
+                    else
+                    {
+                        CreateNewUserInvitationDbRecord(companyGuid, alreadyRegisteredUser, currentUser);
+                    }
+                    emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage);
+
+                    _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
                     return new NewUserRegistrationResult(new Guid(alreadyRegisteredUser.Id), string.Empty);
                 }
@@ -191,7 +210,9 @@ namespace ITBees.UserManager.Services.Registration
             }
             else
             {
+                var user = await _userManager.FindByEmailAsync(newUser.Email);
                 emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(result);
+                CreateNewUserInvitationDbRecord(companyGuid, user, currentUser);
             }
 
             UserAccount userSavedData = null;
@@ -229,6 +250,18 @@ namespace ITBees.UserManager.Services.Registration
             }
 
             return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
+        }
+
+        private void CreateNewUserInvitationDbRecord(Guid? companyGuid, IdentityUser alreadyRegisteredUser,
+            CurrentUser currentUser)
+        {
+            _usersInvitationsToCompaniesRwRepo.InsertData(new UsersInvitationsToCompanies()
+            {
+                CompanyGuid = companyGuid.Value,
+                UserAccountGuid = Guid.Parse(alreadyRegisteredUser.Id),
+                CreatedByGuid = currentUser.Guid,
+                CreatedDate = DateTime.Now,
+            });
         }
 
         private Language GetUserLanguage(IVmWithLanguageDefined newUserRegistrationIm)

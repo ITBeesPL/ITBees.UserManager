@@ -52,6 +52,8 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IPasswordResettingService, PasswordResettingService>();
             services.AddScoped<IResetPasswordEmailConstructorService, ResetPasswordEmailConstructorService>();
             services.AddScoped<IChangePasswordService, ChangePasswordService>();
+            services.AddScoped<IAcceptInvitationService, AcceptInvitationService>();
+            services.AddScoped<IAwaitingInvitationsService, AwaitingInvitationsService>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             if(services.Any(descriptor =>
                    descriptor.ServiceType == typeof(IEmailSendingService)) == false)

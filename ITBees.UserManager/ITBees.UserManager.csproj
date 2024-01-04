@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\GenericControllersAttributes\" />
-    <Folder Include="Controllers\Models\" />
     <Folder Include="Interfaces\Models\" />
     <Folder Include="DbMigrations\" />
     <Folder Include="Services\Mailing\" />
@@ -20,7 +19,7 @@
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.10" />
     <PackageReference Include="ITBees.Interfaces" Version="5.0.9" />
     <PackageReference Include="ITBees.Mailing" Version="5.0.16" />
-    <PackageReference Include="ITBees.Models" Version="5.0.16" />
+    <PackageReference Include="ITBees.Models" Version="5.0.20" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="5.0.3" />
     <PackageReference Include="ITBees.Translations" Version="5.0.25" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="5.0.10" />
