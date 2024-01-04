@@ -1,4 +1,5 @@
 ﻿using ITBees.Models.EmailMessages;
+using ITBees.Models.Languages;
 using ITBees.UserManager.Interfaces.Models;
 
 namespace ITBees.UserManager.Services.Mailing
@@ -10,9 +11,11 @@ namespace ITBees.UserManager.Services.Mailing
         /// </summary>
         /// <param name="userSavedData"></param>
         /// <param name="companyCompanyName"></param>
+        /// <param name="nameOfInviter"></param>
+        /// <param name="userLanguage"></param>
         /// <returns></returns>
         EmailMessage ComposeEmailWithInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string nameOfInviter);
+            string companyCompanyName, string nameOfInviter, Language userLanguage);
 
         /// <summary>
         /// Create message with invitation to platform, and email activation link
@@ -23,7 +26,7 @@ namespace ITBees.UserManager.Services.Mailing
         /// <returns></returns>
         EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData, 
             string companyCompanyName, 
-            string token);
+            string token, Language userLanguage);
 
         /// <summary>
         /// Create message with email confirmation for single user

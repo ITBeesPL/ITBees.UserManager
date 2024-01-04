@@ -176,7 +176,7 @@ namespace ITBees.UserManager.Services.Registration
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName")) // user has account already created on platform, so we can send only invitation for him
                 {
-                    emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.DisplayName);
+                    emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage);
                     _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
                     var alreadyRegisteredUser = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
 
@@ -209,7 +209,7 @@ namespace ITBees.UserManager.Services.Registration
                         LanguageId = userLanguage.Id
                     });
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
-                emailMessage  = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token);
+                emailMessage  = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token, userLanguage);
             }
             catch (Exception e)
             {

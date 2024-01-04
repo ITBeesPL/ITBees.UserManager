@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Web;
 using ITBees.BaseServices.Settings.Models;
 using ITBees.BaseServices.Settings.Services;
+using ITBees.Interfaces.Platforms;
 using ITBees.Mailing.Interfaces;
 using ITBees.Models.EmailMessages;
+using ITBees.Models.Languages;
 using ITBees.Translations;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
@@ -19,6 +19,8 @@ namespace ITBees.UserManager.Services.Mailing
         private readonly IEmailSendingService _emailSendingService;
         private readonly ILogger<RegistrationEmailComposer> _logger;
         private readonly IUserManagerSettings _userManagerSettings;
+        private readonly IPlatformSettingsService _platformSettingsService;
+
         private readonly Dictionary<string, string> _replaceableFields = new Dictionary<string, string>()
         {
             {"PLATFORM_NAME",""},
@@ -26,33 +28,63 @@ namespace ITBees.UserManager.Services.Mailing
         };
 
         public RegistrationEmailComposer(IEmailSendingService emailSendingService,
-            ILogger<RegistrationEmailComposer> logger, IUserManagerSettings userManagerSettings)
+            ILogger<RegistrationEmailComposer> logger,
+            IUserManagerSettings userManagerSettings,
+            IPlatformSettingsService platformSettingsService)
         {
             _emailSendingService = emailSendingService;
             _logger = logger;
             _userManagerSettings = userManagerSettings;
+            _platformSettingsService = platformSettingsService;
         }
 
         public EmailMessage ComposeEmailWithInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string nameOfInviter)
+            string companyCompanyName, string nameOfInviter, Language userLanguage)
         {
+            var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithInvitationToOrganizationSubject, userSavedData.Language);
+            translatedSubject
+                .Replace("[[COMPANY_NAME]]", companyCompanyName)
+                .Replace("[[NameOfInviter]]", nameOfInviter)
+                ;
+            var translatedBody = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithInvitationToOrganizationBody, userSavedData.Language);
+            translatedBody
+                .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
+                .Replace("[[COMPANY_NAME]]", _userManagerSettings.EMAIL_CONFIRMATION_URL)
+                .Replace("[[CONFIRMATION_PARAMETERS]]",
+                    $"?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&company={HttpUtility.UrlEncode(companyCompanyName)}")
+                ;
+            ;
+
+
             return new EmailMessage()
             {
-                Subject = $"{nameOfInviter} has invited You to company : {companyCompanyName}",
-                BodyHtml = "<h1>Accept invitation in Your panel}</h1>",
-                BodyText = "Test",
+                Subject = translatedSubject,
+                BodyHtml = translatedBody,
                 Recipients = userSavedData.Email
             };
         }
 
         public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string token)
+            string companyCompanyName, string token, Language userLanguage)
         {
+            var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationSubject, userSavedData.Language);
+            translatedSubject
+                .Replace("[[COMPANY_NAME]]", companyCompanyName)
+                .Replace("[[INVITING_NAME]]", companyCompanyName)
+                ;
+
+            var translatedBodyHtml = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationBody, userSavedData.Language); ;
+            translatedBodyHtml
+                .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
+                .Replace("[[EMAIL_CONFIRMATION_URL]]", _platformSettingsService.GetSetting("DefaultApiUrl"))
+                .Replace("[[CONFIRMATION_PARAMETERS]]",
+                    $"?emailInvitation=true&token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(userSavedData.Email)}")
+                ;
+
             return new EmailMessage()
             {
-                Subject = $"You have been invited to company : {companyCompanyName}",
-                BodyHtml = $"<h1>Token : {token}</h1>",
-                BodyText = "Test",
+                Subject = translatedSubject,
+                BodyHtml = translatedBodyHtml,
                 Recipients = userSavedData.Email
             };
         }
@@ -64,10 +96,11 @@ namespace ITBees.UserManager.Services.Mailing
 
             var transformedSubject = ReplaceableValues.Process(translatedSubject, _userManagerSettings);
             var transformedBody = ReplaceableValues.Process(
-                translatedBody, 
-                _userManagerSettings, 
-                new ReplaceableField("CONFIRMATION_PARAMETERS", 
+                translatedBody,
+                _userManagerSettings,
+                new ReplaceableField("CONFIRMATION_PARAMETERS",
                     $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}"));
+            transformedBody.Replace("[[EMAIL_CONFIRMATION_URL]]", _userManagerSettings.EMAIL_CONFIRMATION_URL);
 
             return new EmailMessage()
             {
