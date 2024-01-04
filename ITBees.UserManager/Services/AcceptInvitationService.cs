@@ -4,7 +4,6 @@ using ITBees.Interfaces.Repository;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
 using ITBees.Translations;
-using ITBees.UserManager.Controllers;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Services;
@@ -27,14 +26,14 @@ namespace ITBees.UserManager.Services
             _usersInCompanyWoRepo = usersInCompanyWoRepo;
         }
 
-        public AcceptInvitationResultVm Accept(bool emailInvitation, string email, string company)
+        public AcceptInvitationResultVm Accept(bool emailInvitation, string email, Guid companyGuid)
         {
             try
             {
                 var result = _usersInvitationsWoRepo
                     .UpdateData(x => x.Applied == false &&
                                      x.UserAccount.Email == email &&
-                                     x.Company.CompanyName == company, x =>
+                                     x.CompanyGuid == companyGuid, x =>
                     {
                         x.Applied = true;
                     });

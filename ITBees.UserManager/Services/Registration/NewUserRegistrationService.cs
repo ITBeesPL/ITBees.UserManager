@@ -187,11 +187,7 @@ namespace ITBees.UserManager.Services.Registration
 
                     var usersInvitationsToCompaniesList = _usersInvitationsToCompaniesRoRepo.GetData(x =>
                         x.UserAccountGuid == Guid.Parse(alreadyRegisteredUser.Id) && x.CompanyGuid == companyGuid).ToList();
-                    if (usersInvitationsToCompaniesList.Any())
-                    {
-                        //TODO implement logic responsible for update existing invitaion
-                    }
-                    else
+                    if (usersInvitationsToCompaniesList.Any() == false)
                     {
                         CreateNewUserInvitationDbRecord(companyGuid, alreadyRegisteredUser, currentUser);
                     }
