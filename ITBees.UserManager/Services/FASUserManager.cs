@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services
 {
     public class FASUserManager<T> : IUserManager where T : IdentityUser
     {
         private readonly UserManager<T> _userManager;
+        private readonly ILogger<FASUserManager<T>> _logger;
 
-        public FASUserManager(UserManager<T> userManager)
+        public FASUserManager(UserManager<T> userManager, ILogger<FASUserManager<T>> logger)
         {
             _userManager = userManager;
+            _logger = logger;
         }
         public async Task<IdentityResult> CreateAsync(object user, string password)
         {
@@ -67,6 +70,35 @@ namespace ITBees.UserManager.Services
         public async Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass)
         {
             return await _userManager.ChangePasswordAsync((T)user, currentPass, newPass);
+        }
+
+        public async Task DeleteAccount(bool leaveAccountGuidForFutureBillingInformation, Guid userGuid)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userGuid.ToString());
+                
+                if (user.Email.StartsWith("DELETED_"))
+                    throw new Exception("Error while delete user account");
+
+                if (leaveAccountGuidForFutureBillingInformation)
+                {
+                    var newEmail = $"DELETED_{DateTime.Now.ToString("yyyyMMddHHmm")}_{user.Email}";
+                    var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+                    await _userManager.ChangeEmailAsync(user, newEmail, token);
+                    user.Email = newEmail;
+                    await _userManager.SetLockoutEnabledAsync(user, true);
+                }
+                else
+                {
+                    await _userManager.DeleteAsync(user);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Delete account error, exception : {e.Message}", e);
+                throw new Exception($"Delete account error, exception ");
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
@@ -24,5 +25,14 @@ namespace ITBees.UserManager.Interfaces.Services
         Task<string> GeneratePasswordResetTokenAsync(object user);
         Task<IdentityUser> FindByIdAsync(string userIDGuid);
         Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass);
+        /// <summary>
+        /// Deletes user account in database
+        /// </summary>
+        /// <param name="leaveAccountGuidForFutureBillingInformation">
+        /// If set to true, it will only lockout account, and change email address by adding "DELETED_yyyyMMddHHmm_" to user email ie : DELETED_202402011820_youremail@yourdomain.com"
+        /// </param>
+        /// <param name="userGuid"></param>
+        /// <returns></returns>
+        Task DeleteAccount(bool leaveAccountGuidForFutureBillingInformation, Guid userGuid);
     }
 }
