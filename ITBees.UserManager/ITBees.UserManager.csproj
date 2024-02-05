@@ -8,7 +8,7 @@
   <ItemGroup>
     <Folder Include="Controllers\GenericControllersAttributes\" />
     <Folder Include="Interfaces\Models\" />
-    <Folder Include="DbMigrations\" />
+    <Folder Include="Services\AppleLogins\" />
     <Folder Include="Services\Mailing\" />
     <Folder Include="Services\Passwords\Models\" />
   </ItemGroup>

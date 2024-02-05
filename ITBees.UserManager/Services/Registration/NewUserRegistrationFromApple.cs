@@ -1,17 +1,16 @@
 ﻿using System.Threading.Tasks;
-using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Services.Registration
 {
-    public class NewUserRegistrationFromGoogle<T> : INewUserRegistrationFromGoogle where T : IdentityUser, new()
+    public class NewUserRegistrationFromApple<T> : INewUserRegistrationFromApple where T : IdentityUser, new()
     {
         private readonly INewUserRegistrationService _newUserRegistrationService;
         private readonly ILoginService<T> _loginService;
 
-        public NewUserRegistrationFromGoogle(INewUserRegistrationService newUserRegistrationService,
+        public NewUserRegistrationFromApple(INewUserRegistrationService newUserRegistrationService,
             ILoginService<T> loginService)
 
         {
@@ -19,20 +18,19 @@ namespace ITBees.UserManager.Services.Registration
             _loginService = loginService;
         }
 
-        public async Task<TokenVm> CreateNewUserAccountFromGoogleLogin(GooglePayload googlePayload)
+        public async Task<TokenVm> CreateNewUserAccountFromAppleLogin(ApplePayload applePayload)
         {
             await _newUserRegistrationService.CreateNewUser(
                 new NewUserRegistrationIm()
                 {
                     CompanyName = string.Empty,
-                    FirstName = googlePayload.FirstName,
-                    LastName = googlePayload.LastName,
-                    Email = googlePayload.Email,
-                    Language = googlePayload.Language.Code,
+                    FirstName = applePayload.FirstName,
+                    LastName = applePayload.LastName,
+                    Email = applePayload.Email,
                     Password = RandomPasswordGenerator.GenerateRandomPassword(30)
                 }, false);
-            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(googlePayload.Email);
-            await _loginService.ConfirmEmail(googlePayload.Email);
+            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(applePayload.Email);
+            await _loginService.ConfirmEmail(applePayload.Email);
             return loginAfterEmailConfirmation;
         }
     }

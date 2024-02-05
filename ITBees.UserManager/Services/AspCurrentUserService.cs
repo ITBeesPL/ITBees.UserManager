@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.UserManager.Interfaces.Services;
 
@@ -16,7 +15,8 @@ namespace ITBees.UserManager.Services
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IReadOnlyRepository<UsersInCompany> _usersInCompanyRoRepository;
 
-        public AspCurrentUserService(IHttpContextAccessor _contextAccessor, IReadOnlyRepository<UsersInCompany> usersInCompanyRoRepository)
+        public AspCurrentUserService(IHttpContextAccessor _contextAccessor, 
+            IReadOnlyRepository<UsersInCompany> usersInCompanyRoRepository)
         {
             this._contextAccessor = _contextAccessor;
             _usersInCompanyRoRepository = usersInCompanyRoRepository;

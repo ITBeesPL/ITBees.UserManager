@@ -8,6 +8,7 @@ using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Services.Registration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
+using ITBees.UserManager.Interfaces.Models;
 
 
 namespace ITBees.UserManager.Controllers
@@ -27,6 +28,7 @@ namespace ITBees.UserManager.Controllers
             _googleLoginService = googleLoginService;
         }
 
+        [Produces(typeof(TokenVm))]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] GoogleSignInModel model, [FromHeader(Name = "Accept-Language")] string acceptLanguage)
         {
