@@ -9,6 +9,7 @@
     <Folder Include="Controllers\GenericControllersAttributes\" />
     <Folder Include="Interfaces\Models\" />
     <Folder Include="Services\AppleLogins\" />
+    <Folder Include="Services\FacebookLogins\" />
     <Folder Include="Services\Mailing\" />
     <Folder Include="Services\Passwords\Models\" />
   </ItemGroup>

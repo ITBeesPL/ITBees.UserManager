@@ -22,6 +22,7 @@ using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.AppleLogins;
+using ITBees.UserManager.Services.FacebookLogins;
 using ITBees.UserManager.Services.Mailing;
 using ITBees.UserManager.Services.Passwords;
 using ITBees.UserManager.Services.Registration;
@@ -59,6 +60,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IMyCompaniesService, MyCompaniesService>();
             services.AddScoped<INewUserRegistrationFromApple, NewUserRegistrationFromApple<TIdentityUser>>();
             services.AddScoped<IAppleLoginService<TIdentityUser>, AppleLoginService<TIdentityUser>>();
+            services.AddScoped<IFacebookLoginService<TIdentityUser>, FacebookLoginService<TIdentityUser>>();
             services.AddScoped<HttpClient>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             if(services.Any(descriptor =>
@@ -141,6 +143,7 @@ namespace ITBees.UserManager.Services
             feature.Controllers.Add(typeof(ConfirmRegistrationController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(GoogleLoginController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(AppleLoginController<>).MakeGenericType(typeof(T)).GetTypeInfo());
+            feature.Controllers.Add(typeof(FacebookLoginController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             return;
         }
     }
