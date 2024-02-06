@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ITBees.Interfaces.Repository;
+using ITBees.Models.Users;
 using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -11,11 +13,15 @@ namespace ITBees.UserManager.Services
     {
         private readonly UserManager<T> _userManager;
         private readonly ILogger<FASUserManager<T>> _logger;
+        private readonly IWriteOnlyRepository<UserAccount> _userAccountRwRepo;
 
-        public FASUserManager(UserManager<T> userManager, ILogger<FASUserManager<T>> logger)
+        public FASUserManager(UserManager<T> userManager, 
+            ILogger<FASUserManager<T>> logger, 
+            IWriteOnlyRepository<UserAccount> userAccountRwRepo)
         {
             _userManager = userManager;
             _logger = logger;
+            _userAccountRwRepo = userAccountRwRepo;
         }
         public async Task<IdentityResult> CreateAsync(object user, string password)
         {
@@ -84,10 +90,18 @@ namespace ITBees.UserManager.Services
                 if (leaveAccountGuidForFutureBillingInformation)
                 {
                     var newEmail = $"DELETED_{DateTime.Now.ToString("yyyyMMddHHmm")}_{user.Email}";
+                    _userAccountRwRepo.UpdateData(x => x.Email == user.Email, x =>
+                    {
+                        x.Email = newEmail;
+                    });
+
                     var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
                     await _userManager.ChangeEmailAsync(user, newEmail, token);
+                    await _userManager.SetUserNameAsync(user, newEmail);
                     user.Email = newEmail;
                     await _userManager.SetLockoutEnabledAsync(user, true);
+
+                    
                 }
                 else
                 {
