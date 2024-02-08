@@ -8,8 +8,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using ITBees.Interfaces.Platforms;
+using ITBees.Interfaces.Repository;
+using ITBees.Models.Users;
 using ITBees.Translations;
 using ITBees.UserManager.Controllers;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 using ITBees.UserManager.Services.Registration;
@@ -26,19 +29,25 @@ namespace ITBees.UserManager.Services.AppleLogins
         private readonly HttpClient _httpClient;
         private readonly ILoginService<T> _loginService;
         private readonly ILogger<AppleLoginService<T>> _logger;
+        private readonly IReadOnlyRepository<UserAccount> _userOnlyRepository;
+        private readonly INewUserRegistrationFromApple _newUserRegistrationFromApple;
 
         public AppleLoginService(IPlatformSettingsService platformSettingsService,
             HttpClient httpClient,
             ILoginService<T> loginService,
-            ILogger<AppleLoginService<T>> logger)
+            ILogger<AppleLoginService<T>> logger,
+            IReadOnlyRepository<UserAccount> userOnlyRepository,
+            INewUserRegistrationFromApple newUserRegistrationFromApple)
         {
             _platformSettingsService = platformSettingsService;
             _httpClient = httpClient;
             _loginService = loginService;
             _logger = logger;
+            _userOnlyRepository = userOnlyRepository;
+            _newUserRegistrationFromApple = newUserRegistrationFromApple;
         }
 
-        public Task<TokenVm> LoginOrRegister(AppleTokenResponse appleAuthorizationToken, string lang)
+        public async Task<TokenVm> LoginOrRegister(AppleTokenResponse appleAuthorizationToken, string lang)
         {
             var result = ParseAppleTokenClaims(appleAuthorizationToken.IdToken);
             
@@ -48,7 +57,14 @@ namespace ITBees.UserManager.Services.AppleLogins
                 throw new UnauthorizedAccessException(Translate.Get(() => Translations.LoginWithApple.Errors.EmailNotConfirmed, lang));
             }
 
-            return _loginService.LoginAfterEmailConfirmation(result.Email);
+            var userAccount = _userOnlyRepository.GetData(x => x.Email == result.Email).FirstOrDefault();
+            if (userAccount == null)
+            {
+                var resultAccount = await _newUserRegistrationFromApple.CreateNewUserAccountFromAppleLogin(result);
+                return resultAccount;
+            }
+
+            return await _loginService.LoginAfterEmailConfirmation(result.Email);
         }
 
         public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode)
@@ -97,7 +113,9 @@ namespace ITBees.UserManager.Services.AppleLogins
                 Email = token.Claims.FirstOrDefault(c => c.Type == "email")?.Value,
                 EmailVerified = bool.Parse(token.Claims.FirstOrDefault(c => c.Type == "email_verified")?.Value ?? "false"),
                 AuthenticationTime = long.Parse(token.Claims.FirstOrDefault(c => c.Type == "auth_time")?.Value ?? "0"),
-                NonceSupported = bool.Parse(token.Claims.FirstOrDefault(c => c.Type == "nonce_supported")?.Value ?? "false")
+                NonceSupported = bool.Parse(token.Claims.FirstOrDefault(c => c.Type == "nonce_supported")?.Value ?? "false"),
+                FirstName = string.Empty,
+                LastName = string.Empty,
             };
 
             return claims;

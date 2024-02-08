@@ -18,19 +18,19 @@ namespace ITBees.UserManager.Services.Registration
             _loginService = loginService;
         }
 
-        public async Task<TokenVm> CreateNewUserAccountFromAppleLogin(ApplePayload applePayload)
+        public async Task<TokenVm> CreateNewUserAccountFromAppleLogin(AppleTokenClaims appleTokenClaims)
         {
             await _newUserRegistrationService.CreateNewUser(
                 new NewUserRegistrationIm()
                 {
                     CompanyName = string.Empty,
-                    FirstName = applePayload.FirstName,
-                    LastName = applePayload.LastName,
-                    Email = applePayload.Email,
+                    FirstName = appleTokenClaims.FirstName,
+                    LastName = appleTokenClaims.LastName,
+                    Email = appleTokenClaims.Email,
                     Password = RandomPasswordGenerator.GenerateRandomPassword(30)
                 }, false);
-            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(applePayload.Email);
-            await _loginService.ConfirmEmail(applePayload.Email);
+            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(appleTokenClaims.Email);
+            await _loginService.ConfirmEmail(appleTokenClaims.Email);
             return loginAfterEmailConfirmation;
         }
     }

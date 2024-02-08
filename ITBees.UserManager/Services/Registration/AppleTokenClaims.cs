@@ -12,5 +12,7 @@
         public bool EmailVerified { get; set; }
         public long AuthenticationTime { get; set; }
         public bool NonceSupported { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
     }
 }

@@ -5,6 +5,6 @@ namespace ITBees.UserManager.Services.Registration
 {
     public interface INewUserRegistrationFromApple
     {
-        Task<TokenVm> CreateNewUserAccountFromAppleLogin(ApplePayload applePayload);
+        Task<TokenVm> CreateNewUserAccountFromAppleLogin(AppleTokenClaims appleTokenClaims);
     }
 }
