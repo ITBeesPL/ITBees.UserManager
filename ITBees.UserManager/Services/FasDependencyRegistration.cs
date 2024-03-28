@@ -29,9 +29,9 @@ using ITBees.UserManager.Services.Registration;
 
 namespace ITBees.UserManager.Services
 {
-    public class UserManagerDependency
+    public class FasDependencyRegistration
     {
-        public static void RegisterDefaultFASImplementation<TContext, TIdentityUser>(IServiceCollection services, IConfigurationRoot configurationRoot) where TContext : DbContext where TIdentityUser : IdentityUser, new()
+        public static void Register<TContext, TIdentityUser>(IServiceCollection services, IConfigurationRoot configurationRoot) where TContext : DbContext where TIdentityUser : IdentityUser, new()
         {
             TinyMapperSetup.ConfigureMappings();
             services

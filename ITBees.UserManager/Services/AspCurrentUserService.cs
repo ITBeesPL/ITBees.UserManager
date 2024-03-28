@@ -44,12 +44,14 @@ namespace ITBees.UserManager.Services
                 var LastUsedCompanyGuid = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "LastUsedCompanyGuid").Value;
                 var displayName = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "DisplayName").Value;
                 var language = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "Language").Value;
+                var userRoles = claimsIdentity.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x=>x.Value).ToArray();
                 return new CurrentUser()
                 {
                     Guid = new Guid(claim.Value), 
                     LastUsedCompanyGuid = new Guid(LastUsedCompanyGuid), 
                     Language = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language),
-                    DisplayName = displayName
+                    DisplayName = displayName,
+                    UserRoles = userRoles
                 };
             }
             else

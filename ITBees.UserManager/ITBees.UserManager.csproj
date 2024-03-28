@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -20,7 +20,7 @@
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.10" />
     <PackageReference Include="ITBees.Interfaces" Version="5.0.9" />
     <PackageReference Include="ITBees.Mailing" Version="5.0.16" />
-    <PackageReference Include="ITBees.Models" Version="5.0.20" />
+    <PackageReference Include="ITBees.Models" Version="5.0.26" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="5.0.3" />
     <PackageReference Include="ITBees.Translations" Version="5.0.25" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="5.0.10" />
