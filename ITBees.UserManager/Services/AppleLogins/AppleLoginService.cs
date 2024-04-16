@@ -50,7 +50,7 @@ namespace ITBees.UserManager.Services.AppleLogins
         public async Task<TokenVm> LoginOrRegister(AppleTokenResponse appleAuthorizationToken, string lang)
         {
             var result = ParseAppleTokenClaims(appleAuthorizationToken.IdToken);
-            
+
             if (result.EmailVerified == false)
             {
                 _logger.LogError($"Email not confirmed at apple : {result.Email}");
@@ -69,10 +69,10 @@ namespace ITBees.UserManager.Services.AppleLogins
 
         public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId = "")
         {
-            if(string.IsNullOrEmpty(clientId))
+            if (string.IsNullOrEmpty(clientId))
                 clientId = _platformSettingsService.GetSetting("AppleLogin_clientId");
 
-            var clientSecret = GenerateClientSecret();
+            var clientSecret = GenerateClientSecret(clientId);
             var requestBody = new Dictionary<string, string>
             {
                 {"client_id", clientId},
@@ -122,10 +122,13 @@ namespace ITBees.UserManager.Services.AppleLogins
             return claims;
         }
 
-        private string GenerateClientSecret()
+        private string GenerateClientSecret(string clientId = "")
         {
             string teamId = _platformSettingsService.GetSetting("AppleLogin_teamId");
-            string clientId = _platformSettingsService.GetSetting("AppleLogin_clientId"); ;
+            
+            if (string.IsNullOrEmpty(clientId))
+                clientId = _platformSettingsService.GetSetting("AppleLogin_clientId"); ;
+            
             string keyId = _platformSettingsService.GetSetting("AppleLogin_keyId");
             string keyContent = _platformSettingsService.GetSetting("AppleLogin_keyContent");
             string keyPath = _platformSettingsService.GetSetting("AppleLogin_keyPath");
