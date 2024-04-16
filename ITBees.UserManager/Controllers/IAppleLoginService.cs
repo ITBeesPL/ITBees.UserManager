@@ -9,6 +9,6 @@ namespace ITBees.UserManager.Controllers
     public interface IAppleLoginService<T> where T : IdentityUser
     {
         Task<TokenVm> LoginOrRegister(AppleTokenResponse appleAuthorizationToken, string lang);
-        Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId);
+        Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId, string redirectURI);
     }
 }

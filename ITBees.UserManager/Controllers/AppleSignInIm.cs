@@ -6,5 +6,6 @@
         public string AuthorizationCode { get; set; }
         public string? User { get; set; }
         public string? ClientId { get; set; }
+        public string? RedirectURI { get; set; }
     }
 }

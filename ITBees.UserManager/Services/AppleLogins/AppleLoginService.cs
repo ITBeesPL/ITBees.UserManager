@@ -67,10 +67,13 @@ namespace ITBees.UserManager.Services.AppleLogins
             return await _loginService.LoginAfterEmailConfirmation(result.Email);
         }
 
-        public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId = "")
+        public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId = "", string redirectURI = "")
         {
             if (string.IsNullOrEmpty(clientId))
                 clientId = _platformSettingsService.GetSetting("AppleLogin_clientId");
+
+            if (string.IsNullOrEmpty(redirectURI))
+                _platformSettingsService.GetSetting("AppleLogin_redirectUri");
 
             var clientSecret = GenerateClientSecret(clientId);
             var requestBody = new Dictionary<string, string>
@@ -79,7 +82,7 @@ namespace ITBees.UserManager.Services.AppleLogins
                 {"client_secret", clientSecret},
                 {"code", authorizationCode},
                 {"grant_type", "authorization_code"},
-                {"redirect_uri", _platformSettingsService.GetSetting("AppleLogin_redirectUri")}
+                {"redirect_uri", redirectURI}
             };
 
             var requestContent = new FormUrlEncodedContent(requestBody);
@@ -125,10 +128,10 @@ namespace ITBees.UserManager.Services.AppleLogins
         private string GenerateClientSecret(string clientId = "")
         {
             string teamId = _platformSettingsService.GetSetting("AppleLogin_teamId");
-            
+
             if (string.IsNullOrEmpty(clientId))
                 clientId = _platformSettingsService.GetSetting("AppleLogin_clientId"); ;
-            
+
             string keyId = _platformSettingsService.GetSetting("AppleLogin_keyId");
             string keyContent = _platformSettingsService.GetSetting("AppleLogin_keyContent");
             string keyPath = _platformSettingsService.GetSetting("AppleLogin_keyPath");
