@@ -67,9 +67,10 @@ namespace ITBees.UserManager.Services.AppleLogins
             return await _loginService.LoginAfterEmailConfirmation(result.Email);
         }
 
-        public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode)
+        public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId = "")
         {
-            string clientId = _platformSettingsService.GetSetting("AppleLogin_clientId"); ;
+            if(string.IsNullOrEmpty(clientId))
+                clientId = _platformSettingsService.GetSetting("AppleLogin_clientId");
 
             var clientSecret = GenerateClientSecret();
             var requestBody = new Dictionary<string, string>

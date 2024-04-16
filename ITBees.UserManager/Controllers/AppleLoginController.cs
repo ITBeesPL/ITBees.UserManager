@@ -33,7 +33,7 @@ namespace ITBees.UserManager.Controllers
         {
             try
             {
-                AppleTokenResponse appleIdentityToken = await _appleLoginService.ValidateAuthorizationCodeAsync(im.AuthorizationCode);
+                AppleTokenResponse appleIdentityToken = await _appleLoginService.ValidateAuthorizationCodeAsync(im.AuthorizationCode, im.ClientId);
 
                 var lang = ParseAcceptLanguageHeader(acceptLanguage);
                 
