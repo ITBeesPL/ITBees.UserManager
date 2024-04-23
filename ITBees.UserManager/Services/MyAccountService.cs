@@ -23,7 +23,7 @@ namespace ITBees.UserManager.Services
             var usersInCompany = _usersInCompanyRepository
                 .GetData(x => x.UserAccountGuid == currentUserGuid.Guid,
                     x => x.Company,
-                    x => x.UserAccount).ToList();
+                    x => x.UserAccount, x=>x.UserAccount.Language).ToList();
             string displayName = string.IsNullOrEmpty(usersInCompany.First().UserAccount.FirstName) ? usersInCompany.First().UserAccount.Email : $"{usersInCompany.First().UserAccount.FirstName} {usersInCompany.First().UserAccount.LastName}";
             return new ITBees.Models.MyAccount.MyAccount()
             {
@@ -42,7 +42,7 @@ namespace ITBees.UserManager.Services
                     Guid = usersInCompany.First().Company.Guid,
                     IsActive = usersInCompany.First().Company.IsActive
                 },
-                Language = currentUserGuid.Language,
+                Language = usersInCompany.First().UserAccount.Language,
                 DisplayName = displayName
             };
         }
