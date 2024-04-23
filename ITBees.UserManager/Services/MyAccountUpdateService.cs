@@ -46,7 +46,6 @@ public class MyAccountUpdateService : IMyAccountUpdateService
                 var langUpdateResult = _userAccountRwRepo.UpdateData(x => x.Guid == cu.Guid, x =>
                 {
                     x.LanguageId = langId.Value;
-                    x.Guid = myAccountIm.LastUsedCompanyGuid;
                     x.FirstName = myAccountIm.FirstName;
                     x.LastName = myAccountIm.LastName;
                     x.Phone = myAccountIm.Phone;
