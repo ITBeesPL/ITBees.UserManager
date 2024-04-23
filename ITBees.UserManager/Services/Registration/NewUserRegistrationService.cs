@@ -223,8 +223,8 @@ namespace ITBees.UserManager.Services.Registration
                         Phone = newUserRegistrationIm.Phone,
                         FirstName = newUserRegistrationIm.FirstName,
                         LastName = newUserRegistrationIm.LastName,
-                        LanguageId = userLanguage.Id
-                    });
+                        LanguageId = userLanguage.Id,
+                        SetupTime = DateTime.Now});
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
                 emailMessage  = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token, userLanguage);
             }
