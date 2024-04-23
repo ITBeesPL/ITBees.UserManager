@@ -49,6 +49,7 @@ public class MyAccountUpdateService : IMyAccountUpdateService
                     x.Guid = myAccountIm.LastUsedCompanyGuid;
                     x.FirstName = myAccountIm.FirstName;
                     x.LastName = myAccountIm.LastName;
+                    x.Phone = myAccountIm.Phone;
                 }, x => x.Language, x => x.UserAccountModules);
                 if (langUpdateResult.Count == 0)
                 {
@@ -62,6 +63,7 @@ public class MyAccountUpdateService : IMyAccountUpdateService
                     x.Guid = myAccountIm.LastUsedCompanyGuid;
                     x.FirstName = myAccountIm.FirstName;
                     x.LastName = myAccountIm.LastName;
+                    x.Phone = myAccountIm.Phone;
                 }, x=>x.Language, x=>x.UserAccountModules);
                 if (userAccount.Count == 0)
                 {
