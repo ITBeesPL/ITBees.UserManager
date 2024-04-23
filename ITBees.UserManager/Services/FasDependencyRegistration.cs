@@ -61,6 +61,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<INewUserRegistrationFromApple, NewUserRegistrationFromApple<TIdentityUser>>();
             services.AddScoped<IAppleLoginService<TIdentityUser>, AppleLoginService<TIdentityUser>>();
             services.AddScoped<IFacebookLoginService<TIdentityUser>, FacebookLoginService<TIdentityUser>>();
+            services.AddScoped<IMyAccountUpdateService, MyAccountUpdateService>();
             services.AddScoped<HttpClient>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             if(services.Any(descriptor =>

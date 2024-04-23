@@ -1,7 +1,9 @@
-﻿namespace ITBees.UserManager.Interfaces
+﻿using ITBees.Models.MyAccount;
+
+namespace ITBees.UserManager.Interfaces
 {
     public interface IMyAccountServie
     {
-        ITBees.Models.MyAccount.MyAccount GetMyAccountData();
+        MyAccount GetMyAccountData();
     }
 }
