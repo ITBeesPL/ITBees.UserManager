@@ -42,6 +42,11 @@ public class MyAccountUpdateService : IMyAccountUpdateService
 
             if (string.IsNullOrEmpty(myAccountIm.Language) == false && langTokenCode != myAccountIm.Language)
             {
+                if (myAccountIm.Language == "ua") //dirty hack for compability, ukrainian shoulb be set as 'uk'
+                {
+                    myAccountIm.Language = "uk";
+                }
+
                 langId = _langRoRepo.GetData(x => x.Code == myAccountIm.Language).FirstOrDefault()!.Id;
                 var langUpdateResult = _userAccountRwRepo.UpdateData(x => x.Guid == cu.Guid, x =>
                 {
