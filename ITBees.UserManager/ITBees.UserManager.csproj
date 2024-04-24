@@ -17,10 +17,10 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.60.0" />
     <PackageReference Include="ITBees.BaseServices" Version="5.0.19" />
-    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.12" />
+    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.13" />
     <PackageReference Include="ITBees.Interfaces" Version="5.0.9" />
     <PackageReference Include="ITBees.Mailing" Version="5.0.16" />
-    <PackageReference Include="ITBees.Models" Version="5.0.26" />
+    <PackageReference Include="ITBees.Models" Version="5.0.27" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="5.0.3" />
     <PackageReference Include="ITBees.Translations" Version="5.0.25" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="5.0.10" />

@@ -43,6 +43,7 @@ namespace ITBees.UserManager.Services
                 var claim = claimsIdentity.Claims.First();
                 var LastUsedCompanyGuid = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "LastUsedCompanyGuid").Value;
                 var displayName = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "DisplayName").Value;
+                var email = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "Email").Value;
                 var language = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "Language").Value;
                 var userRoles = claimsIdentity.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x=>x.Value).ToArray();
                 return new CurrentUser()
@@ -51,7 +52,8 @@ namespace ITBees.UserManager.Services
                     LastUsedCompanyGuid = new Guid(LastUsedCompanyGuid), 
                     Language = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language),
                     DisplayName = displayName,
-                    UserRoles = userRoles
+                    UserRoles = userRoles,
+                    Email = email
                 };
             }
             else

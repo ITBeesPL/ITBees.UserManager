@@ -1,29 +1,42 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Models.MyAccount;
 using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Controllers.GenericControllersAttributes;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
+using ITBees.UserManager.Interfaces.Services;
 using ITBees.UserManager.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Nelibur.ObjectMapper;
 
 namespace ITBees.UserManager.Controllers
 {
+    [CustomControllerName("MyAccount")]
+    [GenericRestControllerNameConvention]
     [Authorize]
     [Route("[controller]")]
-    public class MyAccountController : RestfulControllerBase<MyAccountController>
+    public class MyAccountController<T> : RestfulControllerBase<MyAccountController<T>> where T : IdentityUser
     {
         private readonly IMyAccountServie _myAccountServie;
         private readonly IMyAccountUpdateService _myAccountUpdateService;
+        private readonly ILoginService<T> _loginService;
+        private readonly IAspCurrentUserService _aspCurrentUserService;
 
         public MyAccountController(IMyAccountServie myAccountServie,
             IMyAccountUpdateService myAccountUpdateService,
-            ILogger<MyAccountController> logger) : base(logger)
+            ILoginService<T> loginService,
+            IAspCurrentUserService aspCurrentUserService,
+            ILogger<MyAccountController<T>> logger) : base(logger)
         {
             _myAccountServie = myAccountServie;
             _myAccountUpdateService = myAccountUpdateService;
+            _loginService = loginService;
+            _aspCurrentUserService = aspCurrentUserService;
         }
 
         /// <summary>
@@ -48,13 +61,17 @@ namespace ITBees.UserManager.Controllers
 
         [HttpPut]
         [Produces(typeof(MyAccountVm))]
-        public IActionResult Put([FromBody] MyAccountIm myAccountIm)
+        public async Task<IActionResult> Put([FromBody] MyAccountIm myAccountIm)
         {
             try
             {
                 _myAccountUpdateService.UpdateMyAccount(myAccountIm);
+
                 MyAccount myAccount = _myAccountServie.GetMyAccountData();
-                var result = TinyMapper.Map<MyAccountVm>(myAccount);
+                var cu = _aspCurrentUserService.GetCurrentUser();
+
+                var newToken = await _loginService.LoginAfterEmailConfirmation(cu.Email);
+                var result = new MyAccountVmWithToken(myAccount, newToken);
                 return Ok(result);
             }
             catch (Exception e)

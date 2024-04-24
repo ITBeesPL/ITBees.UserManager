@@ -93,6 +93,7 @@ namespace ITBees.UserManager.Services
                 {"LastUsedCompanyGuid", userAccount.LastUsedCompanyGuid?.ToString()},
                 {"Language", userAccount.Language.Code},
                 {"DisplayName", userAccount.DisplayName},
+                {"Email", userAccount.Email},
                 {"UserAccountModules", FormatUserAccountModulesForJwtToken(userAccount)},
                 { "Roles" ,FormatRolesForJwtToken(roles)}
             };
