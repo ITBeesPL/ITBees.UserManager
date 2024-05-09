@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.Translations;
@@ -35,7 +36,7 @@ namespace ITBees.UserManager.Services.Passwords
             var result = await _userManager.ResetPasswordAsync(user, passwordResetIm.Token, passwordResetIm.NewPassword);
             if (result.Succeeded) return new ResetPassResultVm() { Success = true };
 
-            var allErrorrs = string.Join(",", result.Errors);
+            var allErrorrs = string.Join(",", result.Errors.Select(x => x.Description));
             _logger.LogError(
                 $"Error while trying to reset password for email: {passwordResetIm.Email} exception:\r\n {allErrorrs}");
 
