@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.60.0" />
-    <PackageReference Include="ITBees.BaseServices" Version="5.0.19" />
+    <PackageReference Include="ITBees.BaseServices" Version="5.0.20" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="5.0.13" />
     <PackageReference Include="ITBees.Interfaces" Version="5.0.9" />
     <PackageReference Include="ITBees.Mailing" Version="5.0.16" />
