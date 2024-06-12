@@ -32,6 +32,5 @@
     <PackageReference Include="MimeKit" Version="4.6.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0" />
   </ItemGroup>
-  </ItemGroup>
 
 </Project>
