@@ -22,7 +22,7 @@
     <PackageReference Include="ITBees.Models" Version="5.0.29" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.5" />
     <PackageReference Include="ITBees.Translations" Version="8.0.33" />
-    <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.14" />
+    <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
     <PackageReference Include="MailKit" Version="4.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
