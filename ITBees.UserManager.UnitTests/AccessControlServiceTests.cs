@@ -20,7 +20,7 @@ namespace ITBees.UserManager.UnitTests
             
             var accessControlResult = accessControl.CanDo(user, typeof(NewUserRegistrationService<>), nameof(NewUserRegistrationService<IdentityUser>.CreateAndInviteNewUserToCompany), companyGuid);
 
-            Assert.True(accessControlResult.CanDoResult);
+            Assert.That(accessControlResult.CanDoResult);
         }
     }
 }
