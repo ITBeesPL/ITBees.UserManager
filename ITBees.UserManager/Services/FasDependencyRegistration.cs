@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using ITBees.Interfaces.Platforms;
 using ITBees.Mailing;
 using ITBees.Mailing.Interfaces;
@@ -64,6 +65,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IMyAccountUpdateService, MyAccountUpdateService>();
             services.AddScoped<HttpClient>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
+            CheckForUsereDeleteAccountServiceImplementation(services);
             if(services.Any(descriptor =>
                    descriptor.ServiceType == typeof(IEmailSendingService)) == false)
             {
@@ -131,6 +133,17 @@ namespace ITBees.UserManager.Services
                         }
                     };
                 });
+        }
+
+        private static void CheckForUsereDeleteAccountServiceImplementation(IServiceCollection services)
+        {
+            if (services.Any(descriptor =>
+                    descriptor.ServiceType == typeof(IAccountDeleteService)) == false)
+            {
+                var message = $"You have to provide Your own implementation for IAccountDeleteService service to user FasManager";
+                Console.WriteLine(message);
+                throw new ArgumentException(message);
+            };
         }
     }
 
