@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -25,11 +26,11 @@ public class AccountDeleteController : RestfulControllerBase<AccountDeleteContro
     /// <param name="accountGuid">If provided, then account of other user will be deleted</param>
     /// <returns></returns>
     [HttpDelete]
-    public IActionResult Del(Guid? accountGuid = null)
+    public async Task<IActionResult> Del(Guid? accountGuid = null)
     {
         try
         {
-            _accountDeleteService.Delete(accountGuid);
+            await _accountDeleteService.Delete(accountGuid);
             return Ok();
         }
         catch (Exception e)
