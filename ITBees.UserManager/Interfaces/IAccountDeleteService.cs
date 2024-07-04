@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace ITBees.UserManager.Interfaces;
 
 public interface IAccountDeleteService
 {
-    void Delete(Guid? accountGuid);
+    Task Delete(Guid? accountGuid);
 }
