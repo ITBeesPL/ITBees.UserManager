@@ -86,8 +86,13 @@ namespace ITBees.UserManager.Services
 
         public bool CurrentUserIsPlatformOperator()
         {
+            return CurrentUserIsInRole("PlatformOperator");
+        }
+
+        public bool CurrentUserIsInRole(string role)
+        {
             var currentUser = GetCurrentUser();
-            if (currentUser != null && currentUser.UserRoles.Contains("PlatformOperator"))
+            if (currentUser != null && currentUser.UserRoles.Contains(role))
             {
                 return true;
             }

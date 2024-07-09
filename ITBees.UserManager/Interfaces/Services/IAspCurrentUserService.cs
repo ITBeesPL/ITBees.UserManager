@@ -17,5 +17,6 @@ namespace ITBees.UserManager.Interfaces.Services
         bool TryCanIDoForCompany(TypeOfOperation typeOfOperation, Guid companyGuid);
 
         bool CurrentUserIsPlatformOperator();
+        bool CurrentUserIsInRole(string role);
     }
 }
