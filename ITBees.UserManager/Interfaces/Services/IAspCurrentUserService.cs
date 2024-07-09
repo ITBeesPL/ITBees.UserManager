@@ -15,5 +15,7 @@ namespace ITBees.UserManager.Interfaces.Services
         /// <param name="companyGuid"></param>
         /// <returns></returns>
         bool TryCanIDoForCompany(TypeOfOperation typeOfOperation, Guid companyGuid);
+
+        bool CurrentUserIsPlatformOperator();
     }
 }

@@ -83,5 +83,16 @@ namespace ITBees.UserManager.Services
 
             throw new AuthorizationException(AuthorizationExceptionMessages.You_dont_have_acceess_enough_right_for_specified_company);
         }
+
+        public bool CurrentUserIsPlatformOperator()
+        {
+            var currentUser = GetCurrentUser();
+            if (currentUser != null && currentUser.UserRoles.Contains("PlatformOperator"))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
