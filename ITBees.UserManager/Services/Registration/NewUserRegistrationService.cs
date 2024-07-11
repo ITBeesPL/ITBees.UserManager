@@ -107,7 +107,8 @@ namespace ITBees.UserManager.Services.Registration
                         Phone = newUserRegistrationIm.Phone,
                         FirstName = newUserRegistrationIm.FirstName,
                         LastName = newUserRegistrationIm.LastName,
-                        LanguageId = userLanguage.Id
+                        LanguageId = userLanguage.Id,
+                        SetupTime = DateTime.Now
                     });
 
 
