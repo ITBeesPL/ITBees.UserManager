@@ -7,31 +7,33 @@
 
   <ItemGroup>
     <Folder Include="Controllers\GenericControllersAttributes\" />
+    <Folder Include="Controllers\PlatformOperator\" />
     <Folder Include="Interfaces\Models\" />
     <Folder Include="Services\AppleLogins\" />
     <Folder Include="Services\FacebookLogins\" />
     <Folder Include="Services\Mailing\" />
     <Folder Include="Services\Passwords\Models\" />
+    <Folder Include="Services\PlatformOperator\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.14" />
-    <PackageReference Include="ITBees.Interfaces" Version="8.0.11" />
+    <PackageReference Include="ITBees.Interfaces" Version="8.0.15" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.25" />
     <PackageReference Include="ITBees.Models" Version="5.0.29" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.7" />
     <PackageReference Include="ITBees.Translations" Version="8.0.36" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
     <PackageReference Include="MailKit" Version="4.7.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.6" />
-    <PackageReference Include="MimeKit" Version="4.7.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.7" />
+    <PackageReference Include="MimeKit" Version="4.7.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.3" />
   </ItemGroup>
 
 </Project>
