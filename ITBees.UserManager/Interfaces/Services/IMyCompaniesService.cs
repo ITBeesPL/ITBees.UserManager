@@ -5,6 +5,6 @@ namespace ITBees.UserManager.Interfaces.Services
 {
     public interface IMyCompaniesService
     {
-        IEnumerable<Company> GetMyCompaniesQuerable();
+        IEnumerable<Company> GetMyCompaniesQueryable();
     }
 }

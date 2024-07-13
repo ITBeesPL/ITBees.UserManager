@@ -18,7 +18,7 @@ namespace ITBees.UserManager.Services
             _aspCurrentUserService = aspCurrentUserService;
         }
 
-        public IEnumerable<Company> GetMyCompaniesQuerable()
+        public IEnumerable<Company> GetMyCompaniesQueryable()
         {
             var cu =_aspCurrentUserService.GetCurrentUser();
             var companies = _usersInCompanyRoRepo.GetDataQueryable(x => x.UserAccountGuid == cu.Guid).Select(x=>x.Company);
