@@ -1,5 +1,6 @@
 ﻿using System;
 using ITBees.Models.Users;
+using ITBees.UserManager.Interfaces.Models;
 
 namespace ITBees.UserManager.Interfaces.Services
 {
@@ -7,6 +8,7 @@ namespace ITBees.UserManager.Interfaces.Services
     {
         Guid? GetCurrentUserGuid();
         CurrentUser GetCurrentUser();
+        CurrentSessionUser GetCurrentSessionUser();
         TypeOfOperation GetMyAcceessToCompany(Guid companyGuid);
         /// <summary>
         /// Check If I'm allowed to do expected kind of operation ie Read or write for specified company. It throws AuthorizationException if You don't have any access to specified company

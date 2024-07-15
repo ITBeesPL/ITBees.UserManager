@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System;
 using System.Linq;
 using ITBees.Models.Languages;
+using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Interfaces.Services;
 
 namespace ITBees.UserManager.Services
@@ -60,6 +61,14 @@ namespace ITBees.UserManager.Services
             {
                 return null;
             }
+        }
+
+        public CurrentSessionUser GetCurrentSessionUser()
+        {
+            var user = GetCurrentUser();
+            var isLogged = user != null;
+            var guid = user?.Guid;
+            return new CurrentSessionUser(user, isLogged, guid);
         }
 
         public TypeOfOperation GetMyAcceessToCompany(Guid companyGuid)
