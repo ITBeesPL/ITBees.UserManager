@@ -21,9 +21,9 @@ public class MyAccountVmWithToken : MyAccountVm
             CreatedBy = x.CreatedBy.DisplayName,
             Guid = x.Guid,
             IsActive = x.IsActive,
-            CreatedByGuid = x.CreatedByGuid,
+            CreatedByGuid = x.CreatedByGuid.Value,
             Owner = x.Owner.DisplayName,
-            OwnerGuid = x.OwnerGuid
+            OwnerGuid = x.OwnerGuid.Value
         }).ToList();
     }
 
