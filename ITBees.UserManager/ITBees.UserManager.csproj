@@ -9,6 +9,7 @@
     <Folder Include="Controllers\GenericControllersAttributes\" />
     <Folder Include="Controllers\PlatformOperator\" />
     <Folder Include="Interfaces\Models\" />
+    <Folder Include="DbModels\" />
     <Folder Include="Services\AppleLogins\" />
     <Folder Include="Services\FacebookLogins\" />
     <Folder Include="Services\Mailing\" />

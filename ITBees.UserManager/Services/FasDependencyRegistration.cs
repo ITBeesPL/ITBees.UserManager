@@ -63,6 +63,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IAppleLoginService<TIdentityUser>, AppleLoginService<TIdentityUser>>();
             services.AddScoped<IFacebookLoginService<TIdentityUser>, FacebookLoginService<TIdentityUser>>();
             services.AddScoped<IMyAccountUpdateService, MyAccountUpdateService>();
+            services.AddScoped<IPlatformStatusService, PlatformStatusService>();
             services.AddScoped<HttpClient>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             CheckForUsereDeleteAccountServiceImplementation(services);
