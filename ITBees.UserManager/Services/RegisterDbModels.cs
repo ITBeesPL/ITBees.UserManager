@@ -2,6 +2,7 @@
 using ITBees.Models.EmailAccounts;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
+using ITBees.UserManager.DbModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITBees.UserManager.Services
@@ -10,6 +11,7 @@ namespace ITBees.UserManager.Services
     {
         public static void Register(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PlatformStatus>().HasKey(x => x.Id);
             modelBuilder.Entity<UserAccount>().HasKey(x => x.Guid);
             modelBuilder.Entity<EmailAccount>();
             modelBuilder.Entity<Company>().HasKey(x => x.Guid);
