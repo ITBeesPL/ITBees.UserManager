@@ -14,17 +14,19 @@ public class PlatformStatusController : RestfulControllerBase<PlatformStatusCont
     {
         _platformStatusService = platformStatusService;
     }
-
+    [HttpGet]
     public IActionResult Get(string lang)
     {
         return ReturnOkResult(()=>_platformStatusService.GetCurrentStatus(lang));
     }
 
+    [HttpPut]
     public IActionResult Put([FromBody] PlatformStatusUm platformStatusUm)
     {
         return ReturnOkResult(() => _platformStatusService.ChangePlatformStatus(platformStatusUm));
     }
 
+    [HttpPost]
     public IActionResult Post([FromBody] PlatformStatusIm platformStatusIm)
     {
         return ReturnOkResult(() => _platformStatusService.CreateNewPlatformStatus(platformStatusIm));

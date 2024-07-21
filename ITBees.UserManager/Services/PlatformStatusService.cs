@@ -85,6 +85,12 @@ public class PlatformStatusService : IPlatformStatusService
             EverythingWorksFine = platformStatusIm.EverythingWorksFine,
             IsActive = platformStatusIm.IsActive
         });
+        _platformStatusRwRepo.UpdateData(x => x.Id != result.Id && x.DeactivatedByGuid == null, x =>
+        {
+            x.IsActive = false;
+            x.DeactivatedDate = DateTime.Now;
+            x.DeactivatedByGuid = currentUser.Guid;
+        });
 
         return new PlatformStatusVm(_platformStatusRoRepo.GetData(x => x.Id == result.Id, x => x.CreatedBy).First());
     }
