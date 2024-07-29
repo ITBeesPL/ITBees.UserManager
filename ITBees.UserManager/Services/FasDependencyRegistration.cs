@@ -15,10 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using ITBees.Interfaces.Platforms;
 using ITBees.Mailing;
 using ITBees.Mailing.Interfaces;
+using ITBees.Models.Companies;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
@@ -32,7 +32,7 @@ namespace ITBees.UserManager.Services
 {
     public class FasDependencyRegistration
     {
-        public static void Register<TContext, TIdentityUser>(IServiceCollection services, IConfigurationRoot configurationRoot) where TContext : DbContext where TIdentityUser : IdentityUser, new()
+        public static void Register<TContext, TIdentityUser, TCompany>(IServiceCollection services, IConfigurationRoot configurationRoot) where TContext : DbContext where TIdentityUser : IdentityUser, new() where TCompany : Company, new()
         {
             TinyMapperSetup.ConfigureMappings();
             services
@@ -43,7 +43,7 @@ namespace ITBees.UserManager.Services
                     c.FeatureProviders.Add(new GenericRestControllerFeatureProvider<TIdentityUser>());
                 });
             services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
-            services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser>));
+            services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser, TCompany>));
             services.AddScoped(typeof(INewUserRegistrationFromGoogle), typeof(NewUserRegistrationFromGoogle<TIdentityUser>));
             services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
             services.AddScoped(typeof(IGoogleLoginService<>), typeof(GoogleLoginService<>));
@@ -67,7 +67,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<HttpClient>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             CheckForUsereDeleteAccountServiceImplementation(services);
-            if(services.Any(descriptor =>
+            if (services.Any(descriptor =>
                    descriptor.ServiceType == typeof(IEmailSendingService)) == false)
             {
                 Console.WriteLine($"Using default implementation for EmailSendingService in UserManager.");

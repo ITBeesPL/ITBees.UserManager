@@ -19,14 +19,14 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Registration
 {
-    public class NewUserRegistrationService<T> : INewUserRegistrationService where T : IdentityUser, new()
+    public class NewUserRegistrationService<T, TCompany> : INewUserRegistrationService where T : IdentityUser, new() where TCompany : Company, new()
     {
         private readonly IUserManager _userManager;
         private readonly IWriteOnlyRepository<UserAccount> _userAccountWriteOnlyRepository;
-        private readonly IWriteOnlyRepository<Company> _companyWoRepository;
-        private readonly IReadOnlyRepository<Company> _companyRoRepository;
+        private readonly IWriteOnlyRepository<TCompany> _companyWoRepository;
+        private readonly IReadOnlyRepository<TCompany> _companyRoRepository;
         private readonly IWriteOnlyRepository<UsersInCompany> _usersInCompanyWoRepo;
-        private readonly ILogger<NewUserRegistrationService<T>> _logger;
+        private readonly ILogger<NewUserRegistrationService<T, TCompany>> _logger;
         private readonly IAspCurrentUserService _aspCurrentUserService;
         private readonly IRegistrationEmailComposer _registrationEmailComposer;
         private readonly IAccessControlService _accessControlService;
@@ -37,10 +37,10 @@ namespace ITBees.UserManager.Services.Registration
 
         public NewUserRegistrationService(IUserManager userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
-            IWriteOnlyRepository<Company> companyWoRepository,
-            IReadOnlyRepository<Company> companyRoRepository,
+            IWriteOnlyRepository<TCompany> companyWoRepository,
+            IReadOnlyRepository<TCompany> companyRoRepository,
             IWriteOnlyRepository<UsersInCompany> usersInCompanyWoRepo,
-            ILogger<NewUserRegistrationService<T>> logger,
+            ILogger<NewUserRegistrationService<T, TCompany>> logger,
             IAspCurrentUserService aspCurrentUserService,
             IRegistrationEmailComposer registrationEmailComposer,
             IAccessControlService accessControlService,
@@ -94,7 +94,7 @@ namespace ITBees.UserManager.Services.Registration
             }
             else
             {
-                
+
             }
 
             try
@@ -160,7 +160,7 @@ namespace ITBees.UserManager.Services.Registration
                 throw new YouMustBeLoggedInToCreateNewUserInvitationException(Translate.Get(() => ITBees.UserManager.Translations.UserManager.NewUserRegistration.YouMustBeLoggedInToAddNewUser, newUserRegistrationIm.Language));
             }
 
-            var accessControlResult = _accessControlService.CanDo(currentUser, typeof(NewUserRegistrationService<>),
+            var accessControlResult = _accessControlService.CanDo(currentUser, typeof(NewUserRegistrationService<T,TCompany>),
                 nameof(this.CreateAndInviteNewUserToCompany), companyGuid.Value); //Todo security implementation
 
             if (accessControlResult.CanDoResult == false)
@@ -225,9 +225,10 @@ namespace ITBees.UserManager.Services.Registration
                         FirstName = newUserRegistrationIm.FirstName,
                         LastName = newUserRegistrationIm.LastName,
                         LanguageId = userLanguage.Id,
-                        SetupTime = DateTime.Now});
+                        SetupTime = DateTime.Now
+                    });
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
-                emailMessage  = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token, userLanguage);
+                emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token, userLanguage);
             }
             catch (Exception e)
             {
@@ -313,7 +314,7 @@ namespace ITBees.UserManager.Services.Registration
                 newUserRegistrationIm.CompanyName = Translate.Get(() => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
             }
 
-            var company = _companyWoRepository.InsertData(new Company()
+            var company = _companyWoRepository.InsertData(new TCompany()
             {
                 CompanyName = newUserRegistrationIm.CompanyName,
                 Created = DateTime.Now,

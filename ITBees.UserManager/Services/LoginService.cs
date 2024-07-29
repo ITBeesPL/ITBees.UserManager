@@ -162,6 +162,11 @@ namespace ITBees.UserManager.Services
                 {
                     var usersInCompanies =
                         _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
+                    if (usersInCompanies.Count == 0)
+                    {
+                        throw new Exception(
+                            $"Could not find any users in company company, last used company guid is null, user guid : {userAccount.Guid}");
+                    }
                     userAccount.LastUsedCompanyGuid = usersInCompanies.First().CompanyGuid;
                 }
             }
