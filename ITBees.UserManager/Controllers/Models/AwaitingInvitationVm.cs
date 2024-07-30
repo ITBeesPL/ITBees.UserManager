@@ -5,6 +5,7 @@ namespace ITBees.UserManager.Controllers.Models
 {
     public class AwaitingInvitationVm
     {
+        public AwaitingInvitationVm() { }
         public AwaitingInvitationVm(UsersInvitationsToCompanies x)
         {
             CompanyName = x.Company.CompanyName;
