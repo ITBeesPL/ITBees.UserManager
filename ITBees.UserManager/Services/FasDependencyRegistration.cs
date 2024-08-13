@@ -32,7 +32,10 @@ namespace ITBees.UserManager.Services
 {
     public class FasDependencyRegistration
     {
-        public static void Register<TContext, TIdentityUser, TCompany>(IServiceCollection services, IConfigurationRoot configurationRoot) where TContext : DbContext where TIdentityUser : IdentityUser, new() where TCompany : Company, new()
+        public static void Register<TContext, TIdentityUser, TCompany>(
+            IServiceCollection services, 
+            IConfigurationRoot configurationRoot, 
+            bool enableLoginWithoutPasswordChecking = false) where TContext : DbContext where TIdentityUser : IdentityUser, new() where TCompany : Company, new()
         {
             TinyMapperSetup.ConfigureMappings();
             services
@@ -45,7 +48,16 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser, TCompany>));
             services.AddScoped(typeof(INewUserRegistrationFromGoogle), typeof(NewUserRegistrationFromGoogle<TIdentityUser>));
-            services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
+
+            if (enableLoginWithoutPasswordChecking)
+            {
+                services.AddScoped(typeof(ILoginService<>), typeof(PlatformDebugLoginService<>));
+            }
+            else
+            {
+                services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
+            }
+            
             services.AddScoped(typeof(IGoogleLoginService<>), typeof(GoogleLoginService<>));
             services.AddScoped(typeof(IConfirmRegistrationService<>), typeof(ConfirmRegistrationService<>));
             services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));

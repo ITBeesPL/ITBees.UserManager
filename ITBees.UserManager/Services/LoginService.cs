@@ -71,7 +71,7 @@ namespace ITBees.UserManager.Services
             }
         }
 
-        public async Task<TokenVm> Login(string email, string pass)
+        public virtual async Task<TokenVm> Login(string email, string pass)
         {
             var userAccount = await GetUserIdAfterThePasswordCheck(email, pass);
 
@@ -177,11 +177,5 @@ namespace ITBees.UserManager.Services
 
             return userAccount;
         }
-    }
-
-    public class ConfirmEmailResult
-    {
-        public bool Success { get; set; }
-        public string Message { get; set; }
     }
 }
