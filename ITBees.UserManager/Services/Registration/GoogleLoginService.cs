@@ -28,11 +28,13 @@ namespace ITBees.UserManager.Services.Registration
             var userAccount = _userOnlyRepository.GetData(x => x.Email == googlePayload.Email).FirstOrDefault();
             if (userAccount == null)
             {
-                var result = await _newUserRegistrationFromGoogle.CreateNewUserAccountFromGoogleLogin(googlePayload);
+                var result =
+                    await _newUserRegistrationFromGoogle.CreateNewUserAccountFromGoogleLogin(googlePayload,
+                        googlePayload.Language.Code);
                 return result;
             }
 
-            return await _loginService.LoginAfterEmailConfirmation(userAccount.Email);
+            return await _loginService.LoginAfterEmailConfirmation(userAccount.Email, googlePayload.Language.Code);
         }
     }
 }

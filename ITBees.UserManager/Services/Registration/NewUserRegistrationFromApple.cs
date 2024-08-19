@@ -29,7 +29,7 @@ namespace ITBees.UserManager.Services.Registration
                     Email = appleTokenClaims.Email,
                     Password = RandomPasswordGenerator.GenerateRandomPassword(30)
                 }, false);
-            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(appleTokenClaims.Email);
+            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(appleTokenClaims.Email,"en");
             await _loginService.ConfirmEmail(appleTokenClaims.Email);
             return loginAfterEmailConfirmation;
         }

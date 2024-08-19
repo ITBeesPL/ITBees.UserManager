@@ -39,7 +39,7 @@ namespace ITBees.UserManager.Controllers
                     return base.CreateBaseErrorResponse(ModelState,string.Empty);
                 }
 
-                var token = await _loginService.Login(loginIm.Username, loginIm.Password);
+                var token = await _loginService.Login(loginIm.Username, loginIm.Password, loginIm.Language);
                 return Ok(token);
             }
             catch (Exception e)

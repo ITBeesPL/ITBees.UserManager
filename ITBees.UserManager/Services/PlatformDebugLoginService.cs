@@ -24,8 +24,8 @@ public class PlatformDebugLoginService<T> : LoginService<T> where T : IdentityUs
 #endif
     }
 
-    public override Task<TokenVm> Login(string email, string pass)
+    public override Task<TokenVm> Login(string email, string pass, string lang)
     {
-        return base.LoginAfterEmailConfirmation(email);
+        return base.LoginAfterEmailConfirmation(email, lang);
     }
 }

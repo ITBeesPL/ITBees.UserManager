@@ -70,7 +70,7 @@ namespace ITBees.UserManager.Controllers
                 MyAccount myAccount = _myAccountServie.GetMyAccountData();
                 var cu = _aspCurrentUserService.GetCurrentUser();
 
-                var newToken = await _loginService.LoginAfterEmailConfirmation(cu.Email);
+                var newToken = await _loginService.LoginAfterEmailConfirmation(cu.Email, myAccountIm.Language);
                 var result = new MyAccountVmWithToken(myAccount, newToken);
                 return Ok(result);
             }

@@ -19,7 +19,7 @@ namespace ITBees.UserManager.Services.Registration
             _loginService = loginService;
         }
 
-        public async Task<TokenVm> CreateNewUserAccountFromGoogleLogin(GooglePayload googlePayload)
+        public async Task<TokenVm> CreateNewUserAccountFromGoogleLogin(GooglePayload googlePayload, string lang)
         {
             await _newUserRegistrationService.CreateNewUser(
                 new NewUserRegistrationIm()
@@ -31,7 +31,7 @@ namespace ITBees.UserManager.Services.Registration
                     Language = googlePayload.Language.Code,
                     Password = RandomPasswordGenerator.GenerateRandomPassword(30)
                 }, false);
-            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(googlePayload.Email);
+            var loginAfterEmailConfirmation = await _loginService.LoginAfterEmailConfirmation(googlePayload.Email, lang);
             await _loginService.ConfirmEmail(googlePayload.Email);
             return loginAfterEmailConfirmation;
         }

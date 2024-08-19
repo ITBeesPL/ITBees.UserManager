@@ -31,7 +31,7 @@ namespace ITBees.UserManager.Services
             var confirmResult = await _userManager.ConfirmEmailAsync(user, confirmRegistrationIm.Token);
             if (confirmResult.Succeeded)
             {
-                var result = await _loginService.LoginAfterEmailConfirmation(user.Email);
+                var result = await _loginService.LoginAfterEmailConfirmation(user.Email, "en");
                 return result;
             }
 

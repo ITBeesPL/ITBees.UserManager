@@ -30,7 +30,7 @@ namespace ITBees.UserManager.Services.Passwords
 
             if (user == null)
             {
-                throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegisterd, new En()));
+                throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegistered, new En()));
             }
 
             var result = await _userManager.ResetPasswordAsync(user, passwordResetIm.Token, passwordResetIm.NewPassword);
@@ -49,7 +49,7 @@ namespace ITBees.UserManager.Services.Passwords
 
             if (user == null)
             {
-                throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegisterd, new En()));
+                throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegistered, new En()));
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);

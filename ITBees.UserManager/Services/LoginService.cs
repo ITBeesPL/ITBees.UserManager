@@ -7,6 +7,7 @@ using ITBees.BaseServices.Platforms.Interfaces;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
+using ITBees.RestfulApiControllers.Authorization;
 using ITBees.Translations;
 using ITBees.UserManager.Helpers;
 using ITBees.UserManager.Interfaces.Models;
@@ -45,9 +46,9 @@ namespace ITBees.UserManager.Services
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        public async Task<TokenVm> LoginAfterEmailConfirmation(string email)
+        public async Task<TokenVm> LoginAfterEmailConfirmation(string email, string lang)
         {
-            var userAccount = GetUserAccount(email);
+            var userAccount = GetUserAccount(email, lang);
             return await GetTokenVm(email, userAccount);
         }
 
@@ -71,9 +72,9 @@ namespace ITBees.UserManager.Services
             }
         }
 
-        public virtual async Task<TokenVm> Login(string email, string pass)
+        public virtual async Task<TokenVm> Login(string email, string pass, string lang)
         {
-            var userAccount = await GetUserIdAfterThePasswordCheck(email, pass);
+            var userAccount = await GetUserIdAfterThePasswordCheck(email, pass, lang);
 
             return await GetTokenVm(email, userAccount);
         }
@@ -128,15 +129,17 @@ namespace ITBees.UserManager.Services
             return formatUserAccountModulesForJwtToken;
         }
 
-        private async Task<UserAccount> GetUserIdAfterThePasswordCheck(string email, string pass)
+        private async Task<UserAccount> GetUserIdAfterThePasswordCheck(string email, string pass, string lang)
         {
-            UserAccount userAccount = GetUserAccount(email);
+            UserAccount userAccount = GetUserAccount(email, lang);
 
             var identityUser = await _userManager.FindByEmailAsync(email);
 
             if (!await _userManager.CheckPasswordAsync((T)identityUser, pass)) throw new UnauthorizedAccessException(Translate.Get(() => Translations.UserManager.UserLogin.IncorrectEmailOrPassword, userAccount.Language));
             if (identityUser.EmailConfirmed) return userAccount;
-            if (identityUser.EmailConfirmed == false) throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, userAccount.Language));
+            if (identityUser.EmailConfirmed == false)
+                throw new Authorization403ForbiddenException
+                    (Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, userAccount.Language));
 
             var tmpToken = await _userManager.GenerateEmailConfirmationTokenAsync((T)identityUser);
 
@@ -145,7 +148,7 @@ namespace ITBees.UserManager.Services
             return userAccount;
         }
 
-        private UserAccount GetUserAccount(string email)
+        private UserAccount GetUserAccount(string email, string lang)
         {
             UserAccount userAccount;
 
@@ -153,7 +156,7 @@ namespace ITBees.UserManager.Services
 
             if (userAccount == null)
             {
-                throw new Exception($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, new En())} {email}");
+                throw new Exception($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, lang)} {email}");
             }
 
             try

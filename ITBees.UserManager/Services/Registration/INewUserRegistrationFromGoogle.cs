@@ -7,6 +7,6 @@ namespace ITBees.UserManager.Services.Registration
 {
     public interface INewUserRegistrationFromGoogle
     {
-        Task<TokenVm> CreateNewUserAccountFromGoogleLogin(GooglePayload googlePayload);
+        Task<TokenVm> CreateNewUserAccountFromGoogleLogin(GooglePayload googlePayload, string lang);
     }
 }

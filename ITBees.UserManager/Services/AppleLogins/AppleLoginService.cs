@@ -64,7 +64,7 @@ namespace ITBees.UserManager.Services.AppleLogins
                 return resultAccount;
             }
 
-            return await _loginService.LoginAfterEmailConfirmation(result.Email);
+            return await _loginService.LoginAfterEmailConfirmation(result.Email,lang);
         }
 
         public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId = "", string redirectURI = "")

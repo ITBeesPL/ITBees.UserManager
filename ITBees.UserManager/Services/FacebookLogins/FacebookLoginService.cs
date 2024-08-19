@@ -50,7 +50,7 @@ namespace ITBees.UserManager.Services.FacebookLogins
                 throw new UnauthorizedAccessException(Translate.Get(() => Translations.LoginWithFacebook.Errors.EmailCouldNotBeEmpty, lang));
             }
 
-            return _loginService.LoginAfterEmailConfirmation(result.Email);
+            return _loginService.LoginAfterEmailConfirmation(result.Email, lang);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace ITBees.UserManager.Translations
 
         public class ResetPassword : ITranslate
         {
-            public static readonly string EmailNotRegisterd = "Email not registered!";
+            public static readonly string EmailNotRegistered = "Email not registered!";
             public static readonly string CurrentPasswordIsIncorrect = "Current password is incorrect";
             public static readonly string CurrentUserNotExits = "Current user not exists!";
             public static readonly string UnableToGenerateNewPasswordResetToken = "Unable to generate new password reset Token";
@@ -54,6 +54,8 @@ namespace ITBees.UserManager.Translations
             public class Errors : ITranslate
             {
                 public static readonly string ErrorWhileRegisteringAUserAccount = "Error while registering a user account, please contact platform operator";
+                public static readonly string PasswordIsTooShort = "Password is too short";
+                public static readonly string PasswordsMustBeAtLeast8Characters = "Password must have at least 8 chars";
             }
         }
     }

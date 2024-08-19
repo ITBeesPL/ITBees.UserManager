@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using InheritedMapper;
 using ITBees.Interfaces.Platforms;
@@ -80,8 +81,14 @@ namespace ITBees.UserManager.Services.Registration
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName"))
                     throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered, userLanguage));
-
-                throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.Errors.ErrorWhileRegisteringAUserAccount, userLanguage));
+                StringBuilder translatedErrors = new StringBuilder();
+                foreach (var identityError in result.Errors)
+                {
+                    var code = Translate.Get(typeof(Translations.UserManager.NewUserRegistration.Errors), identityError.Code, userLanguage, true);
+                    var description = Translate.Get(typeof(Translations.UserManager.NewUserRegistration.Errors), identityError.Description, userLanguage, true);
+                    translatedErrors.AppendLine($"{code} - {description}");
+                }
+                throw new Exception(translatedErrors.ToString());
             }
 
             UserAccount userSavedData = null;
