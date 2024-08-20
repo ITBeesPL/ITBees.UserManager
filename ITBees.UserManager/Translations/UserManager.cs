@@ -54,8 +54,14 @@ namespace ITBees.UserManager.Translations
             public class Errors : ITranslate
             {
                 public static readonly string ErrorWhileRegisteringAUserAccount = "Error while registering a user account, please contact platform operator";
-                public static readonly string PasswordIsTooShort = "Password is too short";
+                public static readonly string PasswordTooShort = "Password is too short";
                 public static readonly string PasswordsMustBeAtLeast8Characters = "Password must have at least 8 chars";
+                public static readonly string PasswordRequiresUniqueChars = "Password requires unique chars";
+                public static readonly string PasswordsMustUseAtLeast1DifferentCharacters = "Passwords must use at least 1 different characters";
+                public static readonly string InvalidUserName = "Invalid user name";
+                public static readonly string UsernameIsInvalidCanOnlyContainLettersOrDigits = "Username '' is invalid, can only contain letters or digits";
+                public static readonly string InvalidEmail = "Invalid email";
+                public static readonly string EmailIsInvalid = "Email '' is invalid.";
             }
         }
     }

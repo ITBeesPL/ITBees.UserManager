@@ -88,7 +88,7 @@ namespace ITBees.UserManager.Services.Registration
                     var description = Translate.Get(typeof(Translations.UserManager.NewUserRegistration.Errors), identityError.Description, userLanguage, true);
                     translatedErrors.AppendLine($"{code} - {description}");
                 }
-                throw new Exception(translatedErrors.ToString());
+                throw new ArgumentException(translatedErrors.ToString());
             }
 
             UserAccount userSavedData = null;
