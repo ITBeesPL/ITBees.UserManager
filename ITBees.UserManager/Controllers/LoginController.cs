@@ -32,7 +32,7 @@ namespace ITBees.UserManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] LoginIm loginIm)
         {
-            return await ReturnOkResult(async () =>
+            return await ReturnOkResultAsync(async () =>
                 await _loginService.Login(loginIm.Username, loginIm.Password, loginIm.Language));
         }
     }
