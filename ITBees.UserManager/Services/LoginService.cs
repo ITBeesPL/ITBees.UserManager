@@ -156,7 +156,7 @@ namespace ITBees.UserManager.Services
 
             if (userAccount == null)
             {
-                throw new Exception($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, lang)} {email}");
+                throw new ArgumentException($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, lang)} {email}");
             }
 
             try

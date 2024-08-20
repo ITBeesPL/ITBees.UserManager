@@ -14,7 +14,7 @@ namespace ITBees.UserManager.Controllers
     [ApiController]
     [GenericRestControllerNameConvention]
     [Route("/Login")]
-    public class LoginController<T> : RestfulControllerBase<LoginController<T>> where T: IdentityUser
+    public class LoginController<T> : RestfulControllerBase<LoginController<T>> where T : IdentityUser
     {
         private readonly ILoginService<T> _loginService;
 
@@ -32,20 +32,8 @@ namespace ITBees.UserManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] LoginIm loginIm)
         {
-            try
-            {
-                if (!TryValidateModel(loginIm))
-                {
-                    return base.CreateBaseErrorResponse(ModelState,string.Empty);
-                }
-
-                var token = await _loginService.Login(loginIm.Username, loginIm.Password, loginIm.Language);
-                return Ok(token);
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+            return await ReturnOkResult(async () =>
+                await _loginService.Login(loginIm.Username, loginIm.Password, loginIm.Language));
         }
     }
 }
