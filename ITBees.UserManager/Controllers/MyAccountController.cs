@@ -1,18 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
-using ITBees.Models.MyAccount;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
-using ITBees.UserManager.Interfaces.Services;
-using ITBees.UserManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Nelibur.ObjectMapper;
 
 namespace ITBees.UserManager.Controllers
 {
@@ -47,37 +42,18 @@ namespace ITBees.UserManager.Controllers
         [Produces(typeof(MyAccountVm))]
         public IActionResult Get()
         {
-            try
-            {
-                MyAccount myAccount = _myAccountServie.GetMyAccountData();
-                var result = TinyMapper.Map<MyAccountVm>(myAccount);
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return CreateBaseErrorResponse(e, null);
-            }
+            return ReturnOkResult(() => _myAccountServie.GetMyAccountData());
         }
 
         [HttpPut]
-        [Produces(typeof(MyAccountVm))]
+        [Produces(typeof(MyAccountWithTokenVm))]
         public async Task<IActionResult> Put([FromBody] MyAccountIm myAccountIm)
         {
-            try
-            {
-                _myAccountUpdateService.UpdateMyAccount(myAccountIm);
+            _myAccountUpdateService.UpdateMyAccount(myAccountIm);
+            MyAccountVm myAccount = _myAccountServie.GetMyAccountData();
+            var cu = _aspCurrentUserService.GetCurrentUser();
 
-                MyAccount myAccount = _myAccountServie.GetMyAccountData();
-                var cu = _aspCurrentUserService.GetCurrentUser();
-
-                var newToken = await _loginService.LoginAfterEmailConfirmation(cu.Email, myAccountIm.Language);
-                var result = new MyAccountVmWithToken(myAccount, newToken);
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return CreateBaseErrorResponse(e, null);
-            }
+            return await ReturnOkResultAsync(async () => await _loginService.GetMyAccountWithTokenWithoutAuthorization(myAccount, myAccountIm.Language));
         }
     }
 }

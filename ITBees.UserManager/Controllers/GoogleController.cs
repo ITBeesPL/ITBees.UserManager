@@ -34,27 +34,16 @@ namespace ITBees.UserManager.Controllers
         {
             string idToken = model.IdToken;
 
-            try
-            {
-                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
 
-                if (string.IsNullOrEmpty(payload.Locale))
-                {
-                    payload.Locale = ParseAcceptLanguageHeader(acceptLanguage);
-                }
+            if (string.IsNullOrEmpty(payload.Locale))
+            {
+                payload.Locale = ParseAcceptLanguageHeader(acceptLanguage);
+            }
 
-                var googlePayload = new GooglePayload(payload);
-                var result = await _googleLoginService.LoginOrRegister(googlePayload);
-                return Ok(result);
-            }
-            catch (InvalidJwtException e)
-            {
-                return CreateBaseErrorResponse(e, model);
-            }
-            catch (Exception e)
-            {
-                return CreateBaseErrorResponse(e, model);
-            }
+            var googlePayload = new GooglePayload(payload);
+
+            return await ReturnOkResultAsync(async () => await _googleLoginService.LoginOrRegister(googlePayload));
         }
 
         private string ParseAcceptLanguageHeader(string acceptLanguage)
@@ -67,7 +56,7 @@ namespace ITBees.UserManager.Controllers
             string[] languages = acceptLanguage.Split(',');
             if (languages.Length > 0)
             {
-                return languages[0].Split(';')[0].Substring(0,2);
+                return languages[0].Split(';')[0].Substring(0, 2);
             }
 
             return null;

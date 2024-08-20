@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.Translations;
-using ITBees.UserManager.Interfaces.Services;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Translations;
 
 namespace ITBees.UserManager.Services.Acl

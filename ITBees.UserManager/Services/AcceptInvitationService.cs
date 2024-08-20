@@ -6,7 +6,6 @@ using ITBees.Models.Users;
 using ITBees.Translations;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
-using ITBees.UserManager.Interfaces.Services;
 using ITBees.UserManager.Translations;
 
 namespace ITBees.UserManager.Services

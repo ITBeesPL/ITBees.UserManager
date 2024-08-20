@@ -2,8 +2,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using ITBees.Translations;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

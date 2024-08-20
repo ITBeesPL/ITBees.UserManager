@@ -7,6 +7,8 @@ using Google.Apis.Auth;
 using ITBees.Interfaces.Platforms;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
+using ITBees.UserManager.Controllers.Models;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Services.AppleLogins;
 using Environment = ITBees.Interfaces.Platforms.Environment;

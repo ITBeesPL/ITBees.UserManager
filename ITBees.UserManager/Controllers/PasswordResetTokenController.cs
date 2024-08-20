@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Services.Passwords;
 using ITBees.UserManager.Services.Passwords.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -20,33 +21,16 @@ namespace ITBees.UserManager.Controllers
 
         [Produces(typeof(ResetPassResultVm))]
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] PasswordResetIm passwordResetIm)
+        public async Task<IActionResult> Post([FromBody] PasswordResetIm passwordResetIm)
         {
-            try
-            {
-                var result = await _passwordResettingService.ResetPassword(passwordResetIm);
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return CreateBaseErrorResponse(e, e);
-            }
+            return await ReturnOkResultAsync(async () => await _passwordResettingService.ResetPassword(passwordResetIm));
         }
-
 
         [Produces(typeof(GenerateResetPasswordResultVm))]
         [HttpGet]
         public async Task<IActionResult> Get(string email)
         {
-            try
-            {
-                await _passwordResettingService.GenerateResetPasswordLink(email);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return CreateBaseErrorResponse(email, e);
-            }
+            return await ReturnOkResultAsync(async () => await _passwordResettingService.GenerateResetPasswordLink(email));
         }
     }
 }

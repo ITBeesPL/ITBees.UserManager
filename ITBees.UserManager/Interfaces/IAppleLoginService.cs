@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Services.AppleLogins;
-using ITBees.UserManager.Services.Registration;
 using Microsoft.AspNetCore.Identity;
 
-namespace ITBees.UserManager.Controllers
+namespace ITBees.UserManager.Interfaces
 {
     public interface IAppleLoginService<T> where T : IdentityUser
     {

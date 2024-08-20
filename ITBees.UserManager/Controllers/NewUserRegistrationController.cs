@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -26,7 +25,7 @@ namespace ITBees.UserManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] NewUserRegistrationIm newUserIm)
         {
-            try
+            return await ReturnOkResultAsync(async () =>
             {
                 var result = await _newUserRegistrationService.CreateNewUser(newUserIm);
 
@@ -34,13 +33,8 @@ namespace ITBees.UserManager.Controllers
                 {
                     UserGuid = result.UserGuid,
                     ErrorMessages = result.ErrorMessages
-
                 });
-            }
-            catch (Exception e)
-            {
-                return base.CreateBaseErrorResponse(e.Message, null);
-            }
+            });
         }
     }
 }

@@ -2,7 +2,7 @@
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Services;
 
-namespace ITBees.UserManager.Interfaces.Services
+namespace ITBees.UserManager.Interfaces
 {
     public interface INewUserRegistrationService
     {

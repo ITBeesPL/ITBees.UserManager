@@ -6,8 +6,8 @@ using System.Security.Claims;
 using System;
 using System.Linq;
 using ITBees.Models.Languages;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 
 namespace ITBees.UserManager.Services
 {

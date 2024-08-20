@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Services.Passwords;
 using Microsoft.AspNetCore.Authorization;
@@ -21,17 +20,9 @@ namespace ITBees.UserManager.Controllers
 
         [Produces(typeof(ChangePassResultVm))]
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] ChangePasswordIm changePasswordIm)
+        public async Task<IActionResult> Post([FromBody] ChangePasswordIm changePasswordIm)
         {
-            try
-            {
-                var result = await _changePasswordService.ChangePassword(changePasswordIm);
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return CreateBaseErrorResponse(e, e);
-            }
+            return await ReturnOkResultAsync(async () => await _changePasswordService.ChangePassword(changePasswordIm));
         }
     }
 }

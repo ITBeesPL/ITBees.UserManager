@@ -1,10 +1,9 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 

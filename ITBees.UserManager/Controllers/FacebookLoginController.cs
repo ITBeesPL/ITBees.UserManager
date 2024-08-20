@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Google.Apis.Auth;
+﻿using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces.Models;
@@ -30,23 +28,10 @@ namespace ITBees.UserManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(string accessToken, [FromHeader(Name = "Accept-Language")] string acceptLanguage)
         {
-            try
-            {
-                FacebookLoginResult facebookLoginResult = await _facebookLoginService.ValidateAccessToken(accessToken);
-                var lang = ParseAcceptLanguageHeader(acceptLanguage);
-                
-                var result = await _facebookLoginService.LoginOrRegister(facebookLoginResult, lang);
+            FacebookLoginResult facebookLoginResult = await _facebookLoginService.ValidateAccessToken(accessToken);
+            var lang = ParseAcceptLanguageHeader(acceptLanguage);
 
-                return Ok(result);
-            }
-            catch (InvalidJwtException e)
-            {
-                return CreateBaseErrorResponse(e, accessToken);
-            }
-            catch (Exception e)
-            {
-                return CreateBaseErrorResponse(e, accessToken);
-            }
+            return await ReturnOkResultAsync(async () => await _facebookLoginService.LoginOrRegister(facebookLoginResult, lang));
         }
 
         private string ParseAcceptLanguageHeader(string acceptLanguage)

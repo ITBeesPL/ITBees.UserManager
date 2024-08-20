@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
-using ITBees.UserManager.Interfaces.Services;
+using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 

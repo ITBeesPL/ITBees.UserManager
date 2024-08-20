@@ -1,15 +1,18 @@
-﻿using ITBees.UserManager.Interfaces.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ITBees.BaseServices.Platforms.Interfaces;
+using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Languages;
+using ITBees.Models.MyAccount;
 using ITBees.Models.Users;
 using ITBees.RestfulApiControllers.Authorization;
 using ITBees.Translations;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Helpers;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -70,6 +73,12 @@ namespace ITBees.UserManager.Services
             {
                 return new ConfirmEmailResult() { Success = false, Message = e.Message };
             }
+        }
+
+        public async Task<MyAccountWithTokenVm> GetMyAccountWithTokenWithoutAuthorization(MyAccountVm myAccount, string language)
+        {
+            var token = await this.LoginAfterEmailConfirmation(myAccount.Email, language);
+            return new MyAccountWithTokenVm(myAccount, token);
         }
 
         public virtual async Task<TokenVm> Login(string email, string pass, string lang)

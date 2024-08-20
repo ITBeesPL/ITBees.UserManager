@@ -1,6 +1,5 @@
 ﻿using System;
-using ITBees.UserManager.Interfaces.Services;
-using ITBees.UserManager.Services;
+using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace ITBees.UserManager.Controllers.GenericControllersAttributes

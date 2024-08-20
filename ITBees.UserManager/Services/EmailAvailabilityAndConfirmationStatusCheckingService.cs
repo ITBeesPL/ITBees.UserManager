@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
 using ITBees.Translations;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 
 namespace ITBees.UserManager.Services
 {

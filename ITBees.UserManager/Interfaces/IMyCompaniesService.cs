@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ITBees.Models.Companies;
 
-namespace ITBees.UserManager.Interfaces.Services
+namespace ITBees.UserManager.Interfaces
 {
     public interface IMyCompaniesService
     {

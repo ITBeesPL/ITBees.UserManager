@@ -2,7 +2,7 @@
 using ITBees.Models.Users;
 using ITBees.UserManager.Interfaces.Models;
 
-namespace ITBees.UserManager.Interfaces.Services
+namespace ITBees.UserManager.Interfaces
 {
     public interface IAspCurrentUserService
     {

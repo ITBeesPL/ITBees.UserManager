@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using ITBees.BaseServices.Platforms.Interfaces;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
 
 namespace ITBees.UserManager.Services;

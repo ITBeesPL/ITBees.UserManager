@@ -1,28 +1,27 @@
 ﻿using System.Linq;
 using ITBees.FAS.ApiInterfaces.Companies;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
-using ITBees.Models.MyAccount;
 using ITBees.UserManager.Interfaces.Models;
 
 namespace ITBees.UserManager.Controllers.Models;
 
-public class MyAccountVmWithToken : MyAccountVm
+public class MyAccountWithTokenVm : MyAccountVm
 {
-    public MyAccountVmWithToken() { }
-    public MyAccountVmWithToken(MyAccount myAccount, TokenVm newToken)
+    public MyAccountWithTokenVm() { }
+    public MyAccountWithTokenVm(MyAccountVm myAccount, TokenVm newToken)
     {
         this.TokenVm = newToken;
-        this.Language = myAccount.Language.Code;
+        this.Language = myAccount.Language;
         this.Guid = myAccount.Guid;
         this.Companies = myAccount.Companies.Select(x => new CompanyVm()
         {
             CompanyName = x.CompanyName,
             Created = x.Created,
-            CreatedBy = x.CreatedBy.DisplayName,
+            CreatedBy = x.CreatedBy,
             Guid = x.Guid,
             IsActive = x.IsActive,
             CreatedByGuid = x.CreatedByGuid.Value,
-            Owner = x.Owner.DisplayName,
+            Owner = x.Owner,
             OwnerGuid = x.OwnerGuid.Value
         }).ToList();
     }

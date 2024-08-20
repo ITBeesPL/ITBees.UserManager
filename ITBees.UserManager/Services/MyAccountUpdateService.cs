@@ -4,7 +4,7 @@ using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
-using ITBees.UserManager.Interfaces.Services;
+using ITBees.UserManager.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services;

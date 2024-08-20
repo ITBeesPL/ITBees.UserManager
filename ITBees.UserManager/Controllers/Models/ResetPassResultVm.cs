@@ -1,4 +1,4 @@
-﻿namespace ITBees.UserManager.Controllers
+﻿namespace ITBees.UserManager.Controllers.Models
 {
     public class ResetPassResultVm
     {

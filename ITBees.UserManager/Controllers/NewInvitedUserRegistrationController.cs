@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -28,21 +27,18 @@ namespace ITBees.UserManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] NewUserRegistrationWithInvitationIm newUserIm)
         {
-            try
-            {
-                var result = await _newUserRegistrationService.CreateAndInviteNewUserToCompany(newUserIm);
 
-                return Ok(new NewUserRegistrationVm()
+            return await ReturnOkResultAsync(async () =>
                 {
-                    UserGuid = result.UserGuid,
-                    ErrorMessages = result.ErrorMessages
+                    var result = await _newUserRegistrationService.CreateAndInviteNewUserToCompany(newUserIm);
+                    return Ok(new NewUserRegistrationVm()
+                    {
+                        UserGuid = result.UserGuid,
+                        ErrorMessages = result.ErrorMessages
 
-                });
-            }
-            catch (Exception e)
-            {
-                return base.CreateBaseErrorResponse(e.Message, null);
-            }
+                    });
+                }
+            );
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ITBees.UserManager.Helpers;
-using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +23,7 @@ using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.AppleLogins;
 using ITBees.UserManager.Services.FacebookLogins;
+using ITBees.UserManager.Services.GoogleLogins;
 using ITBees.UserManager.Services.Mailing;
 using ITBees.UserManager.Services.Passwords;
 using ITBees.UserManager.Services.Registration;

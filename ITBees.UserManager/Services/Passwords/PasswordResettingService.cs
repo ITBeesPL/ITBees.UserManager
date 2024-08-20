@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.Translations;
-using ITBees.UserManager.Controllers;
-using ITBees.UserManager.Interfaces.Services;
+using ITBees.UserManager.Controllers.Models;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Passwords.Models;
 using Microsoft.Extensions.Logging;
 

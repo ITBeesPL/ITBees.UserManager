@@ -5,7 +5,6 @@ using ITBees.Models.Users;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.DbModels;
 using ITBees.UserManager.Interfaces;
-using ITBees.UserManager.Interfaces.Services;
 
 namespace ITBees.UserManager.Services;
 

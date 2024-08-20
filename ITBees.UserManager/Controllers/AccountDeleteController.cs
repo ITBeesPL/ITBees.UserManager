@@ -28,14 +28,6 @@ public class AccountDeleteController : RestfulControllerBase<AccountDeleteContro
     [HttpDelete]
     public async Task<IActionResult> Del(Guid? accountGuid = null)
     {
-        try
-        {
-            await _accountDeleteService.Delete(accountGuid);
-            return Ok();
-        }
-        catch (Exception e)
-        {
-            return CreateBaseErrorResponse(e, accountGuid);
-        }
+        return await ReturnOkResultAsync(async () => await _accountDeleteService.Delete(accountGuid));
     }
 }

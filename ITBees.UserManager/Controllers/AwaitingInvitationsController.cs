@@ -23,8 +23,7 @@ namespace ITBees.UserManager.Controllers
         [Produces(typeof(List<AwaitingInvitationVm>))]
         public IActionResult Get()
         {
-            List<AwaitingInvitationVm> result = _awaitingInvitationsService.GetMyInvitations();
-            return Ok(result);
+            return ReturnOkResult(() => _awaitingInvitationsService.GetMyInvitations());
         }
     }
 }

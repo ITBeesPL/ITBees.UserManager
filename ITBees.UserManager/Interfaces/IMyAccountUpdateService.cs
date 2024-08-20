@@ -1,6 +1,6 @@
 ﻿using ITBees.FAS.ApiInterfaces.MyAccounts;
 
-namespace ITBees.UserManager.Services;
+namespace ITBees.UserManager.Interfaces;
 
 public interface IMyAccountUpdateService
 {

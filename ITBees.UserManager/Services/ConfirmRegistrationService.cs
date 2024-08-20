@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.Translations;
+using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using ITBees.UserManager.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Services

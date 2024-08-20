@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using ITBees.UserManager.Interfaces.Models;
 
-namespace ITBees.UserManager.Interfaces.Services
+namespace ITBees.UserManager.Interfaces
 {
     public interface IEmailAvailabilityAndConfirmationStatusCheckingService
     {

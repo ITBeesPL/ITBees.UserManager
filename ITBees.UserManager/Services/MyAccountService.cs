@@ -1,9 +1,10 @@
 ﻿using System.Linq;
+using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Companies;
 using ITBees.Models.Users;
 using ITBees.UserManager.Interfaces;
-using ITBees.UserManager.Interfaces.Services;
+using Nelibur.ObjectMapper;
 
 namespace ITBees.UserManager.Services
 {
@@ -17,15 +18,15 @@ namespace ITBees.UserManager.Services
             _usersInCompanyRepository = usersInCompanyRepository;
             _aspCurrentUserService = aspCurrentUserService;
         }
-        public ITBees.Models.MyAccount.MyAccount GetMyAccountData()
+        public MyAccountVm GetMyAccountData()
         {
             var currentUserGuid = _aspCurrentUserService.GetCurrentUser();
             var usersInCompany = _usersInCompanyRepository
                 .GetData(x => x.UserAccountGuid == currentUserGuid.Guid,
                     x => x.Company,
-                    x => x.UserAccount, x=>x.UserAccount.Language).ToList();
+                    x => x.UserAccount, x => x.UserAccount.Language).ToList();
             string displayName = string.IsNullOrEmpty(usersInCompany.First().UserAccount.FirstName) ? usersInCompany.First().UserAccount.Email : $"{usersInCompany.First().UserAccount.FirstName} {usersInCompany.First().UserAccount.LastName}";
-            return new ITBees.Models.MyAccount.MyAccount()
+            var myAccount = new ITBees.Models.MyAccount.MyAccount()
             {
                 Guid = usersInCompany.First().UserAccount.Guid,
                 Email = usersInCompany.First().UserAccount.Email,
@@ -45,6 +46,8 @@ namespace ITBees.UserManager.Services
                 Language = usersInCompany.First().UserAccount.Language,
                 DisplayName = displayName
             };
+
+            return TinyMapper.Map<MyAccountVm>(myAccount);
         }
     }
 }

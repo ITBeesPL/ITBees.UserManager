@@ -3,7 +3,7 @@ using ITBees.Models.Languages;
 using ITBees.Models.Roles;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.Models;
-using ITBees.UserManager.Interfaces.Services;
+using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,8 +24,7 @@ namespace ITBees.UserManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] AddRoleIm addRoleIm)
         {
-            await _roleAddingService.AddRole(addRoleIm.Email, addRoleIm.Role, new Pl());
-            return Ok();
+            return await ReturnOkResultAsync(async () => await _roleAddingService.AddRole(addRoleIm.Email, addRoleIm.Role, new Pl()));
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Linq;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Companies;
 using ITBees.Models.Users;
-using ITBees.UserManager.Interfaces.Services;
+using ITBees.UserManager.Interfaces;
 
 namespace ITBees.UserManager.Services
 {

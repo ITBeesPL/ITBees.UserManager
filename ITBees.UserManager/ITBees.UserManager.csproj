@@ -12,6 +12,7 @@
     <Folder Include="DbModels\" />
     <Folder Include="Services\AppleLogins\" />
     <Folder Include="Services\FacebookLogins\" />
+    <Folder Include="Services\GoogleLogins\" />
     <Folder Include="Services\Mailing\" />
     <Folder Include="Services\Passwords\Models\" />
     <Folder Include="Services\PlatformOperator\" />
