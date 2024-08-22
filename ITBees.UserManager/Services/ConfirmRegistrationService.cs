@@ -20,7 +20,7 @@ namespace ITBees.UserManager.Services
             _loginService = loginService;
         }
 
-        public async Task<TokenVm> ConfirmRegistrationEmailAndGetSessinToken(
+        public async Task<TokenVm> ConfirmRegistrationEmailAndGetSessionToken(
             ConfirmRegistrationIm confirmRegistrationIm)
         {
             var user = await _userManager.FindByEmailAsync(confirmRegistrationIm.Email);
