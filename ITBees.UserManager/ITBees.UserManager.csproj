@@ -24,7 +24,7 @@
     <PackageReference Include="ITBees.Interfaces" Version="8.0.15" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.25" />
     <PackageReference Include="ITBees.Models" Version="8.0.39" />
-    <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.18" />
+    <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.19" />
     <PackageReference Include="ITBees.Translations" Version="8.0.43" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
     <PackageReference Include="MailKit" Version="4.7.1.1" />
@@ -35,7 +35,7 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.8" />
     <PackageReference Include="MimeKit" Version="4.7.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
   </ItemGroup>
 
 </Project>
