@@ -8,5 +8,6 @@ namespace ITBees.UserManager.Interfaces
     {
         Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationInputDto, bool sendConfirmationEmail = true);
         Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(NewUserRegistrationWithInvitationIm newUserRegistrationIm);
+        Task ResendConfirmationEmail(string email);
     }
 }
