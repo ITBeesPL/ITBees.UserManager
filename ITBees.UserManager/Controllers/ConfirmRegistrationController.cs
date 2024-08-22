@@ -1,10 +1,8 @@
 ﻿using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
-using ITBees.RestfulApiControllers.Models;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,7 +23,7 @@ namespace ITBees.UserManager.Controllers
 
         [HttpPost]
         [Produces(typeof(TokenVm))]
-        [ProducesResponseType(typeof(FasApiErrorVm), StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(typeof(FasApiErrorVm), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromBody] ConfirmRegistrationIm confirmRegistrationIm)
         {
             return await ReturnOkResultAsync(async () => await _confirmRegistrationService.ConfirmRegistrationEmailAndGetSessionToken(confirmRegistrationIm));

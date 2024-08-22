@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
+using ITBees.RestfulApiControllers.Models;
 using ITBees.UserManager.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -18,6 +20,8 @@ public class ResendActivationLinkController : RestfulControllerBase<ResendActiva
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(FasApiErrorVm), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     public Task<IActionResult> Post(string email)
     {
         return ReturnOkResultAsync(async()=>await _newUserRegistrationService.ResendConfirmationEmail(email));
