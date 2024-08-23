@@ -22,7 +22,7 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.19" />
     <PackageReference Include="ITBees.Interfaces" Version="8.0.15" />
-    <PackageReference Include="ITBees.Mailing" Version="8.0.25" />
+    <PackageReference Include="ITBees.Mailing" Version="8.0.27" />
     <PackageReference Include="ITBees.Models" Version="8.0.40" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.20" />
     <PackageReference Include="ITBees.Translations" Version="8.0.43" />
