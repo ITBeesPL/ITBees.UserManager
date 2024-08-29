@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
@@ -49,11 +50,19 @@ namespace ITBees.UserManager.Controllers
         [Produces(typeof(MyAccountWithTokenVm))]
         public async Task<IActionResult> Put([FromBody] MyAccountIm myAccountIm)
         {
-            _myAccountUpdateService.UpdateMyAccount(myAccountIm);
-            MyAccountVm myAccount = _myAccountServie.GetMyAccountData();
-            var cu = _aspCurrentUserService.GetCurrentUser();
+            return await ReturnOkResultAsync(async () =>
+            {
+                _myAccountUpdateService.UpdateMyAccount(myAccountIm);
+                MyAccountVm myAccount = _myAccountServie.GetMyAccountData();
+                var cu = _aspCurrentUserService.GetCurrentUser();
+                if (myAccountIm.Email != cu.Email)
+                {
+                    throw new UnauthorizedAccessException("this will be reported");
+                }
 
-            return await ReturnOkResultAsync(async () => await _loginService.GetMyAccountWithTokenWithoutAuthorization(myAccount, myAccountIm.Language));
+                return await _loginService.GetMyAccountWithTokenWithoutAuthorization(myAccount,
+                    myAccountIm.Language);
+            });
         }
     }
 }

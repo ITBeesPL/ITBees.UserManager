@@ -170,7 +170,7 @@ namespace ITBees.UserManager.Services
 
             try
             {
-                if (userAccount.LastUsedCompanyGuid == null)
+                if (userAccount.LastUsedCompanyGuid == null || userAccount.LastUsedCompanyGuid == new Guid("00000000-0000-0000-0000-000000000000"))
                 {
                     var usersInCompanies =
                         _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
