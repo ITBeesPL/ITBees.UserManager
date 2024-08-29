@@ -5,5 +5,5 @@ namespace ITBees.UserManager.Interfaces;
 
 public interface IAccountDeleteService
 {
-    Task Delete(Guid? accountGuid);
+    Task Delete(Guid? accountGuid, string authKey);
 }
