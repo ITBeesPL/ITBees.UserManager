@@ -2,13 +2,11 @@
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Controllers;
 
-[Authorize]
 public class AccountDeleteController : RestfulControllerBase<AccountDeleteController>
 {
     private readonly IAccountDeleteService _accountDeleteService;
