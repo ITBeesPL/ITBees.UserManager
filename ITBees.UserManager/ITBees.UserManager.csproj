@@ -21,7 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.19" />
-    <PackageReference Include="ITBees.Interfaces" Version="8.0.23" />
+    <PackageReference Include="ITBees.Interfaces" Version="8.0.25" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.34" />
     <PackageReference Include="ITBees.Models" Version="8.0.47" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
@@ -35,7 +35,7 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.8" />
     <PackageReference Include="MimeKit" Version="4.7.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.0" />
   </ItemGroup>
 
 </Project>
