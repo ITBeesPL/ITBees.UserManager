@@ -29,11 +29,11 @@ namespace ITBees.UserManager.Controllers
             {
                 var result = await _newUserRegistrationService.CreateNewUser(newUserIm);
 
-                return Ok(new NewUserRegistrationVm()
+                return new NewUserRegistrationVm
                 {
                     UserGuid = result.UserGuid,
                     ErrorMessages = result.ErrorMessages
-                });
+                };
             });
         }
     }
