@@ -31,12 +31,12 @@ namespace ITBees.UserManager.Controllers
             return await ReturnOkResultAsync(async () =>
                 {
                     var result = await _newUserRegistrationService.CreateAndInviteNewUserToCompany(newUserIm);
-                    return Ok(new NewUserRegistrationVm()
+                    return new NewUserRegistrationVm()
                     {
                         UserGuid = result.UserGuid,
                         ErrorMessages = result.ErrorMessages
 
-                    });
+                    };
                 }
             );
         }
