@@ -21,9 +21,9 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.24" />
-    <PackageReference Include="ITBees.Interfaces" Version="8.0.30" />
+    <PackageReference Include="ITBees.Interfaces" Version="8.0.31" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.39" />
-    <PackageReference Include="ITBees.Models" Version="8.0.51" />
+    <PackageReference Include="ITBees.Models" Version="8.0.52" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
     <PackageReference Include="ITBees.Translations" Version="8.0.66" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
