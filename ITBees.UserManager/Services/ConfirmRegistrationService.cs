@@ -36,7 +36,7 @@ namespace ITBees.UserManager.Services
             }
 
             var errors = string.Join(";", confirmResult.Errors.Select(x=>x.Description));
-            throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress, new En())+ "("+ errors +")");
+            throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress, new En() + $"Email :{confirmRegistrationIm.Email} token : {confirmRegistrationIm.Token} ")+ "("+ errors +")");
         }
     }
 }
