@@ -82,7 +82,7 @@ namespace ITBees.UserManager.Services.Registration
             if (result.Succeeded == false)
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName"))
-                    throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered, userLanguage));
+                    throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered, userLanguage) + $" : {newUserRegistrationIm.Email}");
                 StringBuilder translatedErrors = new StringBuilder();
                 foreach (var identityError in result.Errors)
                 {
