@@ -229,7 +229,7 @@ namespace ITBees.UserManager.Services.Registration
                 else
                 {
                     var user = await _userManager.FindByEmailAsync(newUser.Email);
-                    emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(result);
+                    emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     CreateNewUserInvitationDbRecord(companyGuid, user, currentUser);
                 }
 
