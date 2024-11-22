@@ -13,7 +13,7 @@ namespace ITBees.UserManager.Interfaces
 
         Task<bool> CheckPasswordAsync(object user, string password);
 
-        Task<string> GenerateEmailConfirmationTokenAsync(object user);
+        Task<string> GenerateEmailConfirmationTokenAsync(dynamic user);
 
         Task<IdentityResult> ConfirmEmailAsync(object user, string token);
 

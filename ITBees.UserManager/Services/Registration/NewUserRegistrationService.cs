@@ -150,119 +150,145 @@ namespace ITBees.UserManager.Services.Registration
             return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
         }
 
-        public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(NewUserRegistrationWithInvitationIm newUserRegistrationIm)
+        public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
+            NewUserRegistrationWithInvitationIm newUserRegistrationIm)
         {
-            var companyGuid = newUserRegistrationIm.CompanyGuid;
-            var userLanguage = GetUserLanguage(newUserRegistrationIm);
-            if (companyGuid == null)
+            try
             {
-                throw new Exception(Translate.Get(() => ITBees.UserManager.Translations.UserManager.NewUserRegistration.ToInviteNewUserYouMustSpecifyTargetCompany, userLanguage));
-            }
-
-            var currentUser = _aspCurrentUserService.GetCurrentUser();
-            if (currentUser == null)
-            {
-                throw new YouMustBeLoggedInToCreateNewUserInvitationException(Translate.Get(() => ITBees.UserManager.Translations.UserManager.NewUserRegistration.YouMustBeLoggedInToAddNewUser, newUserRegistrationIm.Language));
-            }
-
-            var accessControlResult = _accessControlService.CanDo(currentUser, typeof(NewUserRegistrationService<T,TCompany>),
-                nameof(this.CreateAndInviteNewUserToCompany), companyGuid.Value); //Todo security implementation
-
-            if (accessControlResult.CanDoResult == false)
-                throw new Exception(accessControlResult.Message);
-
-            var newUser = new T()
-            {
-                UserName = newUserRegistrationIm.Email,
-                Email = newUserRegistrationIm.Email
-            };
-
-            var company = _companyRoRepository.GetFirst(x => x.Guid == companyGuid);
-
-            IdentityResult result = await _userManager.CreateAsync(newUser, Guid.NewGuid().ToString()); //create temporary password, which should be changed after email confirmation
-            var emailConfirmationToken = string.Empty;
-
-            EmailMessage emailMessage = null;
-            var platformDefaultEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
-
-            if (result.Succeeded == false)
-            {
-                if (result.Errors.Any(x => x.Code == "DuplicateUserName")) // user has account already created on platform, so we can send only invitation for him
+                var companyGuid = newUserRegistrationIm.CompanyGuid;
+                var userLanguage = GetUserLanguage(newUserRegistrationIm);
+                if (companyGuid == null)
                 {
-                    var alreadyRegisteredUser = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
+                    throw new Exception(Translate.Get(
+                        () => ITBees.UserManager.Translations.UserManager.NewUserRegistration
+                            .ToInviteNewUserYouMustSpecifyTargetCompany, userLanguage));
+                }
 
-                    var usersInvitationsToCompaniesList = _usersInvitationsToCompaniesRoRepo.GetData(x =>
-                        x.UserAccountGuid == Guid.Parse(alreadyRegisteredUser.Id) && x.CompanyGuid == companyGuid).ToList();
-                    if (usersInvitationsToCompaniesList.Any() == false)
+                var currentUser = _aspCurrentUserService.GetCurrentUser();
+                if (currentUser == null)
+                {
+                    throw new YouMustBeLoggedInToCreateNewUserInvitationException(Translate.Get(
+                        () => ITBees.UserManager.Translations.UserManager.NewUserRegistration.YouMustBeLoggedInToAddNewUser,
+                        newUserRegistrationIm.Language));
+                }
+
+                var accessControlResult = _accessControlService.CanDo(currentUser,
+                    typeof(NewUserRegistrationService<T, TCompany>),
+                    nameof(this.CreateAndInviteNewUserToCompany), companyGuid.Value); //Todo security implementation
+
+                if (accessControlResult.CanDoResult == false)
+                    throw new Exception(accessControlResult.Message);
+
+                var newUser = new T()
+                {
+                    UserName = newUserRegistrationIm.Email,
+                    Email = newUserRegistrationIm.Email
+                };
+
+                var company = _companyRoRepository.GetFirst(x => x.Guid == companyGuid);
+
+                IdentityResult
+                    result = await _userManager.CreateAsync(newUser,
+                        Guid.NewGuid()
+                            .ToString()); //create temporary password, which should be changed after email confirmation
+                var emailConfirmationToken = string.Empty;
+
+                EmailMessage emailMessage = null;
+                var platformDefaultEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
+
+                if (result.Succeeded == false)
+                {
+                    if (result.Errors.Any(x =>
+                            x.Code ==
+                            "DuplicateUserName")) // user has account already created on platform, so we can send only invitation for him
                     {
-                        CreateNewUserInvitationDbRecord(companyGuid, alreadyRegisteredUser, currentUser);
+                        var alreadyRegisteredUser = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
+
+                        var usersInvitationsToCompaniesList = _usersInvitationsToCompaniesRoRepo.GetData(x =>
+                                x.UserAccountGuid == Guid.Parse(alreadyRegisteredUser.Id) && x.CompanyGuid == companyGuid)
+                            .ToList();
+                        if (usersInvitationsToCompaniesList.Any() == false)
+                        {
+                            CreateNewUserInvitationDbRecord(companyGuid, alreadyRegisteredUser, currentUser);
+                        }
+
+                        emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(
+                            newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage);
+
+                        _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
+
+                        return new NewUserRegistrationResult(new Guid(alreadyRegisteredUser.Id), string.Empty);
                     }
-                    emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage);
-
-                    _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
-
-                    return new NewUserRegistrationResult(new Guid(alreadyRegisteredUser.Id), string.Empty);
+                    else
+                    {
+                        throw new Exception(Translate.Get(
+                            () => Translations.UserManager.NewUserRegistration.Errors.ErrorWhileRegisteringAUserAccount,
+                            userLanguage));
+                    }
                 }
                 else
                 {
-                    throw new Exception(Translate.Get(
-                        () => Translations.UserManager.NewUserRegistration.Errors.ErrorWhileRegisteringAUserAccount,
-                        userLanguage));
+                    var user = await _userManager.FindByEmailAsync(newUser.Email);
+                    emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(result);
+                    CreateNewUserInvitationDbRecord(companyGuid, user, currentUser);
                 }
-            }
-            else
-            {
-                var user = await _userManager.FindByEmailAsync(newUser.Email);
-                emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(result);
-                CreateNewUserInvitationDbRecord(companyGuid, user, currentUser);
-            }
 
-            UserAccount userSavedData = null;
+                UserAccount userSavedData = null;
 
-            try
-            {
-                userSavedData = _userAccountWriteOnlyRepository.InsertData(
-                    new UserAccount()
+                try
+                {
+                    userSavedData = _userAccountWriteOnlyRepository.InsertData(
+                        new UserAccount()
+                        {
+                            Email = newUserRegistrationIm.Email,
+                            Guid = new Guid(newUser.Id),
+                            Phone = newUserRegistrationIm.Phone,
+                            FirstName = newUserRegistrationIm.FirstName,
+                            LastName = newUserRegistrationIm.LastName,
+                            LanguageId = userLanguage.Id,
+                            SetupTime = DateTime.Now
+                        });
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
+                    emailMessage =
+                        _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
+                            newUserRegistrationIm, company.CompanyName, token, userLanguage);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, e.Message);
+                    var user = new UserAccount()
                     {
                         Email = newUserRegistrationIm.Email,
-                        Guid = new Guid(newUser.Id),
-                        Phone = newUserRegistrationIm.Phone,
-                        FirstName = newUserRegistrationIm.FirstName,
-                        LastName = newUserRegistrationIm.LastName,
-                        LanguageId = userLanguage.Id,
-                        SetupTime = DateTime.Now
-                    });
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
-                emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(newUserRegistrationIm, company.CompanyName, token, userLanguage);
+                        Guid = new Guid(newUser.Id)
+                    };
+
+                    if (userSavedData == null)
+                    {
+                        throw new Exception(e.Message);
+                    }
+
+                    return new NewUserRegistrationResult(userSavedData.Guid, e.Message);
+                }
+
+                return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, e.Message);
-                var user = new UserAccount()
-                {
-                    Email = newUserRegistrationIm.Email,
-                    Guid = new Guid(newUser.Id)
-                };
-
-                if (userSavedData == null)
-                {
-                    throw new Exception(e.Message);
-                }
-
-                return new NewUserRegistrationResult(userSavedData.Guid, e.Message);
+                Console.WriteLine(e);
+                throw;
             }
 
-            return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
+
         }
 
         public async Task ResendConfirmationEmail(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            var userLanguage = _userAccountRoRepo.GetData(x => x.Email == email,x=>x.Language).First();
+            var userLanguage = _userAccountRoRepo.GetData(x => x.Email == email, x => x.Language).First();
 
             var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var emailMessage =
-                _registrationEmailComposer.ComposeEmailConfirmation(new NewUserRegistrationIm() {Email = email, Language = userLanguage.Language.Code},
+                _registrationEmailComposer.ComposeEmailConfirmation(new NewUserRegistrationIm() { Email = email, Language = userLanguage.Language.Code },
                     emailConfirmationToken);
             var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
 
