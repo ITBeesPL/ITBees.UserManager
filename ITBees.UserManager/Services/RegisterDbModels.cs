@@ -16,6 +16,7 @@ namespace ITBees.UserManager.Services
             modelBuilder.Entity<EmailAccount>();
             modelBuilder.Entity<Company>().HasKey(x => x.Guid);
             modelBuilder.Entity<UsersInCompany>().HasKey(x => x.Guid);
+            modelBuilder.Entity<UsersInvitationsToCompanies>().HasKey(x => x.Guid);
             modelBuilder.Entity<Language>().HasKey(x => x.Id);
             modelBuilder.Entity<Language>().HasDiscriminator<string>("LanguageType")
                 .HasValue<Aa>(nameof(Aa) + "Type")
