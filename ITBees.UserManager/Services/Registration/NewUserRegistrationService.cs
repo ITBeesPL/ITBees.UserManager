@@ -269,7 +269,7 @@ namespace ITBees.UserManager.Services.Registration
             _emailSendingService.SendEmail(platformEmailAccount, emailMessage);
         }
 
-        private void CreateNewUserInvitationDbRecord(Guid? companyGuid, IdentityUser alreadyRegisteredUser,
+        private void CreateNewUserInvitationDbRecord(Guid? companyGuid, dynamic alreadyRegisteredUser,
             CurrentUser currentUser)
         {
             _usersInvitationsToCompaniesRwRepo.InsertData(new UsersInvitationsToCompanies()
