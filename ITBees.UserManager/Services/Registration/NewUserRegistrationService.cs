@@ -229,6 +229,17 @@ namespace ITBees.UserManager.Services.Registration
                 else
                 {
                     var user = await _userManager.FindByEmailAsync(newUser.Email);
+                    _userAccountWriteOnlyRepository.InsertData(
+                        new UserAccount()
+                        {
+                            Email = newUserRegistrationIm.Email,
+                            Guid = new Guid(newUser.Id),
+                            Phone = newUserRegistrationIm.Phone,
+                            FirstName = newUserRegistrationIm.FirstName,
+                            LastName = newUserRegistrationIm.LastName,
+                            LanguageId = userLanguage.Id,
+                            SetupTime = DateTime.Now
+                        });
                     emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     CreateNewUserInvitationDbRecord(companyGuid, user, currentUser);
                 }

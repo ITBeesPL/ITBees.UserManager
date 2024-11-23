@@ -20,12 +20,12 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
-    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.30" />
-    <PackageReference Include="ITBees.Interfaces" Version="8.0.37" />
+    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.31" />
+    <PackageReference Include="ITBees.Interfaces" Version="8.0.38" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.40" />
-    <PackageReference Include="ITBees.Models" Version="8.0.61" />
+    <PackageReference Include="ITBees.Models" Version="8.0.63" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
-    <PackageReference Include="ITBees.Translations" Version="8.0.82" />
+    <PackageReference Include="ITBees.Translations" Version="8.0.83" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
