@@ -46,6 +46,7 @@ namespace ITBees.UserManager.Services
                     c.FeatureProviders.Add(new GenericRestControllerFeatureProvider<TIdentityUser>());
                 });
             services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
+            services.AddScoped(typeof(IUserRolesService), typeof(UserRolesService));
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser, TCompany>));
             services.AddScoped(typeof(INewUserRegistrationFromGoogle), typeof(NewUserRegistrationFromGoogle<TIdentityUser>));
 
