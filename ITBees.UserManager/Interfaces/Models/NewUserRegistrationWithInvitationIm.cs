@@ -16,5 +16,7 @@ namespace ITBees.UserManager.Interfaces.Models
         public string Phone { get; set; }
 
         public string Language { get; set; }
+
+        public Guid? UserRole { get; set; }
     }
 }
