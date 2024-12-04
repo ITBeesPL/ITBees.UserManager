@@ -20,13 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
-    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.33" />
-    <PackageReference Include="ITBees.Interfaces" Version="8.0.40" />
-    <PackageReference Include="ITBees.Mailing" Version="8.0.40" />
-    <PackageReference Include="ITBees.Models" Version="8.0.64" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
-    <PackageReference Include="ITBees.Translations" Version="8.0.87" />
-    <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
@@ -36,6 +30,14 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.10" />
     <PackageReference Include="MimeKit" Version="4.8.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />
+    <ProjectReference Include="..\..\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces.csproj" />
+    <ProjectReference Include="..\..\ITBees.Mailing\ITBees.Mailing\ITBees.Mailing.csproj" />
+    <ProjectReference Include="..\..\ITBees.RestClient\ITBees.RestClient\ITBees.RestClient.csproj" />
+    <ProjectReference Include="..\..\ITBees.Translations\ITBees.Translations\ITBees.Translations.csproj" />
   </ItemGroup>
 
 </Project>
