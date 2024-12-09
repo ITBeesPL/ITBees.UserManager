@@ -35,7 +35,6 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
     <PackageReference Include="ITBees.BaseServices" Version="8.0.51" />
-    <PackageReference Include="ITBees.ApiInterfaces" Version="8.0." />
     <PackageReference Include="ITBees.RestClient" Version="8.0.15" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.40" />
     <PackageReference Include="ITBees.Translations" Version="8.0.87" />
