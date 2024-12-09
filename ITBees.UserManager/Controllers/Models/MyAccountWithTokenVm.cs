@@ -13,7 +13,7 @@ public class MyAccountWithTokenVm : MyAccountVm
         this.TokenVm = newToken;
         this.Language = myAccount.Language;
         this.Guid = myAccount.Guid;
-        this.Companies = myAccount.Companies.Select(x => new CompanyVm()
+        this.Companies = myAccount.Companies.Select(x => new CompanyWithUserRoleVm()
         {
             CompanyName = x.CompanyName,
             Created = x.Created,

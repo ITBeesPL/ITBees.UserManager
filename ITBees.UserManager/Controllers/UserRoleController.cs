@@ -3,7 +3,6 @@ using ITBees.Models.Roles;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
-using ITBees.UserManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

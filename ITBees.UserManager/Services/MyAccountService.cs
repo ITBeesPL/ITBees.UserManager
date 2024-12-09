@@ -1,8 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Interfaces.Repository;
+using ITBees.Models.Companies;
 using ITBees.Models.Users;
-using ITBees.UserManager.DbModels;
 using ITBees.UserManager.Interfaces;
 using Nelibur.ObjectMapper;
 
@@ -37,6 +38,7 @@ namespace ITBees.UserManager.Services
             string displayName = string.IsNullOrEmpty(usersInCompany.First().UserAccount.FirstName)
                 ? usersInCompany.First().UserAccount.Email
                 : $"{usersInCompany.First().UserAccount.FirstName} {usersInCompany.First().UserAccount.LastName}";
+            
             var myAccount = new Models.MyAccount.MyAccount()
             {
                 Guid = usersInCompany.First().UserAccount.Guid,
@@ -44,12 +46,10 @@ namespace ITBees.UserManager.Services
                 Phone = usersInCompany.First().UserAccount.Phone,
                 FirstName = usersInCompany.First().UserAccount.FirstName,
                 LastName = usersInCompany.First().UserAccount.LastName,
-                Companies = usersInCompany.Select(x => x.Company).ToList(),
+                Companies = usersInCompany.Select(x => new CompanyWithUserRole(x.Company, x.IdentityRole.Name, Guid.Parse((ReadOnlySpan<char>)x.IdentityRole.Id))).ToList(),
                 LastUsedCompanyGuid = currentUserGuid.LastUsedCompanyGuid,
-                LastUsedCompany = lastUsedCompany.Company,
+                LastUsedCompany = new CompanyWithUserRole(lastUsedCompany.Company, lastUsedCompany.IdentityRole.Name, Guid.Parse(lastUsedCompany.IdentityRole.Id)),
                 Language = usersInCompany.First().UserAccount.Language,
-                LastUsedCompanyRoleInCompany = usersInCompany.First().IdentityRole.Name,
-                LastUsedCompanyRoleInCompanyGuid = usersInCompany.First().IdentityRole.Id,
                 DisplayName = displayName
             };
 

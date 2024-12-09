@@ -15,7 +15,21 @@ namespace ITBees.UserManager.Services
             modelBuilder.Entity<UserAccount>().HasKey(x => x.Guid);
             modelBuilder.Entity<EmailAccount>();
             modelBuilder.Entity<Company>().HasKey(x => x.Guid);
-            modelBuilder.Entity<UsersInCompany>().HasKey(x => x.Guid);
+
+            modelBuilder.Entity<UsersInCompany>()
+                .HasKey(x => x.Guid);
+
+            modelBuilder.Entity<UsersInCompany>()
+                .HasOne(uic => uic.UserAccount)
+                .WithMany(ua => ua.UsersInCompanies)
+                .HasForeignKey(uic => uic.UserAccountGuid) // Używamy właściwości UserAccountGuid!
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UsersInCompany>()
+                .HasOne(uic => uic.IdentityRole)
+                .WithMany()
+                .HasForeignKey(uic => uic.IdentityRoleId);
+
             modelBuilder.Entity<UsersInvitationsToCompanies>().HasKey(x => x.Guid);
             modelBuilder.Entity<Language>().HasKey(x => x.Id);
             modelBuilder.Entity<Language>().HasDiscriminator<string>("LanguageType")

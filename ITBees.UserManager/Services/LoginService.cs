@@ -6,7 +6,6 @@ using ITBees.BaseServices.Platforms.Interfaces;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Languages;
-using ITBees.Models.MyAccount;
 using ITBees.Models.Users;
 using ITBees.RestfulApiControllers.Authorization;
 using ITBees.Translations;
@@ -136,7 +135,9 @@ namespace ITBees.UserManager.Services
 
         private string FormatUserAccountModulesForJwtToken(UserAccount userAccount)
         {
-            var formatUserAccountModulesForJwtToken = string.Join(";", userAccount.UserAccountModules.Select(x => $"{x.ModuleType}-{x.ModuleName}-{x.MethodName}-{x.AllowedTypeOfOperation}"));
+            var formatUserAccountModulesForJwtToken = string.Join(";",
+                userAccount.UserAccountModules?.Select(x =>
+                    $"{x.ModuleType}-{x.ModuleName}-{x.MethodName}-{x.AllowedTypeOfOperation}"));
             return formatUserAccountModulesForJwtToken;
         }
 
