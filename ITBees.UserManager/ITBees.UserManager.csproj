@@ -51,12 +51,4 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />
-    <ProjectReference Include="..\..\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces.csproj" />
-    <ProjectReference Include="..\..\ITBees.Mailing\ITBees.Mailing\ITBees.Mailing.csproj" />
-    <ProjectReference Include="..\..\ITBees.RestClient\ITBees.RestClient\ITBees.RestClient.csproj" />
-    <ProjectReference Include="..\..\ITBees.Translations\ITBees.Translations\ITBees.Translations.csproj" />
-  </ItemGroup>
-
 </Project>
