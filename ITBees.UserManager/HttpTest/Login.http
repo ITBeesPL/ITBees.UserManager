@@ -1,0 +1,9 @@
+﻿POST {{OperatorApi_HostAddress}}/login
+Accept: text/plain
+Content-Type: application/json
+
+{
+  "username": "{{adminLogin}}",
+  "password": "{{adminPass}}",
+  "language": "pl"
+}
