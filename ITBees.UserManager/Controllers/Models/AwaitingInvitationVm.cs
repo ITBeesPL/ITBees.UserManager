@@ -1,5 +1,6 @@
 ﻿using System;
 using ITBees.Models.Users;
+using ITBees.UserManager.DbModels;
 
 namespace ITBees.UserManager.Controllers.Models
 {

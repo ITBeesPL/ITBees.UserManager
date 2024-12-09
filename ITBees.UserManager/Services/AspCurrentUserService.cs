@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System;
 using System.Linq;
 using ITBees.Models.Languages;
+using ITBees.UserManager.DbModels;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
 

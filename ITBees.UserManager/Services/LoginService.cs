@@ -15,6 +15,7 @@ using ITBees.UserManager.Helpers;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace ITBees.UserManager.Services
@@ -105,7 +106,8 @@ namespace ITBees.UserManager.Services
                 {"DisplayName", userAccount.DisplayName},
                 {"Email", userAccount.Email},
                 {"UserAccountModules", FormatUserAccountModulesForJwtToken(userAccount)},
-                { "Roles" ,FormatRolesForJwtToken(roles)}
+                {"RoleInCompanies", FormatCompanyRolesForJwtToken(userAccount)},
+                {"Roles" ,FormatRolesForJwtToken(roles)}
             };
 
             _userWriteOnlyRepository.UpdateData(u => u.Email == email, userAccountUpdate =>
@@ -138,6 +140,12 @@ namespace ITBees.UserManager.Services
             return formatUserAccountModulesForJwtToken;
         }
 
+        private string FormatCompanyRolesForJwtToken(UserAccount userAccount)
+        {
+            var formatCompanyRolesForJwtToken = string.Join(";", userAccount.UsersInCompanies.Select(x => $"CompanyGuid:{x.CompanyGuid}|CompanyName:{x.Company?.CompanyName}|RoleGuid:{x.IdentityRole?.Id}|RoleName:{x.IdentityRole?.Name}"));
+            return formatCompanyRolesForJwtToken;
+        }
+
         private async Task<UserAccount> GetUserIdAfterThePasswordCheck(string email, string pass, string lang)
         {
             UserAccount userAccount = GetUserAccount(email, lang);
@@ -161,7 +169,11 @@ namespace ITBees.UserManager.Services
         {
             UserAccount userAccount;
 
-            userAccount = _userReadOnlyRepository.GetFirst(x => x.Email == email, x => x.Language, x => x.UserAccountModules);
+            userAccount = _userReadOnlyRepository.GetDataQueryable(x => x.Email == email)
+                .Include(x => x.UsersInCompanies)
+                .Include(x => x.UserAccountModules)
+                .Include(x => x.Language).Include(x => x.UsersInCompanies)
+                .ThenInclude(x => x.IdentityRole).FirstOrDefault();
 
             if (userAccount == null)
             {
@@ -179,6 +191,7 @@ namespace ITBees.UserManager.Services
                         throw new Exception(
                             $"Could not find any users in company company, last used company guid is null, user guid : {userAccount.Guid}");
                     }
+
                     userAccount.LastUsedCompanyGuid = usersInCompanies.First().CompanyGuid;
                 }
             }

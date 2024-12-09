@@ -5,6 +5,7 @@ using ITBees.Models.Languages;
 using ITBees.Models.Users;
 using ITBees.Translations;
 using ITBees.UserManager.Controllers.Models;
+using ITBees.UserManager.DbModels;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Translations;
 
@@ -43,7 +44,8 @@ namespace ITBees.UserManager.Services
                         AddedByGuid = result.First().CreatedByGuid,
                         AddedDate = DateTime.Now,
                         CompanyGuid = result.First().CompanyGuid,
-                        UserAccountGuid = result.First().UserAccountGuid
+                        UserAccountGuid = result.First().UserAccountGuid,
+                        IdentityRoleId = result.First().IdentityRoleId
                     });
 
                     return new AcceptInvitationResultVm() { Accepted = true, Message = string.Empty };

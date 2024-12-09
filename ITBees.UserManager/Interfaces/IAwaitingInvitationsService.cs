@@ -3,6 +3,7 @@ using System.Linq;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
 using ITBees.UserManager.Controllers.Models;
+using ITBees.UserManager.DbModels;
 
 namespace ITBees.UserManager.Interfaces
 {
