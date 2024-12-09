@@ -29,10 +29,10 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
-    <PackageReference Include="ITBees.BaseServices" Version="8.0.56" />
+    <PackageReference Include="ITBees.BaseServices" Version="8.0.57" />
     <PackageReference Include="ITBees.Models" Version="8.0.66" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.15" />
-    <PackageReference Include="ITBees.Mailing" Version="8.0.42" />
+    <PackageReference Include="ITBees.Mailing" Version="8.0.44" />
     <PackageReference Include="ITBees.Translations" Version="8.0.90" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.35" />
     <PackageReference Include="MailKit" Version="4.8.0" />
