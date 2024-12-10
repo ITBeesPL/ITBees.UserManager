@@ -11,11 +11,6 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="HttpTest\http-client.private.env.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -30,27 +25,47 @@
     <Folder Include="Services\Passwords\Models\" />
     <Folder Include="Services\PlatformOperator\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
-    <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
-    <PackageReference Include="MailKit" Version="4.8.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.10" />
-    <PackageReference Include="MimeKit" Version="4.8.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />
-    <ProjectReference Include="..\..\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces.csproj" />
-    <ProjectReference Include="..\..\ITBees.Mailing\ITBees.Mailing\ITBees.Mailing.csproj" />
-    <ProjectReference Include="..\..\ITBees.RestClient\ITBees.RestClient\ITBees.RestClient.csproj" />
-    <ProjectReference Include="..\..\ITBees.Translations\ITBees.Translations\ITBees.Translations.csproj" />
-  </ItemGroup>
+  
+    <ItemGroup>
+      <PackageReference Include="ITBees.Interfaces" Version="8.0.45" />
+      <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
+      <PackageReference Include="ITBees.BaseServices" Version="8.0.57" />
+      <PackageReference Include="ITBees.Models" Version="8.0.66" />
+      <PackageReference Include="ITBees.RestClient" Version="8.0.15" />
+      <PackageReference Include="ITBees.Mailing" Version="8.0.45" />
+      <PackageReference Include="ITBees.Translations" Version="8.0.91" />
+      <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.35" />
+      <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
+      <PackageReference Include="MailKit" Version="4.8.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.10" />
+      <PackageReference Include="MimeKit" Version="4.8.0" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
+    </ItemGroup>
+  
+<!--  <ItemGroup>-->
+<!--    <ProjectReference Include="..\..\ITBees.Interfaces\ITBees.Interfaces\ITBees.Interfaces.csproj" />-->
+<!--    <ProjectReference Include="..\..\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers.csproj" />-->
+<!--    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />-->
+<!--    <ProjectReference Include="..\..\ITBees.Models\ITBees.Models\ITBees.Models.csproj" />-->
+<!--    <ProjectReference Include="..\..\ITBees.RestClient\ITBees.RestClient\ITBees.RestClient.csproj" />-->
+<!--    <ProjectReference Include="..\..\ITBees.Mailing\ITBees.Mailing\ITBees.Mailing.csproj" />-->
+<!--    <ProjectReference Include="..\..\ITBees.Translations\ITBees.Translations\ITBees.Translations.csproj" />-->
+<!--    <ProjectReference Include="..\..\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces.csproj" />-->
+<!--    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />-->
+<!--    <PackageReference Include="MailKit" Version="4.8.0" />-->
+<!--    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />-->
+<!--    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />-->
+<!--    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />-->
+<!--    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />-->
+<!--    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.10" />-->
+<!--    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.10" />-->
+<!--    <PackageReference Include="MimeKit" Version="4.8.0" />-->
+<!--    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />-->
+<!--  </ItemGroup>-->
 
 </Project>
