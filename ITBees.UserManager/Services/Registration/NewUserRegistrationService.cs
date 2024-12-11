@@ -217,7 +217,8 @@ namespace ITBees.UserManager.Services.Registration
                             .ToList();
                         if (usersInvitationsToCompaniesList.Any() == false)
                         {
-                            CreateNewUserInvitationDbRecord(companyGuid, alreadyRegisteredUser, currentUser);
+                            CreateNewUserInvitationDbRecord(companyGuid, alreadyRegisteredUser, currentUser,
+                                newUserRegistrationIm.UserRoleGuid);
                         }
 
                         emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(
@@ -249,7 +250,7 @@ namespace ITBees.UserManager.Services.Registration
                             SetupTime = DateTime.Now
                         });
                     emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    CreateNewUserInvitationDbRecord(companyGuid, user, currentUser);
+                    CreateNewUserInvitationDbRecord(companyGuid, user, currentUser, newUserRegistrationIm.UserRoleGuid);
                 }
 
                 UserAccount userSavedData = null;
@@ -314,14 +315,15 @@ namespace ITBees.UserManager.Services.Registration
         }
 
         private void CreateNewUserInvitationDbRecord(Guid? companyGuid, dynamic alreadyRegisteredUser,
-            CurrentUser currentUser)
+            CurrentUser currentUser, Guid? fasIdentityRoleGuid)
         {
             _usersInvitationsToCompaniesRwRepo.InsertData(new UsersInvitationsToCompanies()
             {
                 CompanyGuid = companyGuid.Value,
-                UserAccountGuid = Guid.Parse(alreadyRegisteredUser.Id),
+                UserAccountGuid = alreadyRegisteredUser.Id,
                 CreatedByGuid = currentUser.Guid,
                 CreatedDate = DateTime.Now,
+                IdentityRoleId = fasIdentityRoleGuid
             });
         }
 

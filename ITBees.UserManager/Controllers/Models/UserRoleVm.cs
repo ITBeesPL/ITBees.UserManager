@@ -1,4 +1,5 @@
 ﻿using System;
+using ITBees.Models.Users;
 using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Controllers.Models;
@@ -10,10 +11,10 @@ public class UserRoleVm
         
     }
 
-    public UserRoleVm(IdentityRole x)
+    public UserRoleVm(FasIdentityRole x)
     {
         RoleName = x.Name;
-        Guid = System.Guid.Parse(x.Id);
+        Guid = x.Id;
     }
 
     public Guid Guid { get; set; }
