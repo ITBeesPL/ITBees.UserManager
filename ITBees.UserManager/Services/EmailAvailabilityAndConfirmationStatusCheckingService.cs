@@ -1,20 +1,22 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
 using ITBees.Translations;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Services
 {
-    public class EmailAvailabilityAndConfirmationStatusCheckingService : IEmailAvailabilityAndConfirmationStatusCheckingService
+    public class EmailAvailabilityAndConfirmationStatusCheckingService<T> : IEmailAvailabilityAndConfirmationStatusCheckingService where T : IdentityUser<Guid>
     {
         private readonly IReadOnlyRepository<UserAccount> _userAccountRoRepository;
-        private readonly IUserManager _userManager;
+        private readonly IUserManager<T> _userManager;
 
         public EmailAvailabilityAndConfirmationStatusCheckingService(IReadOnlyRepository<UserAccount> userAccountRoRepository,
-            IUserManager userManager)
+            IUserManager<T> userManager)
         {
             _userAccountRoRepository = userAccountRoRepository;
             _userManager = userManager;

@@ -4,17 +4,18 @@ using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.Translations;
 using ITBees.UserManager.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Passwords
 {
-    public class ChangePasswordService : IChangePasswordService
+    public class ChangePasswordService<T> : IChangePasswordService where T : IdentityUser<Guid>
     {
         private readonly IAspCurrentUserService _aspCurrentUserService;
-        private readonly IUserManager _userManager;
+        private readonly IUserManager<T> _userManager;
         private readonly ILogger<IPasswordResettingService> _logger;
 
-        public ChangePasswordService(IAspCurrentUserService aspCurrentUserService, IUserManager userManager, ILogger<IPasswordResettingService> logger)
+        public ChangePasswordService(IAspCurrentUserService aspCurrentUserService, IUserManager<T> userManager, ILogger<IPasswordResettingService> logger)
         {
             _aspCurrentUserService = aspCurrentUserService;
             _userManager = userManager;

@@ -20,7 +20,7 @@ namespace ITBees.UserManager.Controllers
     [ApiController]
     [GenericRestControllerNameConvention]
     [Route("/AppleLogin")]
-    public class AppleLoginController<T> : RestfulControllerBase<AppleLoginController<T>> where T : IdentityUser, new()
+    public class AppleLoginController<T> : RestfulControllerBase<AppleLoginController<T>> where T : IdentityUser<Guid>, new()
     {
         private readonly IAppleLoginService<T> _appleLoginService;
         private readonly IPlatformSettingsService _platformSettingsService;

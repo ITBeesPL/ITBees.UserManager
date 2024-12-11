@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Interfaces
 {
-    public interface IUserManager
+    public interface IUserManager<T> where T : IdentityUser<Guid>
     {
         Task<IdentityResult> CreateAsync(object user, string password);
 
-        Task<IdentityUser> FindByEmailAsync(string email);
+        Task<T> FindByEmailAsync(string email);
 
         Task<bool> CheckPasswordAsync(object user, string password);
 
@@ -23,7 +23,7 @@ namespace ITBees.UserManager.Interfaces
 
         Task<IdentityResult> ResetPasswordAsync(object user, string token, string newPassword);
         Task<string> GeneratePasswordResetTokenAsync(object user);
-        Task<IdentityUser> FindByIdAsync(string userIDGuid);
+        Task<T> FindByIdAsync(string userIDGuid);
         Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass);
         /// <summary>
         /// Deletes user account in database

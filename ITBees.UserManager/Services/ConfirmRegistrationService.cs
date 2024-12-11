@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Services
 {
-    public class ConfirmRegistrationService<T> : IConfirmRegistrationService<T> where T : IdentityUser 
+    public class ConfirmRegistrationService<T> : IConfirmRegistrationService<T> where T : IdentityUser<Guid> 
     {
-        private readonly IUserManager _userManager;
+        private readonly IUserManager<T> _userManager;
         private readonly ILoginService<T> _loginService;
 
-        public ConfirmRegistrationService(IUserManager userManager, ILoginService<T> loginService)
+        public ConfirmRegistrationService(IUserManager<T> userManager, ILoginService<T> loginService)
         {
             _userManager = userManager;
             _loginService = loginService;

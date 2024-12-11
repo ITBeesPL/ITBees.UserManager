@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ITBees.FAS.ApiInterfaces.MyAccounts;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Interfaces
 {
-    public interface ILoginService<T> where T : IdentityUser
+    public interface ILoginService<T> where T : IdentityUser<Guid>
     {
         Task<TokenVm> Login(string email, string pass, string lang);
         Task<TokenVm> LoginAfterEmailConfirmation(string email, string lang);

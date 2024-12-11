@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
@@ -13,7 +14,7 @@ namespace ITBees.UserManager.Controllers
     [ApiController]
     [GenericRestControllerNameConvention]
     [Route("/Login")]
-    public class LoginController<T> : RestfulControllerBase<LoginController<T>> where T : IdentityUser
+    public class LoginController<T> : RestfulControllerBase<LoginController<T>> where T : IdentityUser<Guid>
     {
         private readonly ILoginService<T> _loginService;
 

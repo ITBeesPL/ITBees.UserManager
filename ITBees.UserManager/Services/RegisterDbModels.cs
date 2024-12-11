@@ -22,7 +22,7 @@ namespace ITBees.UserManager.Services
             modelBuilder.Entity<UsersInCompany>()
                 .HasOne(uic => uic.UserAccount)
                 .WithMany(ua => ua.UsersInCompanies)
-                .HasForeignKey(uic => uic.UserAccountGuid) // Używamy właściwości UserAccountGuid!
+                .HasForeignKey(uic => uic.UserAccountGuid)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<UsersInCompany>()

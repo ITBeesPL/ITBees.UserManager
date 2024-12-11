@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces.Models;
@@ -13,7 +14,7 @@ namespace ITBees.UserManager.Controllers
     [ApiController]
     [GenericRestControllerNameConvention]
     [Route("/FacebookLogin")]
-    public class FacebookLoginController<T> : RestfulControllerBase<FacebookLoginController<T>> where T : IdentityUser, new()
+    public class FacebookLoginController<T> : RestfulControllerBase<FacebookLoginController<T>> where T : IdentityUser<Guid>, new()
     {
         private readonly IFacebookLoginService<T> _facebookLoginService;
 

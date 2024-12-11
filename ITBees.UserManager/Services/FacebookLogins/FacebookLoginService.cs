@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace ITBees.UserManager.Services.FacebookLogins
 {
-    public class FacebookLoginService<T> : IFacebookLoginService<T> where T : IdentityUser
+    public class FacebookLoginService<T> : IFacebookLoginService<T> where T : IdentityUser<Guid>
     {
         private readonly ILogger<FacebookLoginService<T>> _logger;
         private readonly HttpClient _httpClient;

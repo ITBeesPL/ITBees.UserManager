@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Services.GoogleLogins
 {
-    public class NewUserRegistrationFromGoogle<T> : INewUserRegistrationFromGoogle where T : IdentityUser, new()
+    public class NewUserRegistrationFromGoogle<T> : INewUserRegistrationFromGoogle where T : IdentityUser<Guid>, new()
     {
         private readonly INewUserRegistrationService _newUserRegistrationService;
         private readonly ILoginService<T> _loginService;

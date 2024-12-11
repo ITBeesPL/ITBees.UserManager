@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Services.Registration
 {
-    public class NewUserRegistrationFromApple<T> : INewUserRegistrationFromApple where T : IdentityUser, new()
+    public class NewUserRegistrationFromApple<T> : INewUserRegistrationFromApple where T : IdentityUser<Guid>, new()
     {
         private readonly INewUserRegistrationService _newUserRegistrationService;
         private readonly ILoginService<T> _loginService;

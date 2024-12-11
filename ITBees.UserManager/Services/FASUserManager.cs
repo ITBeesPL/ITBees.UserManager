@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services
 {
-    public class FASUserManager<T> : IUserManager where T : IdentityUser
+    public class FASUserManager<T> : IUserManager<T> where T : IdentityUser<Guid>
     {
         private readonly UserManager<T> _userManager;
         private readonly ILogger<FASUserManager<T>> _logger;
@@ -28,7 +28,7 @@ namespace ITBees.UserManager.Services
             return await _userManager.CreateAsync((T)user, password);
         }
 
-        public async Task<IdentityUser> FindByEmailAsync(string email)
+        public async Task<T> FindByEmailAsync(string email)
         {
             return await _userManager.FindByEmailAsync(email);
         }
@@ -68,7 +68,7 @@ namespace ITBees.UserManager.Services
             return await _userManager.GeneratePasswordResetTokenAsync((T)user);
         }
 
-        public async Task<IdentityUser> FindByIdAsync(string userIDGuid)
+        public async Task<T> FindByIdAsync(string userIDGuid)
         {
             return await _userManager.FindByIdAsync(userIDGuid);
         }

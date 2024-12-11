@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using ITBees.BaseServices.Platforms.Interfaces;
 using ITBees.Interfaces.Repository;
@@ -9,10 +10,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace ITBees.UserManager.Services;
 
-public class PlatformDebugLoginService<T> : LoginService<T> where T : IdentityUser
+public class PlatformDebugLoginService<T> : LoginService<T> where T : IdentityUser<Guid>
 {
     public PlatformDebugLoginService(
-        IUserManager userManager,
+        IUserManager<T> userManager,
         IReadOnlyRepository<UserAccount> userReadOnlyRepository,
         IReadOnlyRepository<UsersInCompany> usersInCompanyReadOnlyRepository,
         IConfigurationRoot configurationRoot,

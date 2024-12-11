@@ -16,7 +16,7 @@ namespace ITBees.UserManager.Controllers
     [GenericRestControllerNameConvention]
     [Authorize]
     [Route("[controller]")]
-    public class MyAccountController<T> : RestfulControllerBase<MyAccountController<T>> where T : IdentityUser
+    public class MyAccountController<T> : RestfulControllerBase<MyAccountController<T>> where T : IdentityUser<Guid>
     {
         private readonly IMyAccountServie _myAccountServie;
         private readonly IMyAccountUpdateService _myAccountUpdateService;

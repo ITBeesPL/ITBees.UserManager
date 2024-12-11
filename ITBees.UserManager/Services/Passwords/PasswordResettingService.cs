@@ -6,18 +6,19 @@ using ITBees.Translations;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Passwords.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Passwords
 {
-    public class PasswordResettingService : IPasswordResettingService
+    public class PasswordResettingService<T> : IPasswordResettingService where T :  IdentityUser<Guid>
     {
-        private readonly IUserManager _userManager;
+        private readonly IUserManager<T> _userManager;
         private readonly ILogger<IPasswordResettingService> _logger;
         private readonly IResetPasswordEmailConstructorService _resetPasswordEmailConstructorService;
 
 
-        public PasswordResettingService(IUserManager userManager, ILogger<IPasswordResettingService> logger, IResetPasswordEmailConstructorService resetPasswordEmailConstructorService)
+        public PasswordResettingService(IUserManager<T> userManager, ILogger<IPasswordResettingService> logger, IResetPasswordEmailConstructorService resetPasswordEmailConstructorService)
         {
             _userManager = userManager;
             _logger = logger;

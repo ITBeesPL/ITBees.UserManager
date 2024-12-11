@@ -4,14 +4,15 @@ using ITBees.Models.Languages;
 using ITBees.Translations;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Translations;
+using Microsoft.AspNetCore.Identity;
 
 namespace ITBees.UserManager.Services.Acl
 {
-    public class RoleAddingService : IRoleAddingService
+    public class RoleAddingService<T> : IRoleAddingService where T : IdentityUser<Guid>
     {
-        private readonly IUserManager _userManager;
+        private readonly IUserManager<T> _userManager;
 
-        public RoleAddingService(IUserManager userManager)
+        public RoleAddingService(IUserManager<T> userManager)
         {
             _userManager = userManager;
         }

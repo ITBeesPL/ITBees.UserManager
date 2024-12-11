@@ -20,9 +20,10 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Registration
 {
-    public class NewUserRegistrationService<T, TCompany> : INewUserRegistrationService where T : IdentityUser, new() where TCompany : Company, new()
+    public class NewUserRegistrationService<T, TCompany> : INewUserRegistrationService
+        where T : IdentityUser<Guid>, new() where TCompany : Company, new()
     {
-        private readonly IUserManager _userManager;
+        private readonly IUserManager<T> _userManager;
         private readonly IWriteOnlyRepository<UserAccount> _userAccountWriteOnlyRepository;
         private readonly IWriteOnlyRepository<TCompany> _companyWoRepository;
         private readonly IReadOnlyRepository<TCompany> _companyRoRepository;
@@ -37,7 +38,7 @@ namespace ITBees.UserManager.Services.Registration
         private readonly IWriteOnlyRepository<UsersInvitationsToCompanies> _usersInvitationsToCompaniesRwRepo;
         private readonly IReadOnlyRepository<UserAccount> _userAccountRoRepo;
 
-        public NewUserRegistrationService(IUserManager userManager,
+        public NewUserRegistrationService(IUserManager<T> userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
             IWriteOnlyRepository<TCompany> companyWoRepository,
             IReadOnlyRepository<TCompany> companyRoRepository,
@@ -68,7 +69,8 @@ namespace ITBees.UserManager.Services.Registration
             _userAccountRoRepo = userAccountRoRepo;
         }
 
-        public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm, bool sendConfirmationEmail = true)
+        public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm,
+            bool sendConfirmationEmail = true)
         {
             var newUser = new T()
             {
@@ -82,14 +84,19 @@ namespace ITBees.UserManager.Services.Registration
             if (result.Succeeded == false)
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName"))
-                    throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered, userLanguage) + $" : {newUserRegistrationIm.Email}");
+                    throw new Exception(
+                        Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered,
+                            userLanguage) + $" : {newUserRegistrationIm.Email}");
                 StringBuilder translatedErrors = new StringBuilder();
                 foreach (var identityError in result.Errors)
                 {
-                    var code = Translate.Get(typeof(Translations.UserManager.NewUserRegistration.Errors), identityError.Code, userLanguage, true);
-                    var description = Translate.Get(typeof(Translations.UserManager.NewUserRegistration.Errors), identityError.Description, userLanguage, true);
+                    var code = Translate.Get(typeof(Translations.UserManager.NewUserRegistration.Errors),
+                        identityError.Code, userLanguage, true);
+                    var description = Translate.Get(typeof(Translations.UserManager.NewUserRegistration.Errors),
+                        identityError.Description, userLanguage, true);
                     translatedErrors.AppendLine($"{code} - {description}");
                 }
+
                 throw new ArgumentException(translatedErrors.ToString());
             }
 
@@ -108,7 +115,7 @@ namespace ITBees.UserManager.Services.Registration
                     new UserAccount()
                     {
                         Email = newUserRegistrationIm.Email,
-                        Guid = new Guid(newUser.Id),
+                        Guid = newUser.Id,
                         Phone = newUserRegistrationIm.Phone,
                         FirstName = newUserRegistrationIm.FirstName,
                         LastName = newUserRegistrationIm.LastName,
@@ -117,7 +124,7 @@ namespace ITBees.UserManager.Services.Registration
                     });
 
 
-                CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, new Guid(currentUserGuid.Id),
+                CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid.Id,
                     userSavedData, userLanguage);
 
                 if (sendConfirmationEmail)
@@ -136,7 +143,7 @@ namespace ITBees.UserManager.Services.Registration
                 var user = new UserAccount()
                 {
                     Email = newUserRegistrationIm.Email,
-                    Guid = new Guid(newUser.Id)
+                    Guid = newUser.Id
                 };
 
                 if (userSavedData == null)
@@ -168,7 +175,8 @@ namespace ITBees.UserManager.Services.Registration
                 if (currentUser == null)
                 {
                     throw new YouMustBeLoggedInToCreateNewUserInvitationException(Translate.Get(
-                        () => ITBees.UserManager.Translations.UserManager.NewUserRegistration.YouMustBeLoggedInToAddNewUser,
+                        () => ITBees.UserManager.Translations.UserManager.NewUserRegistration
+                            .YouMustBeLoggedInToAddNewUser,
                         newUserRegistrationIm.Language));
                 }
 
@@ -205,7 +213,7 @@ namespace ITBees.UserManager.Services.Registration
                         var alreadyRegisteredUser = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
 
                         var usersInvitationsToCompaniesList = _usersInvitationsToCompaniesRoRepo.GetData(x =>
-                                x.UserAccountGuid == Guid.Parse(alreadyRegisteredUser.Id) && x.CompanyGuid == companyGuid)
+                                x.UserAccountGuid == alreadyRegisteredUser.Id && x.CompanyGuid == companyGuid)
                             .ToList();
                         if (usersInvitationsToCompaniesList.Any() == false)
                         {
@@ -217,7 +225,7 @@ namespace ITBees.UserManager.Services.Registration
 
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
-                        return new NewUserRegistrationResult(new Guid(alreadyRegisteredUser.Id), string.Empty);
+                        return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty);
                     }
                     else
                     {
@@ -233,7 +241,7 @@ namespace ITBees.UserManager.Services.Registration
                         new UserAccount()
                         {
                             Email = newUserRegistrationIm.Email,
-                            Guid = new Guid(newUser.Id),
+                            Guid = newUser.Id,
                             Phone = newUserRegistrationIm.Phone,
                             FirstName = newUserRegistrationIm.FirstName,
                             LastName = newUserRegistrationIm.LastName,
@@ -252,7 +260,7 @@ namespace ITBees.UserManager.Services.Registration
                         new UserAccount()
                         {
                             Email = newUserRegistrationIm.Email,
-                            Guid = new Guid(newUser.Id),
+                            Guid = newUser.Id,
                             Phone = newUserRegistrationIm.Phone,
                             FirstName = newUserRegistrationIm.FirstName,
                             LastName = newUserRegistrationIm.LastName,
@@ -270,7 +278,7 @@ namespace ITBees.UserManager.Services.Registration
                     var user = new UserAccount()
                     {
                         Email = newUserRegistrationIm.Email,
-                        Guid = new Guid(newUser.Id)
+                        Guid = newUser.Id
                     };
 
                     if (userSavedData == null)
@@ -288,8 +296,6 @@ namespace ITBees.UserManager.Services.Registration
                 Console.WriteLine(e);
                 throw;
             }
-
-
         }
 
         public async Task ResendConfirmationEmail(string email)
@@ -299,7 +305,8 @@ namespace ITBees.UserManager.Services.Registration
 
             var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var emailMessage =
-                _registrationEmailComposer.ComposeEmailConfirmation(new NewUserRegistrationIm() { Email = email, Language = userLanguage.Language.Code },
+                _registrationEmailComposer.ComposeEmailConfirmation(
+                    new NewUserRegistrationIm() { Email = email, Language = userLanguage.Language.Code },
                     emailConfirmationToken);
             var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
 
@@ -321,13 +328,16 @@ namespace ITBees.UserManager.Services.Registration
         private Language GetUserLanguage(IVmWithLanguageDefined newUserRegistrationIm)
         {
             Language userLanguage = null;
-            userLanguage = newUserRegistrationIm.Language != null ? new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language) : new En();
+            userLanguage = newUserRegistrationIm.Language != null
+                ? new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language)
+                : new En();
 
             return userLanguage;
         }
 
         private void AddNewUserToCompany(
-            NewUserRegistrationWithInvitationIm newUserRegistrationIm, Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
+            NewUserRegistrationWithInvitationIm newUserRegistrationIm, Guid? currentUserGuid, UserAccount userSavedData,
+            Language userLanguage)
         {
             if (currentUserGuid.HasValue)
             {
@@ -358,7 +368,8 @@ namespace ITBees.UserManager.Services.Registration
             }
             else
             {
-                throw new Exception(Translate.Get(() => Translations.UserManager.NewUserRegistration.IfYouWantToAddNewUserToCompany, userLanguage));
+                throw new Exception(Translate.Get(
+                    () => Translations.UserManager.NewUserRegistration.IfYouWantToAddNewUserToCompany, userLanguage));
             }
         }
 
@@ -367,16 +378,17 @@ namespace ITBees.UserManager.Services.Registration
         {
             if (string.IsNullOrEmpty(newUserRegistrationIm.CompanyName))
             {
-                newUserRegistrationIm.CompanyName = Translate.Get(() => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
+                newUserRegistrationIm.CompanyName = Translate.Get(
+                    () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
             }
 
             var company = _companyWoRepository.InsertData(new TCompany()
             {
                 CompanyName = newUserRegistrationIm.CompanyName,
                 Created = DateTime.Now,
-                CreatedByGuid = new Guid(newUser.Id),
+                CreatedByGuid = newUser.Id,
                 IsActive = true,
-                OwnerGuid = new Guid(newUser.Id)
+                OwnerGuid = newUser.Id
             });
 
             _usersInCompanyWoRepo.InsertData(new UsersInCompany()
