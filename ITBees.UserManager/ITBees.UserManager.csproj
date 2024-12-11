@@ -33,8 +33,8 @@
     <PackageReference Include="ITBees.BaseServices" Version="8.0.61" />
     <PackageReference Include="ITBees.Models" Version="8.0.68" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.16" />
-    <PackageReference Include="ITBees.Mailing" Version="8.0.49" />
-    <PackageReference Include="ITBees.Translations" Version="8.0.96" />
+    <PackageReference Include="ITBees.Mailing" Version="8.0.50" />
+    <PackageReference Include="ITBees.Translations" Version="8.0.97" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.38" />
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
