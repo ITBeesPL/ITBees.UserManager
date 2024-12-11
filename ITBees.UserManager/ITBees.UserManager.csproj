@@ -27,6 +27,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.Interfaces" Version="8.0.46" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.21" />
     <PackageReference Include="ITBees.BaseServices" Version="8.0.58" />
@@ -47,6 +48,7 @@
   </ItemGroup>
   
 <!--  <ItemGroup>-->
+<!--    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />-->
 <!--    <ProjectReference Include="..\..\ITBees.Interfaces\ITBees.Interfaces\ITBees.Interfaces.csproj" />-->
 <!--    <ProjectReference Include="..\..\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers.csproj" />-->
 <!--    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />-->
