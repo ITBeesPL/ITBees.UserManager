@@ -112,7 +112,7 @@ namespace ITBees.UserManager.Services
             })
                 .AddEntityFrameworkStores<TContext>()
                 .AddDefaultTokenProviders()
-                .AddRoles<IdentityRole>();
+                .AddRoles<FasIdentityRole>();
 
             services.AddAuthentication(o =>
             {
