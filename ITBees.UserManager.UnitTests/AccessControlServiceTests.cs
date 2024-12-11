@@ -16,10 +16,10 @@ namespace ITBees.UserManager.UnitTests
         {
             var user = new CurrentUser() {Guid= Guid.NewGuid()};
             var accessControl = new AccessControlService();
-            accessControl.Setup(new List<Type>(){typeof(NewUserRegistrationService<IdentityUser,Company>)});
+            accessControl.Setup(new List<Type>(){typeof(NewUserRegistrationService<IdentityUser<Guid>,Company>)});
             Guid companyGuid = new Guid();
             
-            var accessControlResult = accessControl.CanDo(user, typeof(NewUserRegistrationService<IdentityUser, Company>), nameof(NewUserRegistrationService<IdentityUser, Company>.CreateAndInviteNewUserToCompany), companyGuid);
+            var accessControlResult = accessControl.CanDo(user, typeof(NewUserRegistrationService<IdentityUser<Guid>, Company>), nameof(NewUserRegistrationService<IdentityUser<Guid>, Company>.CreateAndInviteNewUserToCompany), companyGuid);
 
             Assert.That(accessControlResult.CanDoResult);
         }
