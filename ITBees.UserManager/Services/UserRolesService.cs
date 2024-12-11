@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ITBees.Interfaces.Repository;
+using ITBees.Models.Users;
 using ITBees.RestfulApiControllers.Exceptions;
 using ITBees.RestfulApiControllers.Models;
 using ITBees.UserManager.Controllers.Models;
@@ -13,13 +14,13 @@ namespace ITBees.UserManager.Services;
 
 public class UserRolesService : IUserRolesService
 {
-    private readonly IReadOnlyRepository<IdentityRole> _identityRoleRoRepo;
-    private readonly IWriteOnlyRepository<IdentityRole> _identityRoleRwRepo;
+    private readonly IReadOnlyRepository<FasIdentityRole> _identityRoleRoRepo;
+    private readonly IWriteOnlyRepository<FasIdentityRole> _identityRoleRwRepo;
     private readonly IAspCurrentUserService _aspCurrentUserService;
     private readonly ILogger<UserRolesService> _logger;
 
-    public UserRolesService(IReadOnlyRepository<IdentityRole> identityRoleRoRepo,
-        IWriteOnlyRepository<IdentityRole> identityRoleRwRepo,
+    public UserRolesService(IReadOnlyRepository<FasIdentityRole> identityRoleRoRepo,
+        IWriteOnlyRepository<FasIdentityRole> identityRoleRwRepo,
         IAspCurrentUserService aspCurrentUserService,
         ILogger<UserRolesService> logger)
     {
@@ -53,7 +54,7 @@ public class UserRolesService : IUserRolesService
             if (_identityRoleRoRepo.HasData(x => x.Name == roleName))
                 throw new FasApiErrorException(new FasApiErrorVm("Role already exists", 400, ""));
 
-            var result = _identityRoleRwRepo.InsertData(new IdentityRole(roleName));
+            var result = _identityRoleRwRepo.InsertData(new FasIdentityRole(roleName));
             return new UserRoleVm(result);
         }
         _logger.LogCritical($"User role : {roleName} was created by {_aspCurrentUserService.GetCurrentUser().DisplayName}");
@@ -63,14 +64,14 @@ public class UserRolesService : IUserRolesService
 
     public UserRoleVm GetRole(Guid roleGuid)
     {
-        return _identityRoleRoRepo.GetData(x => x.Id == roleGuid.ToString()).Select(x => new UserRoleVm(x)).FirstOrDefault();
+        return _identityRoleRoRepo.GetData(x => x.Id == roleGuid).Select(x => new UserRoleVm(x)).FirstOrDefault();
     }
 
     public void Delete(Guid roleGuid)
     {
         var allRoles = _identityRoleRoRepo.GetData(x => true).ToList();
 
-        var roleToDelete = allRoles.FirstOrDefault(x => x.Id == roleGuid.ToString());
+        var roleToDelete = allRoles.FirstOrDefault(x => x.Id == roleGuid);
         if (roleToDelete == null)
             throw new FasApiErrorException(new FasApiErrorVm("Role not exists", 400, ""));
         if (roleToDelete.Name == "PlatformOperator")
