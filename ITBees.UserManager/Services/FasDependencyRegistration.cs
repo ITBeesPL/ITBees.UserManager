@@ -18,6 +18,7 @@ using ITBees.Interfaces.Platforms;
 using ITBees.Mailing;
 using ITBees.Mailing.Interfaces;
 using ITBees.Models.Companies;
+using ITBees.Models.Users;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
@@ -35,7 +36,7 @@ namespace ITBees.UserManager.Services
         public static void Register<TContext, TIdentityUser, TCompany>(
             IServiceCollection services, 
             IConfigurationRoot configurationRoot, 
-            bool enableLoginWithoutPasswordChecking = false) where TContext : DbContext where TIdentityUser : IdentityUser, new() where TCompany : Company, new()
+            bool enableLoginWithoutPasswordChecking = false) where TContext : DbContext where TIdentityUser : IdentityUser<Guid>, new() where TCompany : Company, new()
         {
             TinyMapperSetup.ConfigureMappings();
             services
@@ -61,14 +62,14 @@ namespace ITBees.UserManager.Services
             
             services.AddScoped(typeof(IGoogleLoginService<>), typeof(GoogleLoginService<>));
             services.AddScoped(typeof(IConfirmRegistrationService<>), typeof(ConfirmRegistrationService<>));
-            services.AddScoped(typeof(IUserManager), typeof(FASUserManager<TIdentityUser>));
-            services.AddScoped<IEmailAvailabilityAndConfirmationStatusCheckingService, EmailAvailabilityAndConfirmationStatusCheckingService>();
+            services.AddScoped(typeof(IUserManager<TIdentityUser>), typeof(FASUserManager<TIdentityUser>));
+            services.AddScoped<IEmailAvailabilityAndConfirmationStatusCheckingService, EmailAvailabilityAndConfirmationStatusCheckingService<TIdentityUser>>();
             services.AddScoped<IRegistrationEmailComposer, RegistrationEmailComposer>();
             services.AddScoped<IAccessControlService, AccessControlService>();
-            services.AddScoped<IRoleAddingService, RoleAddingService>();
-            services.AddScoped<IPasswordResettingService, PasswordResettingService>();
+            services.AddScoped<IRoleAddingService, RoleAddingService<TIdentityUser>>();
+            services.AddScoped<IPasswordResettingService, PasswordResettingService<TIdentityUser>>();
             services.AddScoped<IResetPasswordEmailConstructorService, ResetPasswordEmailConstructorService>();
-            services.AddScoped<IChangePasswordService, ChangePasswordService>();
+            services.AddScoped<IChangePasswordService, ChangePasswordService<TIdentityUser>>();
             services.AddScoped<IAcceptInvitationService, AcceptInvitationService>();
             services.AddScoped<IAwaitingInvitationsService, AwaitingInvitationsService>();
             services.AddScoped<IMyCompaniesService, MyCompaniesService>();
@@ -100,7 +101,7 @@ namespace ITBees.UserManager.Services
                 throw new Exception(message);
             };
 
-            services.AddIdentity<TIdentityUser, IdentityRole>(options =>
+            services.AddIdentity<TIdentityUser, FasIdentityRole>(options =>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireNonAlphanumeric = false;
@@ -161,7 +162,7 @@ namespace ITBees.UserManager.Services
         }
     }
 
-    public class GenericRestControllerFeatureProvider<T> : IApplicationFeatureProvider<ControllerFeature> where T : IdentityUser
+    public class GenericRestControllerFeatureProvider<T> : IApplicationFeatureProvider<ControllerFeature> where T : IdentityUser<Guid>
     {
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
         {

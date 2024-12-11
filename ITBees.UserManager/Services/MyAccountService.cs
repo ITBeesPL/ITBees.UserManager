@@ -46,14 +46,14 @@ namespace ITBees.UserManager.Services
                 Phone = usersInCompany.First().UserAccount.Phone,
                 FirstName = usersInCompany.First().UserAccount.FirstName,
                 LastName = usersInCompany.First().UserAccount.LastName,
-                Companies = usersInCompany.Select(x => new CompanyWithUserRole(x.Company, x.IdentityRole.Name, Guid.Parse((ReadOnlySpan<char>)x.IdentityRole.Id))).ToList(),
+                Companies = usersInCompany.Select(x => new CompanyWithUserRole(x.Company, x.IdentityRole?.Name, x.IdentityRole?.Id)).ToList(),
                 LastUsedCompanyGuid = currentUserGuid.LastUsedCompanyGuid,
-                LastUsedCompany = new CompanyWithUserRole(lastUsedCompany.Company, lastUsedCompany.IdentityRole.Name, Guid.Parse(lastUsedCompany.IdentityRole.Id)),
+                LastUsedCompany = new CompanyWithUserRole(lastUsedCompany.Company, lastUsedCompany.IdentityRole?.Name, lastUsedCompany.IdentityRole?.Id),
                 Language = usersInCompany.First().UserAccount.Language,
                 DisplayName = displayName
             };
 
-            return TinyMapper.Map<MyAccountVm>(myAccount);
+            return new MyAccountVm(myAccount);
         }
     }
 }

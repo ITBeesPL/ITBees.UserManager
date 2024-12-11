@@ -21,7 +21,7 @@ using Newtonsoft.Json;
 
 namespace ITBees.UserManager.Services.AppleLogins
 {
-    public class AppleLoginService<T> : IAppleLoginService<T> where T : IdentityUser
+    public class AppleLoginService<T> : IAppleLoginService<T> where T : IdentityUser<Guid>
     {
         private readonly IPlatformSettingsService _platformSettingsService;
         private readonly HttpClient _httpClient;

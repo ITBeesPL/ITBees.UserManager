@@ -13,17 +13,7 @@ public class MyAccountWithTokenVm : MyAccountVm
         this.TokenVm = newToken;
         this.Language = myAccount.Language;
         this.Guid = myAccount.Guid;
-        this.Companies = myAccount.Companies.Select(x => new CompanyWithUserRoleVm()
-        {
-            CompanyName = x.CompanyName,
-            Created = x.Created,
-            CreatedBy = x.CreatedBy,
-            Guid = x.Guid,
-            IsActive = x.IsActive,
-            CreatedByGuid = x.CreatedByGuid.Value,
-            Owner = x.Owner,
-            OwnerGuid = x.OwnerGuid.Value
-        }).ToList();
+        this.Companies = myAccount.Companies.Select(x => new CompanyWithUserRoleVm(x)).ToList();
     }
 
     public TokenVm TokenVm { get; set; }

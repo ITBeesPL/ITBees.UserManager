@@ -19,9 +19,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace ITBees.UserManager.Services
 {
-    public class LoginService<T> : ILoginService<T> where T : IdentityUser
+    public class LoginService<T> : ILoginService<T> where T : IdentityUser<Guid>
     {
-        private readonly IUserManager _userManager;
+        private readonly IUserManager<T> _userManager;
         private readonly IReadOnlyRepository<UserAccount> _userReadOnlyRepository;
         private readonly IReadOnlyRepository<UsersInCompany> _usersInCompanyReadOnlyRepository;
         private readonly IWriteOnlyRepository<UserAccount> _userWriteOnlyRepository;
@@ -29,7 +29,7 @@ namespace ITBees.UserManager.Services
         private readonly ICurrentDateTimeService _currentDateTimeService;
 
         public LoginService(
-            IUserManager userManager,
+            IUserManager<T> userManager,
             IReadOnlyRepository<UserAccount> userReadOnlyRepository,
             IReadOnlyRepository<UsersInCompany> usersInCompanyReadOnlyRepository,
             IConfigurationRoot configurationRoot,
@@ -153,15 +153,15 @@ namespace ITBees.UserManager.Services
 
             var identityUser = await _userManager.FindByEmailAsync(email);
 
-            if (!await _userManager.CheckPasswordAsync((T)identityUser, pass)) throw new UnauthorizedAccessException(Translate.Get(() => Translations.UserManager.UserLogin.IncorrectEmailOrPassword, userAccount.Language));
+            if (!await _userManager.CheckPasswordAsync(identityUser, pass)) throw new UnauthorizedAccessException(Translate.Get(() => Translations.UserManager.UserLogin.IncorrectEmailOrPassword, userAccount.Language));
             if (identityUser.EmailConfirmed) return userAccount;
             if (identityUser.EmailConfirmed == false)
                 throw new Authorization403ForbiddenException
                     (Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, userAccount.Language));
 
-            var tmpToken = await _userManager.GenerateEmailConfirmationTokenAsync((T)identityUser);
+            var tmpToken = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
 
-            await _userManager.ConfirmEmailAsync((T)identityUser, tmpToken);
+            await _userManager.ConfirmEmailAsync(identityUser, tmpToken);
 
             return userAccount;
         }
@@ -169,7 +169,18 @@ namespace ITBees.UserManager.Services
         private UserAccount GetUserAccount(string email, string lang)
         {
             UserAccount userAccount;
-
+            try
+            {
+                userAccount = _userReadOnlyRepository.GetDataQueryable(x => x.Email == email)
+                    .Include(x => x.UsersInCompanies)
+                    .Include(x => x.UserAccountModules)
+                    .Include(x => x.Language).Include(x => x.UsersInCompanies)
+                    .ThenInclude(x => x.IdentityRole).FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             userAccount = _userReadOnlyRepository.GetDataQueryable(x => x.Email == email)
                 .Include(x => x.UsersInCompanies)
                 .Include(x => x.UserAccountModules)

@@ -17,7 +17,7 @@ namespace ITBees.UserManager.Controllers
     [ApiController]
     [GenericRestControllerNameConvention]
     [Route("/GoogleLogin")]
-    public class GoogleLoginController<T> : RestfulControllerBase<GoogleLoginController<T>> where T : IdentityUser, new()
+    public class GoogleLoginController<T> : RestfulControllerBase<GoogleLoginController<T>> where T : IdentityUser<Guid>, new()
     {
         private readonly IGoogleLoginService<T> _googleLoginService;
 

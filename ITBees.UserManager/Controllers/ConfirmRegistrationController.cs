@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Interfaces;
@@ -12,7 +13,7 @@ namespace ITBees.UserManager.Controllers
     [CustomControllerName("ConfirmRegistration")]
     [GenericRestControllerNameConvention]
     [Route("/ConfirmRegistration")]
-    public class ConfirmRegistrationController<T> : RestfulControllerBase<ConfirmRegistrationController<T>> where T : IdentityUser
+    public class ConfirmRegistrationController<T> : RestfulControllerBase<ConfirmRegistrationController<T>> where T : IdentityUser<Guid>
     {
         private readonly IConfirmRegistrationService<T> _confirmRegistrationService;
 
