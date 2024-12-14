@@ -33,7 +33,7 @@
     <PackageReference Include="ITBees.BaseServices" Version="8.0.62" />
     <PackageReference Include="ITBees.Models" Version="8.0.70" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.16" />
-    <PackageReference Include="ITBees.Mailing" Version="8.0.53" />
+    <PackageReference Include="ITBees.Mailing" Version="8.0.54" />
     <PackageReference Include="ITBees.Translations" Version="8.0.101" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.40" />
     <PackageReference Include="MailKit" Version="4.8.0" />
