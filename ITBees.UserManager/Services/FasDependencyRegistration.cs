@@ -153,7 +153,7 @@ namespace ITBees.UserManager.Services
         private static void CheckForUsereDeleteAccountServiceImplementation(IServiceCollection services)
         {
             if (services.Any(descriptor =>
-                    descriptor.ServiceType == typeof(IAccountDeleteService)) == false)
+                    descriptor.ServiceType == typeof(IAccountDeleteService<>)) == false)
             {
                 var message = $"You have to provide Your own implementation for IAccountDeleteService service to user FasManager";
                 Console.WriteLine(message);
