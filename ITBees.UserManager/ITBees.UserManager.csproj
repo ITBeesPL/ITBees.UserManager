@@ -51,13 +51,10 @@
 <!--    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />-->
 <!--    <ProjectReference Include="..\..\ITBees.Interfaces\ITBees.Interfaces\ITBees.Interfaces.csproj" />-->
 <!--    <ProjectReference Include="..\..\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers\ITBees.RestfulApiControllers.csproj" />-->
-<!--    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />-->
-<!--    <ProjectReference Include="..\..\ITBees.Models\ITBees.Models\ITBees.Models.csproj" />-->
 <!--    <ProjectReference Include="..\..\ITBees.RestClient\ITBees.RestClient\ITBees.RestClient.csproj" />-->
 <!--    <ProjectReference Include="..\..\ITBees.Mailing\ITBees.Mailing\ITBees.Mailing.csproj" />-->
 <!--    <ProjectReference Include="..\..\ITBees.Translations\ITBees.Translations\ITBees.Translations.csproj" />-->
 <!--    <ProjectReference Include="..\..\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces\ITBees.FAS.ApiInterfaces.csproj" />-->
-<!--    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />-->
 <!--    <PackageReference Include="MailKit" Version="4.8.0" />-->
 <!--    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />-->
 <!--    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />-->
