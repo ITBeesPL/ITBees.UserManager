@@ -25,6 +25,7 @@ using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.AppleLogins;
 using ITBees.UserManager.Services.FacebookLogins;
 using ITBees.UserManager.Services.GoogleLogins;
+using ITBees.UserManager.Services.Invitations;
 using ITBees.UserManager.Services.Mailing;
 using ITBees.UserManager.Services.Passwords;
 using ITBees.UserManager.Services.Registration;
@@ -50,6 +51,8 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(IUserRolesService), typeof(UserRolesService));
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser, TCompany>));
             services.AddScoped(typeof(INewUserRegistrationFromGoogle), typeof(NewUserRegistrationFromGoogle<TIdentityUser>));
+            services.AddScoped(typeof(InvitationResendService), typeof(IInvitationResendService));
+            services.AddScoped(typeof(UserInvitationService), typeof(IUserInvitationService));
 
             if (enableLoginWithoutPasswordChecking)
             {

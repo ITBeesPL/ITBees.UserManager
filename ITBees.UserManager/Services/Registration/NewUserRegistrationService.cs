@@ -10,7 +10,10 @@ using ITBees.Models.Companies;
 using ITBees.Models.EmailMessages;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
+using ITBees.RestfulApiControllers.Exceptions;
+using ITBees.RestfulApiControllers.Models;
 using ITBees.Translations;
+using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Services.Acl;
@@ -319,6 +322,40 @@ namespace ITBees.UserManager.Services.Registration
             var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
 
             _emailSendingService.SendEmail(platformEmailAccount, emailMessage);
+        }
+
+        public async Task ResendInvitationToCompany(InvitationResendIm invitationIm)
+        {
+            var user = await _userManager.FindByEmailAsync(invitationIm.UserEmail);
+            if (user == null)
+            {
+                throw new FasApiErrorException(new FasApiErrorVm(
+                    Translate.Get(() => Translations.UserInvitation.UserForSpecifiedEmailNotFound,
+                        _aspCurrentUserService.GetCurrentUser().Language), 400, ""));
+            }
+            var usersInvitationToCompany = _usersInvitationsToCompaniesRoRepo
+                .GetData(x => x.CompanyGuid == invitationIm.CompanyGuid && x.UserAccountGuid == user.Id)
+                .FirstOrDefault();
+            if (user.EmailConfirmed)
+            {
+                if (usersInvitationToCompany == null)
+                {
+                    throw new FasApiErrorException(new FasApiErrorVm(
+                        Translate.Get(() => Translations.UserInvitation.InvitationNotExists,
+                            _aspCurrentUserService.GetCurrentUser().Language), 400, ""));
+                }
+
+                if (usersInvitationToCompany.Applied)
+                {
+                    throw new FasApiErrorException(new FasApiErrorVm(
+                        Translate.Get(() => Translations.UserInvitation.InvitationAlreadyAccepted,
+                            _aspCurrentUserService.GetCurrentUser().Language), 400, ""));
+                }
+            }
+            else
+            {
+                
+            }
         }
 
         private void CreateNewUserInvitationDbRecord(Guid? companyGuid, dynamic alreadyRegisteredUser,
