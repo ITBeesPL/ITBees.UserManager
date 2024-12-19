@@ -16,8 +16,10 @@ public class InvitationNewUserController : RestfulControllerBase<InvitationNewUs
         _iUserInvitationService = iUserInvitationService;
     }
 
+    [HttpPost]
+    [Produces<ApplyInvitationResultForNewUserVm>]
     public IActionResult Post([FromBody] InvitationNewUserIm invitationNewUserIm)
     {
-        return ReturnOkResult(() => { _iUserInvitationService.ApplyNewUser(invitationNewUserIm);});
+        return ReturnOkResult(() => { _iUserInvitationService.ApplyNewUser(invitationNewUserIm); });
     }
 }

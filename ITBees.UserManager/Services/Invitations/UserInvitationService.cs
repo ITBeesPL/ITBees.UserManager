@@ -14,24 +14,30 @@ public class UserInvitationService : IUserInvitationService
         IReadOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRoRepo,
         IWriteOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRwRepo,
         IWriteOnlyRepository<UsersInCompany> usersInvitationsToCompanyRwRepo
-        )
+    )
     {
         _usersInvitationsToCompaniesRoRepo = usersInvitationsToCompaniesRoRepo;
         _usersInvitationsToCompaniesRwRepo = usersInvitationsToCompaniesRwRepo;
         _usersInvitationsToCompanyRwRepo = usersInvitationsToCompanyRwRepo;
     }
+
     public void ApplyNewUser(InvitationExistingUserIm invitationExistingUserIm)
     {
-        
     }
 
-    public void ApplyNewUser(InvitationNewUserIm invitationNewUserIm)
+    public ApplyInvitationResultForNewUserVm ApplyNewUser(InvitationNewUserIm invitationNewUserIm)
     {
-        
+        return new ApplyInvitationResultForNewUserVm()
+        {
+            Success = false, Message = "not implemented yet"
+        };
     }
 
-    public void ApplyExistingUser(InvitationExistingUserIm invitationExistingUserIm)
+    public ApplyInvitationResultForExistingUserVm ApplyExistingUser(InvitationExistingUserIm invitationExistingUserIm)
     {
-        
+        return new ApplyInvitationResultForExistingUserVm()
+        {
+            Success = false, Message = "not implemented yet"
+        };
     }
 }

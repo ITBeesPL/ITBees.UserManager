@@ -17,8 +17,10 @@ public class InvitationExistingUserController : RestfulControllerBase<Invitation
         _iUserInvitationService = iUserInvitationService;
     }
 
+    [HttpPost]
+    [Produces<ApplyInvitationResultForExistingUserVm>]
     public IActionResult Post([FromBody] InvitationExistingUserIm invitationExistingUserIm)
     {
-        return ReturnOkResult(() => { _iUserInvitationService.ApplyExistingUser(invitationExistingUserIm);});
+        return ReturnOkResult(() => { _iUserInvitationService.ApplyExistingUser(invitationExistingUserIm); });
     }
 }

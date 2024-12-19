@@ -4,6 +4,6 @@ namespace ITBees.UserManager.Services.Invitations;
 
 public interface IUserInvitationService
 {
-    void ApplyNewUser(InvitationNewUserIm invitationNewUserIm);
-    void ApplyExistingUser(InvitationExistingUserIm invitationExistingUserIm);
+    ApplyInvitationResultForNewUserVm ApplyNewUser(InvitationNewUserIm invitationNewUserIm);
+    ApplyInvitationResultForExistingUserVm ApplyExistingUser(InvitationExistingUserIm invitationExistingUserIm);
 }
