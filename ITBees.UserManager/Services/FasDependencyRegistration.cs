@@ -51,8 +51,8 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(IUserRolesService), typeof(UserRolesService));
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser, TCompany>));
             services.AddScoped(typeof(INewUserRegistrationFromGoogle), typeof(NewUserRegistrationFromGoogle<TIdentityUser>));
-            services.AddScoped(typeof(InvitationResendService), typeof(IInvitationResendService));
-            services.AddScoped(typeof(UserInvitationService), typeof(IUserInvitationService));
+            services.AddScoped(typeof(IInvitationResendService), typeof(InvitationResendService));
+            services.AddScoped(typeof(IUserInvitationService), typeof(UserInvitationService));
 
             if (enableLoginWithoutPasswordChecking)
             {
