@@ -1,4 +1,5 @@
 ﻿using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Controllers.Invitations.Models;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -17,7 +18,8 @@ public class InvitationResendController : RestfulControllerBase<InvitationResend
     {
         _invitationResendService = invitationResendService;
     }
-
+[HttpPost]
+[Produces<InvtiationResendResultVm>]
     public IActionResult Post([FromBody] InvitationResendIm invitationResendIm)
     {
         return ReturnOkResult(() => { _invitationResendService.Resend(invitationResendIm);});

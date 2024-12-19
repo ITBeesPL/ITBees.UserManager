@@ -1,9 +1,11 @@
 ﻿using ITBees.UserManager.Controllers;
+using ITBees.UserManager.Controllers.Invitations.Models;
 using ITBees.UserManager.Controllers.Models;
+using ITBees.UserManager.Services.Invitations;
 
 namespace ITBees.UserManager.Interfaces;
 
 public interface IInvitationResendService
 {
-    void Resend(InvitationResendIm invitationResendIm);
+    InvtiationResendResultVm Resend(InvitationResendIm invitationResendIm);
 }

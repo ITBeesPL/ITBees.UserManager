@@ -1,5 +1,7 @@
-﻿using ITBees.Interfaces.Repository;
+﻿using System;
+using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
+using ITBees.UserManager.Controllers.Invitations.Models;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 
@@ -19,9 +21,17 @@ public class InvitationResendService : IInvitationResendService
         _usersInvitationsToCompaniesRoRepo = usersInvitationsToCompaniesRoRepo;
         _newUserRegistrationService = newUserRegistrationService;
     }
-    public void Resend(InvitationResendIm invitationIm)
+    public InvtiationResendResultVm Resend(InvitationResendIm invitationIm)
     {
-        _aspCurrentUserService.TryCanIDoForCompany(TypeOfOperation.Rw, invitationIm.CompanyGuid);
-        _newUserRegistrationService.ResendInvitationToCompany(invitationIm);
+        try
+        {
+            _aspCurrentUserService.TryCanIDoForCompany(TypeOfOperation.Rw, invitationIm.CompanyGuid);
+            _newUserRegistrationService.ResendInvitationToCompany(invitationIm);
+            return new InvtiationResendResultVm() { Success = true };
+        }
+        catch (Exception e)
+        {
+            return new InvtiationResendResultVm() { Success = false , Message = $"Failed to resend invitation {e.Message}"};
+        }
     }
 }
