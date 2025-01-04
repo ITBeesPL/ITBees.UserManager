@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Controllers;
 
+[CustomControllerName("AccountDelete")]
+[GenericRestControllerNameConvention]
+[Route("/AccountDelete")]
 public class AccountDeleteController<T> : RestfulControllerBase<AccountDeleteController<T>> where T : IdentityUser<Guid> 
 {
     private readonly IAccountDeleteService<T> _accountDeleteService;
