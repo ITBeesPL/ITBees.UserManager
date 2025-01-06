@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\GenericControllersAttributes\" />
-    <Folder Include="Controllers\PlatformOperator\" />
     <Folder Include="Interfaces\Models\" />
     <Folder Include="DbModels\" />
     <Folder Include="Services\AppleLogins\" />
@@ -23,7 +22,6 @@
     <Folder Include="Services\GoogleLogins\" />
     <Folder Include="Services\Mailing\" />
     <Folder Include="Services\Passwords\Models\" />
-    <Folder Include="Services\PlatformOperator\" />
   </ItemGroup>
   
   <ItemGroup>
