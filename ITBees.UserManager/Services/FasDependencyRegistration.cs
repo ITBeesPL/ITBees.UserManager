@@ -28,6 +28,7 @@ using ITBees.UserManager.Services.GoogleLogins;
 using ITBees.UserManager.Services.Invitations;
 using ITBees.UserManager.Services.Mailing;
 using ITBees.UserManager.Services.Passwords;
+using ITBees.UserManager.Services.PlatformOperator;
 using ITBees.UserManager.Services.Registration;
 
 namespace ITBees.UserManager.Services
@@ -63,6 +64,7 @@ namespace ITBees.UserManager.Services
                 services.AddScoped(typeof(ILoginService<>), typeof(LoginService<>));
             }
             
+            services.AddScoped(typeof(IPlatformUsersService), typeof(PlatformUsersService));
             services.AddScoped(typeof(IGoogleLoginService<>), typeof(GoogleLoginService<>));
             services.AddScoped(typeof(IConfirmRegistrationService<>), typeof(ConfirmRegistrationService<>));
             services.AddScoped(typeof(IUserManager<TIdentityUser>), typeof(FASUserManager<TIdentityUser>));
