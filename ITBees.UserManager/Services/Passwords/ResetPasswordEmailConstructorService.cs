@@ -58,7 +58,7 @@ namespace ITBees.UserManager.Services.Passwords
         private EmailMessage GetResetPasswordMessage(string email, string token, Language userLanguage)
         {
             var emailBody = Translate.Get(() => Translations.UserManager.ResetPassword.DefaultEmailBodyForPasswordResetStarted, userLanguage);
-            var resetUrl = $"{_userManagerSettings.APPLICATION_SITE_URL}password/reset?email={HttpUtility.UrlEncode(email)}&token={HttpUtility.UrlEncode(token)}";
+            var resetUrl = $"{_userManagerSettings.APPLICATION_SITE_URL}auth/reset?email={HttpUtility.UrlEncode(email)}&token={HttpUtility.UrlEncode(token)}";
             emailBody = emailBody.Replace("[[resetUrl]]", resetUrl).Replace("[[site.Url]]", _userManagerSettings.SITE_URL);
             return new EmailMessage()
             {
