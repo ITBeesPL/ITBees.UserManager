@@ -17,10 +17,10 @@ public class PlatformUserAccountVm
         City = x.Company.City;
         PostCode = x.Company.PostCode;
         Phone = x.UserAccount.Phone;
-        LastLoginDate = x.UserAccount.LastLoginDateTime.Value;
+        LastLoginDate = x.UserAccount.LastLoginDateTime;
         // Country = x.Company.Country
-        SubscriptionPlan = x.Company.CompanyPlatformSubscription.SubscriptionPlanName;
-        SubscriptionPlanActiveTo = x.Company.CompanyPlatformSubscription.SubscriptionActiveTo;
+        SubscriptionPlan = x.Company.CompanyPlatformSubscription?.SubscriptionPlanName;
+        SubscriptionPlanActiveTo = x.Company.CompanyPlatformSubscription?.SubscriptionActiveTo;
         LoginCount = x.UserAccount.LoginsCount;
     }
 
