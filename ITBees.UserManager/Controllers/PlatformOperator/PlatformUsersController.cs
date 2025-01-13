@@ -19,6 +19,7 @@ public class PlatformUsersController : RestfulControllerBase<PlatformUsersContro
     }
 
     [HttpGet]
+    [Produces<PaginatedResult<PlatformUserAccountVm>>]
     public IActionResult Get(string? search, int? page, int? pageSize, string? sortColumn, SortOrder? sortOrder)
     {
         return ReturnOkResult(()=>_platformUsersService.GetUsers(search, page, pageSize, sortColumn, sortOrder));
