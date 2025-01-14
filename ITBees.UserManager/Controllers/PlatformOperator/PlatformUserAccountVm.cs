@@ -8,6 +8,7 @@ public class PlatformUserAccountVm
     public PlatformUserAccountVm(UsersInCompany x)
     {
         Guid = x.UserAccountGuid;
+        DisplayName = x.UserAccount.DisplayName;
         FirstName = x.UserAccount.FirstName;
         LastName = x.UserAccount.LastName;
         Email = x.UserAccount.Email;
@@ -22,7 +23,15 @@ public class PlatformUserAccountVm
         SubscriptionPlan = x.Company.CompanyPlatformSubscription?.SubscriptionPlanName;
         SubscriptionPlanActiveTo = x.Company.CompanyPlatformSubscription?.SubscriptionActiveTo;
         LoginCount = x.UserAccount.LoginsCount;
+        CompanyRole = x.IdentityRole?.Name;
+        CompanyRoleGuid = x.IdentityRoleId;
     }
+
+    public Guid? CompanyRoleGuid { get; set; }
+
+    public string CompanyRole { get; set; }
+
+    public string DisplayName { get; set; }
 
     public int LoginCount { get; set; }
 

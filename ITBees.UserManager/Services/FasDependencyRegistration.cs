@@ -20,6 +20,7 @@ using ITBees.Mailing.Interfaces;
 using ITBees.Models.Companies;
 using ITBees.Models.Users;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
+using ITBees.UserManager.Controllers.PlatformOperator;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.AppleLogins;
@@ -54,6 +55,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(INewUserRegistrationFromGoogle), typeof(NewUserRegistrationFromGoogle<TIdentityUser>));
             services.AddScoped(typeof(IInvitationResendService), typeof(InvitationResendService));
             services.AddScoped(typeof(IUserInvitationService), typeof(UserInvitationService));
+            services.AddScoped(typeof(ITokenAsService<>), typeof(TokenAsService<>));
 
             if (enableLoginWithoutPasswordChecking)
             {
@@ -180,7 +182,7 @@ namespace ITBees.UserManager.Services
             feature.Controllers.Add(typeof(FacebookLoginController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(MyAccountController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(AccountDeleteController<>).MakeGenericType(typeof(T)).GetTypeInfo());
-            return;
+            feature.Controllers.Add(typeof(TokenAsController<>).MakeGenericType(typeof(T)).GetTypeInfo());
         }
     }
 }

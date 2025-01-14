@@ -29,7 +29,8 @@ public class PlatformUsersService : IPlatformUsersService
         {
             return _usersInCompanyRoRepo
                 .GetDataPaginated(x => true, new SortOptions(page, pageSize, sortColumn, sortOrder),
-                    x => x.UserAccount, x=>x.Company, x=>x.Company.CompanyPlatformSubscription).MapTo(x => new PlatformUserAccountVm(x));
+                    x => x.UserAccount, x => x.Company, x => x.Company.CompanyPlatformSubscription)
+                .MapTo(x => new PlatformUserAccountVm(x));
         }
         else
         {
@@ -40,7 +41,8 @@ public class PlatformUsersService : IPlatformUsersService
                                        x.UserAccount.Email.ToLower().Contains(search) ||
                                        x.UserAccount.Phone.ToLower().Contains(search)
                     , new SortOptions(page, pageSize, sortColumn, sortOrder),
-                    x => x.UserAccount, x=>x.Company, x=>x.Company.CompanyPlatformSubscription).MapTo(x => new PlatformUserAccountVm(x));
+                    x => x.UserAccount, x => x.Company, x => x.Company.CompanyPlatformSubscription, x => x.IdentityRole)
+                .MapTo(x => new PlatformUserAccountVm(x));
         }
     }
 }
