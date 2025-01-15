@@ -29,7 +29,7 @@ public class PlatformUsersService : IPlatformUsersService
         {
             return _usersInCompanyRoRepo
                 .GetDataPaginated(x => true, new SortOptions(page, pageSize, sortColumn, sortOrder),
-                    x => x.UserAccount, x => x.Company, x => x.Company.CompanyPlatformSubscription)
+                    x => x.UserAccount, x => x.Company, x => x.Company.CompanyPlatformSubscription, x => x.IdentityRole)
                 .MapTo(x => new PlatformUserAccountVm(x));
         }
         else
