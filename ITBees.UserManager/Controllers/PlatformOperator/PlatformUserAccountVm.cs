@@ -25,7 +25,10 @@ public class PlatformUserAccountVm
         LoginCount = x.UserAccount.LoginsCount;
         CompanyRole = x.IdentityRole?.Name;
         CompanyRoleGuid = x.IdentityRoleId;
+        Created = x.UserAccount.SetupTime;
     }
+
+    public DateTime? Created { get; set; }
 
     public Guid? CompanyRoleGuid { get; set; }
 
