@@ -15,8 +15,10 @@ public class UserRoleVm
     {
         RoleName = x.Name;
         Guid = x.Id;
+        RoleDescription = x.RoleDescription;
     }
 
     public Guid Guid { get; set; }
     public string RoleName { get; set; }
+    public string RoleDescription { get; set; }
 }
