@@ -18,5 +18,6 @@ namespace ITBees.UserManager.Interfaces.Models
         public string Language { get; set; }
 
         public Guid? UserRoleGuid { get; set; }
+        public bool SendEmailInvitation { get; set; }
     }
 }

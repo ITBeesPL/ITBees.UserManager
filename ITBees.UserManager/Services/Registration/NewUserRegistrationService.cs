@@ -227,7 +227,8 @@ namespace ITBees.UserManager.Services.Registration
                         emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(
                             newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage);
 
-                        _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
+                        if (newUserRegistrationIm.SendEmailInvitation)
+                            _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
                         return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty);
                     }
@@ -258,49 +259,11 @@ namespace ITBees.UserManager.Services.Registration
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
                         newUserRegistrationIm, company.CompanyName, token, userLanguage);
 
-                    _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
+                    if (newUserRegistrationIm.SendEmailInvitation)
+                        _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
                     return new NewUserRegistrationResult(user.Id, string.Empty);
                 }
-
-                UserAccount userSavedData = null;
-
-                try
-                {
-                    userSavedData = _userAccountWriteOnlyRepository.InsertData(
-                        new UserAccount()
-                        {
-                            Email = newUserRegistrationIm.Email,
-                            Guid = newUser.Id,
-                            Phone = newUserRegistrationIm.Phone,
-                            FirstName = newUserRegistrationIm.FirstName,
-                            LastName = newUserRegistrationIm.LastName,
-                            LanguageId = userLanguage.Id,
-                            SetupTime = DateTime.Now
-                        });
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUserRegistrationIm.Email);
-                    emailMessage =
-                        _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
-                            newUserRegistrationIm, company.CompanyName, token, userLanguage);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, e.Message);
-                    var user = new UserAccount()
-                    {
-                        Email = newUserRegistrationIm.Email,
-                        Guid = newUser.Id
-                    };
-
-                    if (userSavedData == null)
-                    {
-                        throw new Exception(e.Message);
-                    }
-
-                    return new NewUserRegistrationResult(userSavedData.Guid, e.Message);
-                }
-
-                return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
             }
             catch (Exception e)
             {
@@ -333,6 +296,7 @@ namespace ITBees.UserManager.Services.Registration
                     Translate.Get(() => Translations.UserInvitation.UserForSpecifiedEmailNotFound,
                         _aspCurrentUserService.GetCurrentUser().Language), 400, ""));
             }
+
             var usersInvitationToCompany = _usersInvitationsToCompaniesRoRepo
                 .GetData(x => x.CompanyGuid == invitationIm.CompanyGuid && x.UserAccountGuid == user.Id)
                 .FirstOrDefault();
@@ -354,7 +318,6 @@ namespace ITBees.UserManager.Services.Registration
             }
             else
             {
-                
             }
         }
 
