@@ -1,4 +1,0 @@
-GET {{OperatorApi_HostAddress}}/MyAccount
-Accept: text/plain
-Content-Type: application/json
-Authorization: Bearer {{value}}
