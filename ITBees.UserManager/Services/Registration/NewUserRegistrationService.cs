@@ -207,7 +207,7 @@ namespace ITBees.UserManager.Services.Registration
                 invitationEmailCreator);
         }
 
-        public static string GenerateRandomPassword()
+        private static string GenerateRandomPassword()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
             Random random = new Random();
