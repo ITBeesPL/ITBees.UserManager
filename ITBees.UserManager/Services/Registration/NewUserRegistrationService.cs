@@ -40,6 +40,7 @@ namespace ITBees.UserManager.Services.Registration
         private readonly IReadOnlyRepository<UsersInvitationsToCompanies> _usersInvitationsToCompaniesRoRepo;
         private readonly IWriteOnlyRepository<UsersInvitationsToCompanies> _usersInvitationsToCompaniesRwRepo;
         private readonly IReadOnlyRepository<UserAccount> _userAccountRoRepo;
+        private readonly IWriteOnlyRepository<InvoiceData> _invoiceDataRwRepo;
 
         public NewUserRegistrationService(IUserManager<T> userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
@@ -54,7 +55,8 @@ namespace ITBees.UserManager.Services.Registration
             IPlatformSettingsService platformSettingsService,
             IReadOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRoRepo,
             IWriteOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRwRepo,
-            IReadOnlyRepository<UserAccount> userAccountRoRepo)
+            IReadOnlyRepository<UserAccount> userAccountRoRepo,
+            IWriteOnlyRepository<InvoiceData> invoiceDataRwRepo)
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
@@ -70,10 +72,13 @@ namespace ITBees.UserManager.Services.Registration
             _usersInvitationsToCompaniesRoRepo = usersInvitationsToCompaniesRoRepo;
             _usersInvitationsToCompaniesRwRepo = usersInvitationsToCompaniesRwRepo;
             _userAccountRoRepo = userAccountRoRepo;
+            _invoiceDataRwRepo = invoiceDataRwRepo;
         }
 
         public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm,
-            bool sendConfirmationEmail = true)
+            bool sendConfirmationEmail = true,
+            AdditionalInvoiceDataIm additionalInvoiceDataIm = null,
+            IInvitationEmailBodyCreator invitationEmailCreator = null)
         {
             var newUser = new T()
             {
@@ -83,6 +88,7 @@ namespace ITBees.UserManager.Services.Registration
 
             var result = await _userManager.CreateAsync(newUser, newUserRegistrationIm.Password);
             var userLanguage = GetUserLanguage(newUserRegistrationIm);
+            Guid? invoiceDataGuid = null;
 
             if (result.Succeeded == false)
             {
@@ -127,14 +133,42 @@ namespace ITBees.UserManager.Services.Registration
                     });
 
 
-                CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid.Id,
+                var company = CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid.Id,
                     userSavedData, userLanguage);
+
+                if (additionalInvoiceDataIm != null)
+                {
+                    invoiceDataGuid = _invoiceDataRwRepo.InsertData(new InvoiceData()
+                    {
+                        CompanyGuid = company.Guid,
+                        CompanyName = additionalInvoiceDataIm.CompanyName,
+                        Created = DateTime.Now,
+                        City = additionalInvoiceDataIm.City,
+                        IsActive = true,
+                        CreatedByGuid = currentUserGuid.Id,
+                        Country = additionalInvoiceDataIm.Country,
+                        Street = additionalInvoiceDataIm.Street,
+                        InvoiceEmail = additionalInvoiceDataIm.InvoiceEmail,
+                        InvoiceRequested = additionalInvoiceDataIm.InvoiceRequested,
+                        PostCode = additionalInvoiceDataIm.PostCode,
+                        NIP = additionalInvoiceDataIm.NIP
+                    }).Guid;
+                }
 
                 if (sendConfirmationEmail)
                 {
-                    var emailMessage =
-                        _registrationEmailComposer.ComposeEmailConfirmation(newUserRegistrationIm,
+                    EmailMessage emailMessage = null;
+                    if (invitationEmailCreator == null)
+                    {
+                        emailMessage = _registrationEmailComposer.ComposeEmailConfirmation(newUserRegistrationIm,
                             emailConfirmationToken);
+                    }
+                    else
+                    {
+                        emailMessage = invitationEmailCreator.Create(newUserRegistrationIm,
+                            emailConfirmationToken);
+                    }
+
                     var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
 
                     _emailSendingService.SendEmail(platformEmailAccount, emailMessage);
@@ -154,10 +188,17 @@ namespace ITBees.UserManager.Services.Registration
                     throw new Exception(e.Message);
                 }
 
-                return new NewUserRegistrationResult(userSavedData.Guid, e.Message);
+                return new NewUserRegistrationResult(userSavedData.Guid, e.Message, invoiceDataGuid);
             }
 
-            return new NewUserRegistrationResult(userSavedData.Guid, string.Empty);
+            return new NewUserRegistrationResult(userSavedData.Guid, string.Empty, invoiceDataGuid);
+        }
+
+        public Task<NewUserRegistrationResult> CreateNewPartnerUser(NewUserRegistrationIm newUserRegistrationInputDto,
+            bool sendConfirmationEmail,
+            IInvitationEmailBodyCreator invitationEmailCreator, AdditionalInvoiceDataIm additionalInvoiceDataIm = null)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
@@ -230,7 +271,7 @@ namespace ITBees.UserManager.Services.Registration
                         if (newUserRegistrationIm.SendEmailInvitation)
                             _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
-                        return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty);
+                        return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty, null);
                     }
                     else
                     {
@@ -262,7 +303,7 @@ namespace ITBees.UserManager.Services.Registration
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
-                    return new NewUserRegistrationResult(user.Id, string.Empty);
+                    return new NewUserRegistrationResult(user.Id, string.Empty, null);
                 }
             }
             catch (Exception e)
@@ -382,7 +423,7 @@ namespace ITBees.UserManager.Services.Registration
             }
         }
 
-        private void CreateCompanyAndAddCurrentUser(NewUserRegistrationIm newUserRegistrationIm, T newUser,
+        private Company CreateCompanyAndAddCurrentUser(NewUserRegistrationIm newUserRegistrationIm, T newUser,
             Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
         {
             if (string.IsNullOrEmpty(newUserRegistrationIm.CompanyName))
@@ -407,6 +448,8 @@ namespace ITBees.UserManager.Services.Registration
                 AddedDate = DateTime.Now,
                 UserAccountGuid = userSavedData.Guid
             });
+
+            return company;
         }
     }
 }
