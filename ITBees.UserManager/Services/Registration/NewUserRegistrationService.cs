@@ -86,7 +86,11 @@ namespace ITBees.UserManager.Services.Registration
                 Email = newUserRegistrationIm.Email
             };
 
-            var result = await _userManager.CreateAsync(newUser, newUserRegistrationIm.Password);
+            var password = string.IsNullOrEmpty(newUserRegistrationIm.Password)
+                ? GenerateRandomPassword()
+                : newUserRegistrationIm.Password;
+            
+            var result = await _userManager.CreateAsync(newUser, password);
             var userLanguage = GetUserLanguage(newUserRegistrationIm);
             Guid? invoiceDataGuid = null;
 
@@ -194,12 +198,27 @@ namespace ITBees.UserManager.Services.Registration
             return new NewUserRegistrationResult(userSavedData.Guid, string.Empty, invoiceDataGuid);
         }
 
-        public async Task<NewUserRegistrationResult> CreateNewPartnerUser(NewUserRegistrationIm newUserRegistrationInputDto,
+        public async Task<NewUserRegistrationResult> CreateNewPartnerUser(
+            NewUserRegistrationIm newUserRegistrationInputDto,
             bool sendConfirmationEmail,
             IInvitationEmailBodyCreator invitationEmailCreator, AdditionalInvoiceDataIm additionalInvoiceDataIm)
         {
             return await CreateNewUser(newUserRegistrationInputDto, sendConfirmationEmail, additionalInvoiceDataIm,
                 invitationEmailCreator);
+        }
+
+        public static string GenerateRandomPassword()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+            Random random = new Random();
+            char[] password = new char[20];
+
+            for (int i = 0; i < password.Length; i++)
+            {
+                password[i] = chars[random.Next(chars.Length)];
+            }
+
+            return new string(password);
         }
 
         public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
