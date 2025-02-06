@@ -78,7 +78,8 @@ namespace ITBees.UserManager.Services.Registration
         public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm,
             bool sendConfirmationEmail = true,
             AdditionalInvoiceDataIm additionalInvoiceDataIm = null,
-            IInvitationEmailBodyCreator invitationEmailCreator = null)
+            IInvitationEmailBodyCreator invitationEmailCreator = null, 
+            bool inviteToSetPassword = false)
         {
             var newUser = new T()
             {
@@ -116,10 +117,16 @@ namespace ITBees.UserManager.Services.Registration
             UserAccount userSavedData = null;
             var currentUserGuid = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
             var emailConfirmationToken = string.Empty;
+            var setPasswordToken = string.Empty;
 
             if (sendConfirmationEmail)
             {
                 emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(currentUserGuid);
+            }
+
+            if (inviteToSetPassword)
+            {
+                setPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(currentUserGuid);
             }
 
             try
@@ -170,7 +177,7 @@ namespace ITBees.UserManager.Services.Registration
                     else
                     {
                         emailMessage = invitationEmailCreator.Create(newUserRegistrationIm,
-                            emailConfirmationToken);
+                            emailConfirmationToken, setPasswordToken);
                     }
 
                     var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
@@ -201,10 +208,12 @@ namespace ITBees.UserManager.Services.Registration
         public async Task<NewUserRegistrationResult> CreateNewPartnerUser(
             NewUserRegistrationIm newUserRegistrationInputDto,
             bool sendConfirmationEmail,
-            IInvitationEmailBodyCreator invitationEmailCreator, AdditionalInvoiceDataIm additionalInvoiceDataIm)
+            IInvitationEmailBodyCreator invitationEmailCreator, 
+            AdditionalInvoiceDataIm additionalInvoiceDataIm,
+            bool inviteToSetPassword)
         {
             return await CreateNewUser(newUserRegistrationInputDto, sendConfirmationEmail, additionalInvoiceDataIm,
-                invitationEmailCreator);
+                invitationEmailCreator, inviteToSetPassword);
         }
 
         private static string GenerateRandomPassword()

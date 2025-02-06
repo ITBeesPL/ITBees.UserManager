@@ -5,5 +5,5 @@ namespace ITBees.UserManager.Interfaces;
 
 public interface IInvitationEmailBodyCreator
 {
-    EmailMessage Create(NewUserRegistrationIm newUserRegistrationIm, string emailConfirmationToken);
+    EmailMessage Create(NewUserRegistrationIm newUserRegistrationIm, string emailConfirmationToken, string setPasswordToken);
 }
