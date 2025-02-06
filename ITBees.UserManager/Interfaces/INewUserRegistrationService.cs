@@ -11,7 +11,7 @@ namespace ITBees.UserManager.Interfaces
             bool sendConfirmationEmail = true, AdditionalInvoiceDataIm additionalInvoiceDataIm = null,
             IInvitationEmailBodyCreator invitationEmailCreator = null);
         Task<NewUserRegistrationResult> CreateNewPartnerUser(NewUserRegistrationIm newUserRegistrationInputDto,
-            bool sendConfirmationEmail, IInvitationEmailBodyCreator invitationEmailCreator, AdditionalInvoiceDataIm additionalInvoiceDataIm = null);
+            bool sendConfirmationEmail, IInvitationEmailBodyCreator invitationEmailCreator, AdditionalInvoiceDataIm additionalInvoiceDataIm);
 
         Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
             NewUserRegistrationWithInvitationIm newUserRegistrationIm);

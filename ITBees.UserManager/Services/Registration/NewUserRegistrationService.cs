@@ -194,11 +194,12 @@ namespace ITBees.UserManager.Services.Registration
             return new NewUserRegistrationResult(userSavedData.Guid, string.Empty, invoiceDataGuid);
         }
 
-        public Task<NewUserRegistrationResult> CreateNewPartnerUser(NewUserRegistrationIm newUserRegistrationInputDto,
+        public async Task<NewUserRegistrationResult> CreateNewPartnerUser(NewUserRegistrationIm newUserRegistrationInputDto,
             bool sendConfirmationEmail,
-            IInvitationEmailBodyCreator invitationEmailCreator, AdditionalInvoiceDataIm additionalInvoiceDataIm = null)
+            IInvitationEmailBodyCreator invitationEmailCreator, AdditionalInvoiceDataIm additionalInvoiceDataIm)
         {
-            throw new NotImplementedException();
+            return await CreateNewUser(newUserRegistrationInputDto, sendConfirmationEmail, additionalInvoiceDataIm,
+                invitationEmailCreator);
         }
 
         public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
