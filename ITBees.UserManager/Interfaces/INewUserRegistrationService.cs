@@ -6,7 +6,7 @@ using ITBees.UserManager.Services;
 
 namespace ITBees.UserManager.Interfaces
 {
-    public interface INewUserRegistrationService<T> where T : Company
+    public interface INewUserRegistrationService<T> : INewUserRegistrationService where T : Company
     {
         
     }
