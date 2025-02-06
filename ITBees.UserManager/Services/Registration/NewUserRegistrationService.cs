@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Registration
 {
-    public class NewUserRegistrationService<T, TCompany> : INewUserRegistrationService
+    public class NewUserRegistrationService<T, TCompany> : INewUserRegistrationService, INewUserRegistrationService<TCompany>
         where T : IdentityUser<Guid>, new() where TCompany : Company, new()
     {
         private readonly IUserManager<T> _userManager;
@@ -41,6 +41,7 @@ namespace ITBees.UserManager.Services.Registration
         private readonly IWriteOnlyRepository<UsersInvitationsToCompanies> _usersInvitationsToCompaniesRwRepo;
         private readonly IReadOnlyRepository<UserAccount> _userAccountRoRepo;
         private readonly IWriteOnlyRepository<InvoiceData> _invoiceDataRwRepo;
+        private readonly IWriteOnlyRepository<TCompany> _companyRwRepo;
 
         public NewUserRegistrationService(IUserManager<T> userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
@@ -79,7 +80,8 @@ namespace ITBees.UserManager.Services.Registration
             bool sendConfirmationEmail = true,
             AdditionalInvoiceDataIm additionalInvoiceDataIm = null,
             IInvitationEmailBodyCreator invitationEmailCreator = null, 
-            bool inviteToSetPassword = false)
+            bool inviteToSetPassword = false, 
+            bool useTCompanyRepository = false)
         {
             var newUser = new T()
             {
@@ -205,12 +207,12 @@ namespace ITBees.UserManager.Services.Registration
             return new NewUserRegistrationResult(userSavedData.Guid, string.Empty, invoiceDataGuid);
         }
 
-        public async Task<NewUserRegistrationResult> CreateNewPartnerUser(
+        public async Task<NewUserRegistrationResult> CreateNewPartnerUser<TCompany>(
             NewUserRegistrationIm newUserRegistrationInputDto,
             bool sendConfirmationEmail,
             IInvitationEmailBodyCreator invitationEmailCreator, 
             AdditionalInvoiceDataIm additionalInvoiceDataIm,
-            bool inviteToSetPassword)
+            bool inviteToSetPassword) where TCompany : Company
         {
             return await CreateNewUser(newUserRegistrationInputDto, sendConfirmationEmail, additionalInvoiceDataIm,
                 invitationEmailCreator, inviteToSetPassword);

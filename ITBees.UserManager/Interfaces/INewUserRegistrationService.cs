@@ -1,10 +1,15 @@
 ﻿using System.Threading.Tasks;
+using ITBees.Models.Companies;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Services;
 
 namespace ITBees.UserManager.Interfaces
 {
+    public interface INewUserRegistrationService<T> where T : Company
+    {
+        
+    }
     public interface INewUserRegistrationService
     {
         Task<NewUserRegistrationResult> CreateNewUser(
@@ -12,13 +17,14 @@ namespace ITBees.UserManager.Interfaces
             bool sendConfirmationEmail = true, 
             AdditionalInvoiceDataIm additionalInvoiceDataIm = null,
             IInvitationEmailBodyCreator invitationEmailCreator = null,
-            bool inviteToSetPassword = false);
+            bool inviteToSetPassword = false,
+            bool useTCompanyRepository = false);
         
-        Task<NewUserRegistrationResult> CreateNewPartnerUser(NewUserRegistrationIm newUserRegistrationInputDto,
+        Task<NewUserRegistrationResult> CreateNewPartnerUser<T>(NewUserRegistrationIm newUserRegistrationInputDto,
             bool sendConfirmationAndInviteToSePasswordEmail, 
             IInvitationEmailBodyCreator invitationEmailCreator, 
             AdditionalInvoiceDataIm additionalInvoiceDataIm,
-            bool inviteToSetPassword);
+            bool inviteToSetPassword) where T : Company;
 
         Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
             NewUserRegistrationWithInvitationIm newUserRegistrationIm);

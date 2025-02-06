@@ -52,6 +52,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
             services.AddScoped(typeof(IUserRolesService), typeof(UserRolesService));
             services.AddScoped(typeof(INewUserRegistrationService), typeof(NewUserRegistrationService<TIdentityUser, TCompany>));
+            services.AddScoped(typeof(INewUserRegistrationService<TCompany>), typeof(NewUserRegistrationService<TIdentityUser, TCompany>));
             services.AddScoped(typeof(INewUserRegistrationFromGoogle), typeof(NewUserRegistrationFromGoogle<TIdentityUser>));
             services.AddScoped(typeof(IInvitationResendService), typeof(InvitationResendService));
             services.AddScoped(typeof(IUserInvitationService), typeof(UserInvitationService));
