@@ -2,9 +2,9 @@
 
 public class AcceptAccountIm
 {
-    public string Email { get; }
-    public string Token { get; }
-    public string NewPassword { get; }
+    public string Email { get; set; }
+    public string Token { get; set; }
+    public string NewPassword { get; set; }
     public string Lang { get; set; }
 
     public AcceptAccountIm()
