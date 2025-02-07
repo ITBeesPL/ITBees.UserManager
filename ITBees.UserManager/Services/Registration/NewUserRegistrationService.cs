@@ -23,7 +23,8 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Registration
 {
-    public class NewUserRegistrationService<T, TCompany> : INewUserRegistrationService, INewUserRegistrationService<TCompany>
+    public class NewUserRegistrationService<T, TCompany> : INewUserRegistrationService,
+        INewUserRegistrationService<TCompany>
         where T : IdentityUser<Guid>, new() where TCompany : Company, new()
     {
         private readonly IUserManager<T> _userManager;
@@ -79,8 +80,8 @@ namespace ITBees.UserManager.Services.Registration
         public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm,
             bool sendConfirmationEmail = true,
             AdditionalInvoiceDataIm additionalInvoiceDataIm = null,
-            IInvitationEmailBodyCreator invitationEmailCreator = null, 
-            bool inviteToSetPassword = false, 
+            IInvitationEmailBodyCreator invitationEmailCreator = null,
+            bool inviteToSetPassword = false,
             bool useTCompanyRepository = false)
         {
             var newUser = new T()
@@ -92,7 +93,7 @@ namespace ITBees.UserManager.Services.Registration
             var password = string.IsNullOrEmpty(newUserRegistrationIm.Password)
                 ? GenerateRandomPassword()
                 : newUserRegistrationIm.Password;
-            
+
             var result = await _userManager.CreateAsync(newUser, password);
             var userLanguage = GetUserLanguage(newUserRegistrationIm);
             Guid? invoiceDataGuid = null;
@@ -131,6 +132,7 @@ namespace ITBees.UserManager.Services.Registration
                 setPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(currentUserGuid);
             }
 
+            TCompany company = null;
             try
             {
                 userSavedData = _userAccountWriteOnlyRepository.InsertData(
@@ -146,7 +148,7 @@ namespace ITBees.UserManager.Services.Registration
                     });
 
 
-                var company = CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid.Id,
+                company = CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid.Id,
                     userSavedData, userLanguage);
 
                 if (additionalInvoiceDataIm != null)
@@ -201,16 +203,16 @@ namespace ITBees.UserManager.Services.Registration
                     throw new Exception(e.Message);
                 }
 
-                return new NewUserRegistrationResult(userSavedData.Guid, e.Message, invoiceDataGuid);
+                return new NewUserRegistrationResult(userSavedData.Guid, e.Message, invoiceDataGuid, company.Guid);
             }
 
-            return new NewUserRegistrationResult(userSavedData.Guid, string.Empty, invoiceDataGuid);
+            return new NewUserRegistrationResult(userSavedData.Guid, string.Empty, invoiceDataGuid, company.Guid);
         }
 
         public async Task<NewUserRegistrationResult> CreateNewPartnerUser<TCompany>(
             NewUserRegistrationIm newUserRegistrationInputDto,
             bool sendConfirmationEmail,
-            IInvitationEmailBodyCreator invitationEmailCreator, 
+            IInvitationEmailBodyCreator invitationEmailCreator,
             AdditionalInvoiceDataIm additionalInvoiceDataIm,
             bool inviteToSetPassword) where TCompany : Company
         {
@@ -302,7 +304,7 @@ namespace ITBees.UserManager.Services.Registration
                         if (newUserRegistrationIm.SendEmailInvitation)
                             _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
-                        return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty, null);
+                        return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty, null, company.Guid);
                     }
                     else
                     {
@@ -334,7 +336,7 @@ namespace ITBees.UserManager.Services.Registration
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
-                    return new NewUserRegistrationResult(user.Id, string.Empty, null);
+                    return new NewUserRegistrationResult(user.Id, string.Empty, null, company.Guid);
                 }
             }
             catch (Exception e)
@@ -454,7 +456,7 @@ namespace ITBees.UserManager.Services.Registration
             }
         }
 
-        private Company CreateCompanyAndAddCurrentUser(NewUserRegistrationIm newUserRegistrationIm, T newUser,
+        private TCompany CreateCompanyAndAddCurrentUser(NewUserRegistrationIm newUserRegistrationIm, T newUser,
             Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
         {
             if (string.IsNullOrEmpty(newUserRegistrationIm.CompanyName))
