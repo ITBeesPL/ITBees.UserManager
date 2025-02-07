@@ -22,7 +22,8 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
     {
         try
         {
-            await _userManager.ResetPasswordAsync(x.Email, x.Token, x.NewPassword);
+            var user = await _userManager.FindByEmailAsync(x.Email);
+            await _userManager.ResetPasswordAsync(user, x.Token, x.NewPassword);
             await _loginService.ConfirmEmail(x.Email);
             var jwttoken = await _loginService.LoginAfterEmailConfirmation(x.Email, x.Lang);
             return new AcceptAccountResultVm(true, jwttoken, null);
