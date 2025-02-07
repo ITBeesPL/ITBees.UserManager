@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers;
+using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Controllers;
 
+
+[GenericRestControllerNameConvention]
+[CustomControllerName("AcceptAccount")]
 public class AcceptAccountController<T> : RestfulControllerBase<AcceptAccountController<T>> where T : IdentityUser<Guid>, new()
 {
     private readonly IAcceptAccountService<T> _acceptAccountService;
