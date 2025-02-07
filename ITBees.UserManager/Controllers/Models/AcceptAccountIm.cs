@@ -5,6 +5,7 @@ public class AcceptAccountIm
     public string Email { get; }
     public string Token { get; }
     public string NewPassword { get; }
+    public string Lang { get; set; }
 
     public AcceptAccountIm()
     {

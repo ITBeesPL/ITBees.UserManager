@@ -25,11 +25,9 @@ public class AcceptAccountController<T> : RestfulControllerBase<AcceptAccountCon
 
     [HttpPost]
     [Produces(typeof(AcceptAccountResultVm))]
-    public Task<IActionResult> Post([FromBody] AcceptAccountIm acceptAccountIm,
-        [FromHeader(Name = "Accept-Language")] string acceptLanguage)
+    public Task<IActionResult> Post([FromBody] AcceptAccountIm acceptAccountIm)
     {
-        var lang = LanaguageParser.ParseAcceptLanguageHeader(acceptLanguage);
         return ReturnOkResultAsync(async () =>
-            await _acceptAccountService.AcceptAccount(acceptAccountIm ,lang));
+            await _acceptAccountService.AcceptAccount(acceptAccountIm));
     }
 }

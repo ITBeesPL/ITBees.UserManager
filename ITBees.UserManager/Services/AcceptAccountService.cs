@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers.Exceptions;
-using ITBees.UserManager.Controllers;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -19,13 +18,13 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
         _userManager = userManager;
     }
 
-    public async Task<AcceptAccountResultVm> AcceptAccount(AcceptAccountIm x, string lang)
+    public async Task<AcceptAccountResultVm> AcceptAccount(AcceptAccountIm x)
     {
         try
         {
             await _userManager.ResetPasswordAsync(x.Email, x.Token, x.NewPassword);
             await _loginService.ConfirmEmail(x.Email);
-            var jwttoken = await _loginService.LoginAfterEmailConfirmation(x.Email, lang);
+            var jwttoken = await _loginService.LoginAfterEmailConfirmation(x.Email, x.Lang);
             return new AcceptAccountResultVm(true, jwttoken, null);
         }
         catch (Exception e)
