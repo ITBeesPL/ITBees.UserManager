@@ -40,7 +40,6 @@ namespace ITBees.UserManager.Controllers
         {
             try
             {
-
                 if (string.IsNullOrEmpty(im.RedirectURI) == false && _platformSettingsService.GetCurrentEnvironment() == Environment.Prod)
                 {
                     return CreateBaseErrorResponse(
@@ -50,8 +49,7 @@ namespace ITBees.UserManager.Controllers
 
                 AppleTokenResponse appleIdentityToken = await _appleLoginService.ValidateAuthorizationCodeAsync(im.AuthorizationCode, im.ClientId, im.RedirectURI);
 
-                var lang = ParseAcceptLanguageHeader(acceptLanguage);
-
+                var lang = LanaguageParser.ParseAcceptLanguageHeader(acceptLanguage);
 
                 var result = await _appleLoginService.LoginOrRegister(appleIdentityToken, lang);
 
@@ -65,22 +63,6 @@ namespace ITBees.UserManager.Controllers
             {
                 return CreateBaseErrorResponse(e, im);
             }
-        }
-
-        private string ParseAcceptLanguageHeader(string acceptLanguage)
-        {
-            if (string.IsNullOrWhiteSpace(acceptLanguage))
-            {
-                return null;
-            }
-
-            string[] languages = acceptLanguage.Split(',');
-            if (languages.Length > 0)
-            {
-                return languages[0].Split(';')[0].Substring(0, 2);
-            }
-
-            return null;
         }
     }
 }

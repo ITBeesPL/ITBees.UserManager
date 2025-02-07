@@ -83,6 +83,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IMyCompaniesService, MyCompaniesService>();
             services.AddScoped<INewUserRegistrationFromApple, NewUserRegistrationFromApple<TIdentityUser>>();
             services.AddScoped<IAppleLoginService<TIdentityUser>, AppleLoginService<TIdentityUser>>();
+            services.AddScoped<IAcceptAccountService<TIdentityUser>, AcceptAccountService<TIdentityUser>>();
             services.AddScoped<IFacebookLoginService<TIdentityUser>, FacebookLoginService<TIdentityUser>>();
             services.AddScoped<IMyAccountUpdateService, MyAccountUpdateService>();
             services.AddScoped<IPlatformStatusService, PlatformStatusService>();
@@ -185,6 +186,7 @@ namespace ITBees.UserManager.Services
             feature.Controllers.Add(typeof(AccountDeleteController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(TokenAsController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(LoginAsParamController<>).MakeGenericType(typeof(T)).GetTypeInfo());
+            feature.Controllers.Add(typeof(AcceptAccountController<>).MakeGenericType(typeof(T)).GetTypeInfo());
         }
     }
 }
