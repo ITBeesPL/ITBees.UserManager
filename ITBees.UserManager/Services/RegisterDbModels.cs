@@ -17,6 +17,9 @@ namespace ITBees.UserManager.Services
             modelBuilder.Entity<Company>().HasKey(x => x.Guid);
             modelBuilder.Entity<Company>().HasDiscriminator<string>("Discriminator")
                 .HasValue<Company>("Company");
+            modelBuilder.Entity<Company>().HasOne(x => x.CreatedBy);
+            modelBuilder.Entity<Company>().HasOne(x => x.Owner);
+            modelBuilder.Entity<UserAccount>().HasOne(x => x.LastUsedCompany);
 
             modelBuilder.Entity<UsersInCompany>()
                 .HasKey(x => x.Guid);
