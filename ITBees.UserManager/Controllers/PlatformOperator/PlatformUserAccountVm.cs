@@ -22,6 +22,8 @@ public class PlatformUserAccountVm
         // Country = x.Company.Country
         SubscriptionPlan = x.Company.CompanyPlatformSubscription?.SubscriptionPlanName;
         SubscriptionPlanActiveTo = x.Company.CompanyPlatformSubscription?.SubscriptionActiveTo;
+        //SubscriptionPlanBgColor = x.Company.CompanyPlatformSubscription?.SubscriptionPlan; //todo implement
+        //SubscriptionPlanFgColor = x.Company.CompanyPlatformSubscription?.SubscriptionPlan; //todo implement
         LoginCount = x.UserAccount.LoginsCount;
         CompanyRole = x.IdentityRole?.Name;
         CompanyRoleGuid = x.IdentityRoleId;
@@ -50,6 +52,8 @@ public class PlatformUserAccountVm
     public string City { get; set; }
     public string Country { get; set; }
     public string SubscriptionPlan { get; set; }
+    public string SubscriptionPlanBgColor { get; set; }
+    public string SubscriptionPlanFgColor { get; set; }
     public string CompanyName { get; set; }
     public DateTime? LastLoginDate { get; set; }
 }
