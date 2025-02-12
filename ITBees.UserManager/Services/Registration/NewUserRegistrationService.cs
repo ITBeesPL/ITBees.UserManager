@@ -144,7 +144,7 @@ namespace ITBees.UserManager.Services.Registration
                         FirstName = newUserRegistrationIm.FirstName,
                         LastName = newUserRegistrationIm.LastName,
                         LanguageId = userLanguage.Id,
-                        SetupTime = DateTime.Now
+                        SetupTime = DateTime.Now,
                     });
 
 
@@ -304,7 +304,8 @@ namespace ITBees.UserManager.Services.Registration
                         if (newUserRegistrationIm.SendEmailInvitation)
                             _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
-                        return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty, null, company.Guid);
+                        return new NewUserRegistrationResult(alreadyRegisteredUser.Id, string.Empty, null,
+                            company.Guid);
                     }
                     else
                     {
@@ -473,6 +474,9 @@ namespace ITBees.UserManager.Services.Registration
                 IsActive = true,
                 OwnerGuid = newUser.Id
             });
+
+            _userAccountWriteOnlyRepository.UpdateData(x => x.Guid == newUser.Id,
+                x => { x.LastUsedCompanyGuid = company.Guid; });
 
             _usersInCompanyWoRepo.InsertData(new UsersInCompany()
             {
