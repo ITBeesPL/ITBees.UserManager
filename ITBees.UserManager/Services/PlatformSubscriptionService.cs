@@ -20,7 +20,7 @@ public class PlatformSubscriptionService : IPlatformSubscriptionService
 
     public void ActivateSubscriptionPlanIfNeeded(UsersInCompany lastUsedCompany)
     {
-        if (lastUsedCompany.Company.CompanyPlatformSubscription.SubscriptionPlanGuid != null &&
+        if (lastUsedCompany.Company.CompanyPlatformSubscription?.SubscriptionPlanGuid != null &&
             lastUsedCompany.Company.CompanyPlatformSubscription.SubscriptionActiveTo == null)
         {
             DateTime endDate = DateTime.Now;
