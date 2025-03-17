@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers.Exceptions;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services;
 
@@ -12,11 +15,13 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
 {
     private readonly ILoginService<T> _loginService;
     private readonly IUserManager<T> _userManager;
+    private readonly ILogger<AcceptAccountService<T>> _logger;
 
-    public AcceptAccountService(ILoginService<T> loginService, IUserManager<T> userManager)
+    public AcceptAccountService(ILoginService<T> loginService, IUserManager<T> userManager, ILogger<AcceptAccountService<T>> logger)
     {
         _loginService = loginService;
         _userManager = userManager;
+        _logger = logger;
     }
 
     public async Task<AcceptAccountResultVm> AcceptAccount(AcceptAccountIm x)
@@ -28,6 +33,8 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
             if (!resetResult.Succeeded)
             {
                 var errorDescriptions = resetResult.Errors.Select(e => e.Description);
+                _logger.LogError($"Error while accpeting user account : {JsonSerializer.Serialize(x)}, errors :\r\n" +errorDescriptions.Aggregate((a, b) => $"{a}, {b}"));
+                
                 throw new FasApiErrorException("Unable to set password, please contact with provider", 400);
             }
 

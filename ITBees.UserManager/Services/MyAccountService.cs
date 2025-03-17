@@ -30,6 +30,7 @@ namespace ITBees.UserManager.Services
                 .GetData(x => x.UserAccountGuid == currentUserGuid.Guid,
                     x => x.Company,
                     x => x.Company.CompanyPlatformSubscription,
+                    x => x.Company.CompanyPlatformSubscription.SubscriptionPlan,
                     x => x.UserAccount,
                     x => x.UserAccount.Language,
                     x => x.IdentityRole);

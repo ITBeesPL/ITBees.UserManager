@@ -39,7 +39,7 @@ public class PlatformSubscriptionService : IPlatformSubscriptionService
                 
             //it is done by pure sql to prevent problems with inheritance in derived Company classes / differten generics of Company model. 
             _companyRwRepository.Sql(
-                $"UPDATE Company SET SubscriptionActiveTo = '{formattedDate}' WHERE Guid = '{lastUsedCompany.CompanyGuid}'");
+                $"UPDATE Company SET CompanyPlatformSubscription_SubscriptionActiveTo = '{formattedDate}' WHERE Guid = '{lastUsedCompany.CompanyGuid}'");
                 
             _logger.LogInformation($"Activated subscription plan for company {lastUsedCompany.Company.CompanyName} - after first login, plan : {lastUsedCompany.Company.CompanyPlatformSubscription.SubscriptionPlan.PlanName} valid to : {formattedDate}");
         }
