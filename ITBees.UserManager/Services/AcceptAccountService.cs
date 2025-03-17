@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers.Exceptions;
 using ITBees.UserManager.Controllers.Models;
@@ -23,7 +24,13 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
         try
         {
             var user = await _userManager.FindByEmailAsync(x.Email);
-            await _userManager.ResetPasswordAsync(user, x.Token, x.NewPassword);
+            var resetResult = await _userManager.ResetPasswordAsync(user, x.Token, x.NewPassword);
+            if (!resetResult.Succeeded)
+            {
+                var errorDescriptions = resetResult.Errors.Select(e => e.Description);
+                throw new FasApiErrorException("Unable to set password, please contact with provider", 400);
+            }
+
             await _loginService.ConfirmEmail(x.Email);
             var jwttoken = await _loginService.LoginAfterEmailConfirmation(x.Email, x.Lang);
             return new AcceptAccountResultVm(true, jwttoken, null);
