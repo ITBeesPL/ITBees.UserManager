@@ -4,6 +4,11 @@ namespace ITBees.UserManager.Controllers.Models;
 
 public class AcceptAccountResultVm
 {
+    public AcceptAccountResultVm()
+    {
+        
+    }
+    
     public AcceptAccountResultVm(bool success, TokenVm token, string message)
     {
         Success = success;
