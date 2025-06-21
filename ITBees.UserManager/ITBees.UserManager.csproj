@@ -17,14 +17,14 @@
   
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
-    <PackageReference Include="ITBees.Interfaces" Version="8.0.59" />
-    <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.22" />
-    <PackageReference Include="ITBees.BaseServices" Version="8.0.72" />
-    <PackageReference Include="ITBees.Models" Version="8.0.83" />
+    <PackageReference Include="ITBees.Interfaces" Version="8.0.61" />
+    <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.24" />
+    <PackageReference Include="ITBees.BaseServices" Version="8.0.74" />
+    <PackageReference Include="ITBees.Models" Version="8.0.85" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.17" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.68" />
-    <PackageReference Include="ITBees.Translations" Version="8.0.119" />
-    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.48" />
+    <PackageReference Include="ITBees.Translations" Version="8.0.121" />
+    <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.51" />
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
