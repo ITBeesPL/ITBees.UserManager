@@ -20,7 +20,7 @@
     <PackageReference Include="ITBees.Interfaces" Version="8.0.59" />
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.22" />
     <PackageReference Include="ITBees.BaseServices" Version="8.0.72" />
-    <PackageReference Include="ITBees.Models" Version="8.0.82" />
+    <PackageReference Include="ITBees.Models" Version="8.0.83" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.17" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.68" />
     <PackageReference Include="ITBees.Translations" Version="8.0.119" />
@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.10" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
     <PackageReference Include="MimeKit" Version="4.8.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
   </ItemGroup>
