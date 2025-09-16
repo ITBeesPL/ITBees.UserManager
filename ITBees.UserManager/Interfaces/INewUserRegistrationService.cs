@@ -27,7 +27,8 @@ namespace ITBees.UserManager.Interfaces
             bool inviteToSetPassword) where T : Company;
 
         Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
-            NewUserRegistrationWithInvitationIm newUserRegistrationIm);
+            NewUserRegistrationWithInvitationIm newUserRegistrationIm, 
+            string accountEmailActivationBaseLink = "");
 
         Task ResendConfirmationEmail(string email);
         Task ResendInvitationToCompany(InvitationResendIm invitationIm);

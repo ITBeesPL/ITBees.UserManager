@@ -13,9 +13,11 @@ namespace ITBees.UserManager.Services.Mailing
         /// <param name="companyCompanyName"></param>
         /// <param name="nameOfInviter"></param>
         /// <param name="userLanguage"></param>
+        /// <param name="accountEmailActivationBaseLink"></param>
         /// <returns></returns>
         EmailMessage ComposeEmailWithInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string nameOfInviter, Language userLanguage);
+            string companyCompanyName, string nameOfInviter, Language userLanguage,
+            string accountEmailActivationBaseLink = "");
 
         /// <summary>
         /// Create message with invitation to platform, and email activation link
@@ -26,7 +28,8 @@ namespace ITBees.UserManager.Services.Mailing
         /// <returns></returns>
         EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData, 
             string companyCompanyName, 
-            string token, Language userLanguage);
+            string token, Language userLanguage, 
+            string accountEmailActivationBaseLink = "");
 
         /// <summary>
         /// Create message with email confirmation for single user

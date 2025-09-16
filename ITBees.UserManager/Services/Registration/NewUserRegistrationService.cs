@@ -235,7 +235,8 @@ namespace ITBees.UserManager.Services.Registration
         }
 
         public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
-            NewUserRegistrationWithInvitationIm newUserRegistrationIm)
+            NewUserRegistrationWithInvitationIm newUserRegistrationIm, 
+            string accountEmailActivationBaseLink = "")
         {
             try
             {
@@ -299,7 +300,8 @@ namespace ITBees.UserManager.Services.Registration
                         }
 
                         emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(
-                            newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage);
+                            newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage, 
+                            accountEmailActivationBaseLink);
 
                         if (newUserRegistrationIm.SendEmailInvitation)
                             _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);

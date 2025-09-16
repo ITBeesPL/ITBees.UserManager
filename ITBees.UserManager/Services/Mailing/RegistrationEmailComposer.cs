@@ -40,8 +40,11 @@ namespace ITBees.UserManager.Services.Mailing
         }
 
         public EmailMessage ComposeEmailWithInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string nameOfInviter, Language userLanguage)
+            string companyCompanyName, string nameOfInviter, Language userLanguage,
+            string accountEmailActivationBaseLink = "")
         {
+            accountEmailActivationBaseLink = GetBaseUrl(accountEmailActivationBaseLink);
+            
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithInvitationToOrganizationSubject, userSavedData.Language);
             translatedSubject = translatedSubject
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
@@ -52,7 +55,7 @@ namespace ITBees.UserManager.Services.Mailing
                     .Replace("[[INVITING_NAME]]", nameOfInviter)
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
-                .Replace("[[EMAIL_CONFIRMATION_URL]]", _platformSettingsService.GetSetting("DefaultApiUrl"))
+                .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
                     $"/acceptInvitation?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&companyGuid={userSavedData.CompanyGuid}&key={Guid.NewGuid()}")
                 ;
@@ -66,9 +69,19 @@ namespace ITBees.UserManager.Services.Mailing
             };
         }
 
-        public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string token, Language userLanguage)
+        private string GetBaseUrl(string accountEmailActivationBaseLink)
         {
+            if(string.IsNullOrEmpty(accountEmailActivationBaseLink))
+                return _platformSettingsService.GetSetting("DefaultApiUrl");
+            
+            return accountEmailActivationBaseLink;
+        }
+
+        public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
+            string companyCompanyName, string token, Language userLanguage, string accountEmailActivationBaseLink = "")
+        {
+            accountEmailActivationBaseLink = GetBaseUrl(accountEmailActivationBaseLink);
+            
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationSubject, userSavedData.Language);
             translatedSubject = translatedSubject
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
@@ -78,7 +91,7 @@ namespace ITBees.UserManager.Services.Mailing
             var translatedBodyHtml = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationBody, userSavedData.Language); ;
             translatedBodyHtml = translatedBodyHtml
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
-                .Replace("[[EMAIL_CONFIRMATION_URL]]", _platformSettingsService.GetSetting("DefaultApiUrl"))
+                .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
                     $"?emailInvitation=true&token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(userSavedData.Email)}")
                 ;
