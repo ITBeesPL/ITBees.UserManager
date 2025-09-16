@@ -334,7 +334,7 @@ namespace ITBees.UserManager.Services.Registration
                     CreateNewUserInvitationDbRecord(companyGuid, user, currentUser, newUserRegistrationIm.UserRoleGuid);
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
-                        newUserRegistrationIm, company.CompanyName, token, userLanguage);
+                        newUserRegistrationIm, company.CompanyName, token, userLanguage, accountEmailActivationBaseLink);
 
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
