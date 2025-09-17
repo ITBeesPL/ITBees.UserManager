@@ -235,7 +235,7 @@ namespace ITBees.UserManager.Services.Registration
         }
 
         public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
-            NewUserRegistrationWithInvitationIm newUserRegistrationIm, 
+            NewUserRegistrationWithInvitationIm newUserRegistrationIm,
             string accountEmailActivationBaseLink = "")
         {
             try
@@ -282,6 +282,9 @@ namespace ITBees.UserManager.Services.Registration
                 EmailMessage emailMessage = null;
                 var platformDefaultEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
 
+                var targetCompanyName = newUserRegistrationIm.InvitationToCompany ?? company.CompanyName;
+                var inviterName = newUserRegistrationIm.InvitationCreatorName ?? currentUser.DisplayName;
+                
                 if (result.Succeeded == false)
                 {
                     if (result.Errors.Any(x =>
@@ -299,8 +302,9 @@ namespace ITBees.UserManager.Services.Registration
                                 newUserRegistrationIm.UserRoleGuid);
                         }
 
+                        
                         emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(
-                            newUserRegistrationIm, company.CompanyName, currentUser.DisplayName, userLanguage, 
+                            newUserRegistrationIm, targetCompanyName, inviterName, userLanguage,
                             accountEmailActivationBaseLink);
 
                         if (newUserRegistrationIm.SendEmailInvitation)
@@ -334,7 +338,7 @@ namespace ITBees.UserManager.Services.Registration
                     CreateNewUserInvitationDbRecord(companyGuid, user, currentUser, newUserRegistrationIm.UserRoleGuid);
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
-                        newUserRegistrationIm, company.CompanyName, token, userLanguage, accountEmailActivationBaseLink);
+                        newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink);
 
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);

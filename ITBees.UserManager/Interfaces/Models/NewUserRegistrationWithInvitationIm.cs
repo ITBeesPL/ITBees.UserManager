@@ -19,5 +19,7 @@ namespace ITBees.UserManager.Interfaces.Models
 
         public Guid? UserRoleGuid { get; set; }
         public bool SendEmailInvitation { get; set; }
+        [NullableStringProperty] public string? InvitationCreatorName { get; set; }
+        [NullableStringProperty] public string? InvitationToCompany { get; set; }
     }
 }
