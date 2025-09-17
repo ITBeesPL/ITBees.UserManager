@@ -1,4 +1,5 @@
 ﻿using System;
+using ITBees.Interfaces.CodeGeneration;
 
 namespace ITBees.UserManager.Interfaces.Models
 {
