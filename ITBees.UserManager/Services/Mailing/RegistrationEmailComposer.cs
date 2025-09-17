@@ -80,6 +80,8 @@ namespace ITBees.UserManager.Services.Mailing
         public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
             string companyCompanyName, string token, Language userLanguage, string accountEmailActivationBaseLink = "")
         {
+            companyCompanyName = userSavedData.InvitationToCompany ?? companyCompanyName;
+            var invitorName = userSavedData.InvitationCreatorName ?? " ";
             accountEmailActivationBaseLink = GetBaseUrl(accountEmailActivationBaseLink);
             
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationSubject, userSavedData.Language);
@@ -90,6 +92,8 @@ namespace ITBees.UserManager.Services.Mailing
 
             var translatedBodyHtml = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationBody, userSavedData.Language); ;
             translatedBodyHtml = translatedBodyHtml
+                .Replace("[[INVITING_NAME]]", invitorName)
+                .Replace("[[COMPANY_NAME]]", companyCompanyName)
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
                 .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
