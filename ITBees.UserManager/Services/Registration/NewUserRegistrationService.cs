@@ -334,11 +334,12 @@ namespace ITBees.UserManager.Services.Registration
                             LanguageId = userLanguage.Id,
                             SetupTime = DateTime.Now
                         });
-                    emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    
                     CreateNewUserInvitationDbRecord(companyGuid, user, currentUser, newUserRegistrationIm.UserRoleGuid);
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                    var tokenPassword = await _userManager.GeneratePasswordResetTokenAsync(newUser);
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
-                        newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink);
+                        newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink, tokenPassword);
 
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);

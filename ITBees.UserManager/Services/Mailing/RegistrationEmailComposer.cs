@@ -78,7 +78,7 @@ namespace ITBees.UserManager.Services.Mailing
         }
 
         public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string token, Language userLanguage, string accountEmailActivationBaseLink = "")
+            string companyCompanyName, string token, Language userLanguage, string accountEmailActivationBaseLink = "", string tokenPassword= "")
         {
             companyCompanyName = userSavedData.InvitationToCompany ?? companyCompanyName;
             var invitorName = userSavedData.InvitationCreatorName ?? " ";
@@ -97,7 +97,7 @@ namespace ITBees.UserManager.Services.Mailing
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
                 .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
-                    $"?emailInvitation=true&token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(userSavedData.Email)}")
+                    $"?emailInvitation=true&token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(userSavedData.Email)}&tokenAuth={tokenPassword}")
                 ;
 
             return new EmailMessage()

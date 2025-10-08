@@ -29,7 +29,8 @@ namespace ITBees.UserManager.Services.Mailing
         EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData, 
             string companyCompanyName, 
             string token, Language userLanguage, 
-            string accountEmailActivationBaseLink = "");
+            string accountEmailActivationBaseLink = "",
+            string tokenAuth ="");
 
         /// <summary>
         /// Create message with email confirmation for single user
