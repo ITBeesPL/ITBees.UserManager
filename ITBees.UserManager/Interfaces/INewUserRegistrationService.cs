@@ -3,6 +3,7 @@ using ITBees.Models.Companies;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Services;
+using ITBees.UserManager.Services.Registration;
 
 namespace ITBees.UserManager.Interfaces
 {
@@ -28,7 +29,8 @@ namespace ITBees.UserManager.Interfaces
 
         Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
             NewUserRegistrationWithInvitationIm newUserRegistrationIm, 
-            string accountEmailActivationBaseLink = "");
+            string accountEmailActivationBaseLink = "", 
+            IExternalSecurityService externalSecurityService = null);
 
         Task ResendConfirmationEmail(string email);
         Task ResendInvitationToCompany(InvitationResendIm invitationIm);

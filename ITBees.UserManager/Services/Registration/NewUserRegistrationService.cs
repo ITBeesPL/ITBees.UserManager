@@ -237,8 +237,14 @@ namespace ITBees.UserManager.Services.Registration
 
         public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
             NewUserRegistrationWithInvitationIm newUserRegistrationIm,
-            string accountEmailActivationBaseLink = "")
+            string accountEmailActivationBaseLink = "", 
+            IExternalSecurityService externalSecurityService = null)
         {
+            if (externalSecurityService == null)
+            {
+                externalSecurityService = new DefaultSecurityService<T,TCompany>(_aspCurrentUserService, _accessControlService);
+            }
+            
             try
             {
                 var companyGuid = newUserRegistrationIm.CompanyGuid;
@@ -250,7 +256,8 @@ namespace ITBees.UserManager.Services.Registration
                             .ToInviteNewUserYouMustSpecifyTargetCompany, userLanguage));
                 }
 
-                var currentUser = _aspCurrentUserService.GetCurrentUser();
+                var currentUser = externalSecurityService.GetCurrentUser();
+                
                 if (currentUser == null)
                 {
                     throw new YouMustBeLoggedInToCreateNewUserInvitationException(Translate.Get(
@@ -259,10 +266,9 @@ namespace ITBees.UserManager.Services.Registration
                         newUserRegistrationIm.Language));
                 }
 
-                var accessControlResult = _accessControlService.CanDo(currentUser,
-                    typeof(NewUserRegistrationService<T, TCompany>),
-                    nameof(this.CreateAndInviteNewUserToCompany), companyGuid.Value); //Todo security implementation
-
+                var accessControlResult = externalSecurityService.CheckUserAccessToMethod(currentUser, typeof(NewUserRegistrationService<T, TCompany>),
+                    nameof(this.CreateAndInviteNewUserToCompany), companyGuid.Value);
+                
                 if (accessControlResult.CanDoResult == false)
                     throw new Exception(accessControlResult.Message);
 
@@ -278,6 +284,7 @@ namespace ITBees.UserManager.Services.Registration
                     result = await _userManager.CreateAsync(newUser,
                         Guid.NewGuid()
                             .ToString()); //create temporary password, which should be changed after email confirmation
+                
                 var emailConfirmationToken = string.Empty;
 
                 EmailMessage emailMessage = null;
@@ -499,3 +506,4 @@ namespace ITBees.UserManager.Services.Registration
         }
     }
 }
+
