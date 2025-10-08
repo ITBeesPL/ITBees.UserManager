@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using InheritedMapper;
 using ITBees.Interfaces.Platforms;
 using ITBees.Interfaces.Repository;
@@ -236,8 +237,7 @@ namespace ITBees.UserManager.Services.Registration
 
         public async Task<NewUserRegistrationResult> CreateAndInviteNewUserToCompany(
             NewUserRegistrationWithInvitationIm newUserRegistrationIm,
-            string accountEmailActivationBaseLink = "",
-            string confirmationApiEndpointUrl = "")
+            string accountEmailActivationBaseLink = "")
         {
             try
             {
@@ -341,7 +341,7 @@ namespace ITBees.UserManager.Services.Registration
                     var tokenPassword = await _userManager.GeneratePasswordResetTokenAsync(newUser);
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
                         newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink,
-                        tokenPassword, confirmationApiEndpointUrl);
+                        tokenPassword);
 
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);

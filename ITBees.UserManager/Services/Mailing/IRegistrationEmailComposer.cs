@@ -30,8 +30,7 @@ namespace ITBees.UserManager.Services.Mailing
             string companyCompanyName, 
             string token, Language userLanguage, 
             string accountEmailActivationBaseLink = "",
-            string tokenAuth ="",
-            string apiUrl = "");
+            string tokenAuth ="");
 
         /// <summary>
         /// Create message with email confirmation for single user
