@@ -57,7 +57,7 @@ namespace ITBees.UserManager.Services.Mailing
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
                 .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
-                    $"/acceptInvitation?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&companyGuid={userSavedData.CompanyGuid}&key={Guid.NewGuid()}")
+                    $"/acceptInvitation?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&companyGuid={userSavedData.CompanyGuid}&key={Guid.NewGuid()}&company={HttpUtility.UrlEncode(companyCompanyName)}")
                 ;
             ;
 
@@ -97,8 +97,7 @@ namespace ITBees.UserManager.Services.Mailing
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
                 .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
-                    $"?emailInvitation=true&token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(userSavedData.Email)}&tokenAuth={tokenPassword}")
-                ;
+                    $"?emailInvitation=true&token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(userSavedData.Email)}&tokenAuth={tokenPassword}&company={HttpUtility.UrlEncode(companyCompanyName)}");
 
             return new EmailMessage()
             {
