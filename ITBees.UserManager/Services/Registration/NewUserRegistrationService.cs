@@ -332,7 +332,6 @@ namespace ITBees.UserManager.Services.Registration
                 }
                 else
                 {
-                    var user = await _userManager.FindByEmailAsync(newUser.Email);
                     _userAccountWriteOnlyRepository.InsertData(
                         new UserAccount()
                         {
@@ -342,10 +341,11 @@ namespace ITBees.UserManager.Services.Registration
                             FirstName = newUserRegistrationIm.FirstName,
                             LastName = newUserRegistrationIm.LastName,
                             LanguageId = userLanguage.Id,
-                            SetupTime = DateTime.Now
+                            SetupTime = DateTime.Now,
+                            LastUsedCompanyGuid = companyGuid
                         });
 
-                    CreateNewUserInvitationDbRecord(companyGuid, user, currentUser, newUserRegistrationIm.UserRoleGuid);
+                    CreateNewUserInvitationDbRecord(companyGuid, newUser, currentUser, newUserRegistrationIm.UserRoleGuid);
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                     var tokenPassword = await _userManager.GeneratePasswordResetTokenAsync(newUser);
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
@@ -355,7 +355,7 @@ namespace ITBees.UserManager.Services.Registration
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
 
-                    return new NewUserRegistrationResult(user.Id, string.Empty, null, company.Guid);
+                    return new NewUserRegistrationResult(newUser.Id, string.Empty, null, company.Guid);
                 }
             }
             catch (Exception e)
