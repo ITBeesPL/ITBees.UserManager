@@ -26,11 +26,12 @@ namespace ITBees.UserManager.Services.Mailing
         /// <param name="companyCompanyName"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData, 
-            string companyCompanyName, 
-            string token, Language userLanguage, 
+        EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(
+            NewUserRegistrationWithInvitationIm userSavedData,
+            string companyCompanyName,
+            string token, Language userLanguage,
             string accountEmailActivationBaseLink = "",
-            string tokenAuth ="");
+            string tokenAuth = "");
 
         /// <summary>
         /// Create message with email confirmation for single user
@@ -38,6 +39,7 @@ namespace ITBees.UserManager.Services.Mailing
         /// <param name="newUser"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        EmailMessage ComposeEmailConfirmation(NewUserRegistrationIm newUser, string token);
+        EmailMessage ComposeEmailConfirmation(NewUserRegistrationIm newUser, string token, string tokenPassword,
+            string companyName);
     }
 }

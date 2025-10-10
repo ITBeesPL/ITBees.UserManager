@@ -107,7 +107,7 @@ namespace ITBees.UserManager.Services.Mailing
             };
         }
 
-        public EmailMessage ComposeEmailConfirmation(NewUserRegistrationIm newUser, string token)
+        public EmailMessage ComposeEmailConfirmation(NewUserRegistrationIm newUser, string token, string tokenPassword, string companyName)
         {
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailConfirmationSubject, newUser.Language);
             var translatedBody = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailConfirmationBody, newUser.Language);
@@ -117,7 +117,7 @@ namespace ITBees.UserManager.Services.Mailing
                 translatedBody,
                 _userManagerSettings,
                 new ReplaceableField("CONFIRMATION_PARAMETERS",
-                    $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}"));
+                    $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}&tokenAuth={HttpUtility.UrlEncode(tokenPassword)}&company={HttpUtility.UrlEncode(companyName)}"));
             transformedBody = transformedBody.Replace("[[EMAIL_CONFIRMATION_URL]]", _userManagerSettings.EMAIL_CONFIRMATION_URL);
 
             return new EmailMessage()
