@@ -6,5 +6,6 @@ namespace ITBees.UserManager.Interfaces
     public interface IAcceptInvitationService
     {
         AcceptInvitationResultVm Accept(bool emailInvitation, string email, Guid company);
+        AcceptInvitationResultVm AcceptAllAwaitingInvitations(string email);
     }
 }

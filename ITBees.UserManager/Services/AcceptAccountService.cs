@@ -16,12 +16,14 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
     private readonly ILoginService<T> _loginService;
     private readonly IUserManager<T> _userManager;
     private readonly ILogger<AcceptAccountService<T>> _logger;
+    private readonly IAcceptInvitationService _acceptInvitationService;
 
-    public AcceptAccountService(ILoginService<T> loginService, IUserManager<T> userManager, ILogger<AcceptAccountService<T>> logger)
+    public AcceptAccountService(ILoginService<T> loginService, IUserManager<T> userManager, ILogger<AcceptAccountService<T>> logger, IAcceptInvitationService acceptInvitationService)
     {
         _loginService = loginService;
         _userManager = userManager;
         _logger = logger;
+        _acceptInvitationService = acceptInvitationService;
     }
 
     public async Task<AcceptAccountResultVm> AcceptAccount(AcceptAccountIm x)
@@ -39,6 +41,7 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
             }
 
             await _loginService.ConfirmEmail(x.Email);
+            _acceptInvitationService.AcceptAllAwaitingInvitations(x.Email);
             var jwttoken = await _loginService.LoginAfterEmailConfirmation(x.Email, x.Lang);
             return new AcceptAccountResultVm(true, jwttoken, null);
         }
