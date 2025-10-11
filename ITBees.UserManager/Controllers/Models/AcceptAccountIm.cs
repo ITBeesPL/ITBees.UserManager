@@ -1,9 +1,12 @@
-﻿namespace ITBees.UserManager.Controllers.Models;
+﻿using ITBees.Interfaces.CodeGeneration;
+
+namespace ITBees.UserManager.Controllers.Models;
 
 public class AcceptAccountIm
 {
     public string Email { get; set; }
     public string Token { get; set; }
+    [NullableStringProperty] public string? TokenAuth { get; set; }
     public string NewPassword { get; set; }
     public string Lang { get; set; }
 

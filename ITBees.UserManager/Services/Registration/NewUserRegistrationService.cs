@@ -360,9 +360,11 @@ namespace ITBees.UserManager.Services.Registration
                     
                     var rawEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                     var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawEmailToken));
+                    _logger.LogInformation("Email confirmation token generated for user {email}: {token}, rawEmailToken : {rawEmailToken}", newUserRegistrationIm.Email, token, rawEmailToken);
                     
-                    var raw = await _userManager.GeneratePasswordResetTokenAsync(newUser);
-                    var tokenPassword = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw));
+                    var rawPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(newUser);
+                    var tokenPassword = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawPasswordToken));
+                    _logger.LogInformation("Password confirmation token generated for user {email}: {tokenPass}, rawPasswordToken : {rawPasswordToken}", newUserRegistrationIm.Email, tokenPassword, rawPasswordToken);
                     
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
                         newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink,

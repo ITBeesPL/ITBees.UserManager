@@ -32,14 +32,15 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
         try
         {
             var user = await _userManager.FindByEmailAsync(x.Email);
-            var tokenDecodedFromBase64 = WebEncoders.Base64UrlDecode(x.Token);
+            var tokenDecodedFromBase64 = WebEncoders.Base64UrlDecode(x.TokenAuth!);
             var token = Encoding.UTF8.GetString(tokenDecodedFromBase64);
             var resetResult = await _userManager.ResetPasswordAsync(user, token, x.NewPassword);
             if (!resetResult.Succeeded)
             {
                 var errorDescriptions = resetResult.Errors.Select(e => e.Description);
                 _logger.LogError($"Error while accpeting user account : {JsonSerializer.Serialize(x)}, errors :\r\n" +errorDescriptions.Aggregate((a, b) => $"{a}, {b}"));
-                
+                _logger.LogError("decoded token: " + token);
+
                 throw new FasApiErrorException("Unable to set password, please contact with provider", 400);
             }
 
