@@ -115,6 +115,7 @@ namespace ITBees.UserManager.Services.Registration
                     translatedErrors.AppendLine($"{code} - {description}");
                 }
 
+                _logger.LogError("Errors while creating new user: {errors}", translatedErrors.ToString());
                 throw new ArgumentException(translatedErrors.ToString());
             }
 
@@ -149,8 +150,8 @@ namespace ITBees.UserManager.Services.Registration
                     });
 
 
-                company = CreateCompanyAndAddCurrentUser(newUserRegistrationIm, newUser, currentUserGuid.Id,
-                    userSavedData, userLanguage);
+                company = CreateCompanyAndAddCurrentUser(newUserRegistrationIm.CompanyName, newUser, currentUserGuid.Id,
+                    userLanguage);
 
                 if (additionalInvoiceDataIm != null)
                 {
@@ -193,6 +194,7 @@ namespace ITBees.UserManager.Services.Registration
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
+                _logger.LogError("Error occurred while creating new user");
                 var user = new UserAccount()
                 {
                     Email = newUserRegistrationIm.Email,
@@ -207,6 +209,8 @@ namespace ITBees.UserManager.Services.Registration
                 return new NewUserRegistrationResult(userSavedData.Guid, e.Message, invoiceDataGuid, company.Guid);
             }
 
+            _logger.LogInformation("New user created with email {email} and guid {guid}", newUserRegistrationIm.Email,
+                userSavedData.Guid);
             return new NewUserRegistrationResult(userSavedData.Guid, string.Empty, invoiceDataGuid, company.Guid);
         }
 
@@ -345,7 +349,10 @@ namespace ITBees.UserManager.Services.Registration
                             LastUsedCompanyGuid = companyGuid
                         });
 
-                    CreateNewUserInvitationDbRecord(companyGuid, newUser, currentUser, newUserRegistrationIm.UserRoleGuid);
+                    CreateNewUserInvitationDbRecord(companyGuid, newUser, currentUser,
+                        newUserRegistrationIm.UserRoleGuid);
+                    var newUserCompany =
+                        CreateCompanyAndAddCurrentUser(string.Empty, newUser, newUser.Id, userLanguage);
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                     var tokenPassword = await _userManager.GeneratePasswordResetTokenAsync(newUser);
                     token = tokenPassword; //todo remove this in future, fix to avoic frontend changes, 
@@ -375,7 +382,7 @@ namespace ITBees.UserManager.Services.Registration
             var emailMessage =
                 _registrationEmailComposer.ComposeEmailConfirmation(
                     new NewUserRegistrationIm() { Email = email, Language = userLanguage.Language.Code },
-                    emailConfirmationToken, "","");
+                    emailConfirmationToken, "", "");
             var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
 
             _emailSendingService.SendEmail(platformEmailAccount, emailMessage);
@@ -476,18 +483,18 @@ namespace ITBees.UserManager.Services.Registration
             }
         }
 
-        private TCompany CreateCompanyAndAddCurrentUser(NewUserRegistrationIm newUserRegistrationIm, T newUser,
-            Guid? currentUserGuid, UserAccount userSavedData, Language userLanguage)
+        private TCompany CreateCompanyAndAddCurrentUser(string companyName, T newUser,
+            Guid? currentUserGuid, Language userLanguage)
         {
-            if (string.IsNullOrEmpty(newUserRegistrationIm.CompanyName))
+            if (string.IsNullOrEmpty(companyName))
             {
-                newUserRegistrationIm.CompanyName = Translate.Get(
+                companyName = Translate.Get(
                     () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
             }
 
             var company = _companyWoRepository.InsertData(new TCompany()
             {
-                CompanyName = newUserRegistrationIm.CompanyName,
+                CompanyName = companyName,
                 Created = DateTime.Now,
                 CreatedByGuid = newUser.Id,
                 IsActive = true,
@@ -502,7 +509,7 @@ namespace ITBees.UserManager.Services.Registration
                 CompanyGuid = company.Guid,
                 AddedByGuid = currentUserGuid.Value,
                 AddedDate = DateTime.Now,
-                UserAccountGuid = userSavedData.Guid
+                UserAccountGuid = currentUserGuid.Value,
             });
 
             return company;

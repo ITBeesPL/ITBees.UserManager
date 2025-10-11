@@ -16,6 +16,7 @@ using ITBees.UserManager.Interfaces.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services
 {
@@ -27,6 +28,7 @@ namespace ITBees.UserManager.Services
         private readonly IWriteOnlyRepository<UserAccount> _userWriteOnlyRepository;
         private readonly IConfigurationRoot _configurationRoot;
         private readonly ICurrentDateTimeService _currentDateTimeService;
+        private readonly ILogger<LoginService<T>> _logger;
 
         public LoginService(
             IUserManager<T> userManager,
@@ -34,7 +36,8 @@ namespace ITBees.UserManager.Services
             IReadOnlyRepository<UsersInCompany> usersInCompanyReadOnlyRepository,
             IConfigurationRoot configurationRoot,
             IWriteOnlyRepository<UserAccount> userWriteOnlyRepository,
-            ICurrentDateTimeService currentDateTimeService)
+            ICurrentDateTimeService currentDateTimeService,
+            ILogger<LoginService<T>> logger)
         {
             _userManager = userManager;
             _userReadOnlyRepository = userReadOnlyRepository;
@@ -42,6 +45,7 @@ namespace ITBees.UserManager.Services
             _configurationRoot = configurationRoot;
             _userWriteOnlyRepository = userWriteOnlyRepository;
             _currentDateTimeService = currentDateTimeService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -71,6 +75,7 @@ namespace ITBees.UserManager.Services
             }
             catch (Exception e)
             {
+                _logger.LogError(e, $"Error during email confirmation for email {email} message : {e.Message}");
                 return new ConfirmEmailResult() { Success = false, Message = e.Message };
             }
         }
@@ -169,18 +174,7 @@ namespace ITBees.UserManager.Services
         private UserAccount GetUserAccount(string email, string lang)
         {
             UserAccount userAccount;
-            try
-            {
-                userAccount = _userReadOnlyRepository.GetDataQueryable(x => x.Email == email)
-                    .Include(x => x.UsersInCompanies)
-                    .Include(x => x.UserAccountModules)
-                    .Include(x => x.Language).Include(x => x.UsersInCompanies)
-                    .ThenInclude(x => x.IdentityRole).FirstOrDefault();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            
             userAccount = _userReadOnlyRepository.GetDataQueryable(x => x.Email == email)
                 .Include(x => x.UsersInCompanies)
                 .Include(x => x.UserAccountModules)
@@ -189,6 +183,7 @@ namespace ITBees.UserManager.Services
 
             if (userAccount == null)
             {
+                _logger.LogError("Could not find user account for email {email}", email);
                 throw new ArgumentException($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, lang)} {email}");
             }
 
@@ -209,6 +204,7 @@ namespace ITBees.UserManager.Services
             }
             catch (Exception e)
             {
+                _logger.LogError("Error during getting last used company guid for email {email}, message : {message}", email, e.Message);
                 throw new Exception($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, new En())} {email} , {e.Message}");
             }
 
