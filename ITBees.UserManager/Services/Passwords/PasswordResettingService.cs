@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using ITBees.Models.Languages;
 using ITBees.Translations;
@@ -7,6 +8,7 @@ using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Services.Passwords.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Passwords
@@ -33,8 +35,9 @@ namespace ITBees.UserManager.Services.Passwords
             {
                 throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegistered, new En()));
             }
-
-            var result = await _userManager.ResetPasswordAsync(user, passwordResetIm.Token, passwordResetIm.NewPassword);
+            var tokenBytes = WebEncoders.Base64UrlDecode(passwordResetIm.Token);
+            var token = Encoding.UTF8.GetString(tokenBytes);
+            var result = await _userManager.ResetPasswordAsync(user, token, passwordResetIm.NewPassword);
             if (result.Succeeded) return new ResetPassResultVm() { Success = true };
 
             var allErrorrs = string.Join(",", result.Errors.Select(x => x.Description));
@@ -53,7 +56,8 @@ namespace ITBees.UserManager.Services.Passwords
                 throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegistered, new En()));
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var raw = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw));
             if (token == null)
             {
                 throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.UnableToGenerateNewPasswordResetToken, new En()));

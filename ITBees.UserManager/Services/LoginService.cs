@@ -70,6 +70,7 @@ namespace ITBees.UserManager.Services
             {
                 var user = await _userManager.FindByEmailAsync(email);
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                
                 await _userManager.ConfirmEmailAsync(user, token);
                 return new ConfirmEmailResult() { Success = true };
             }

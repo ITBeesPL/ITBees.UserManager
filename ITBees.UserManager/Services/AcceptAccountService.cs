@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers.Exceptions;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services;
@@ -31,7 +32,9 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
         try
         {
             var user = await _userManager.FindByEmailAsync(x.Email);
-            var resetResult = await _userManager.ResetPasswordAsync(user, x.Token, x.NewPassword);
+            var tokenDecodedFromBase64 = WebEncoders.Base64UrlDecode(x.Token);
+            var token = Encoding.UTF8.GetString(tokenDecodedFromBase64);
+            var resetResult = await _userManager.ResetPasswordAsync(user, token, x.NewPassword);
             if (!resetResult.Succeeded)
             {
                 var errorDescriptions = resetResult.Errors.Select(e => e.Description);

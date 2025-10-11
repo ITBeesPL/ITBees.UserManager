@@ -20,6 +20,7 @@ using ITBees.UserManager.Interfaces.Models;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.Mailing;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Services.Registration
@@ -126,12 +127,14 @@ namespace ITBees.UserManager.Services.Registration
 
             if (sendConfirmationEmail)
             {
-                emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(currentUserGuid);
+                var raw = await _userManager.GenerateEmailConfirmationTokenAsync(currentUserGuid);
+                emailConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw)); 
             }
 
             if (inviteToSetPassword)
             {
-                setPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(currentUserGuid);
+                var raw = await _userManager.GeneratePasswordResetTokenAsync(currentUserGuid);
+                setPasswordToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw));
             }
 
             TCompany company = null;
@@ -353,8 +356,13 @@ namespace ITBees.UserManager.Services.Registration
                         newUserRegistrationIm.UserRoleGuid);
                     var newUserCompany =
                         CreateCompanyAndAddCurrentUser(string.Empty, newUser, newUser.Id, userLanguage);
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-                    var tokenPassword = await _userManager.GeneratePasswordResetTokenAsync(newUser);
+                    
+                    var rawEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                    var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawEmailToken));
+                    
+                    var raw = await _userManager.GeneratePasswordResetTokenAsync(newUser);
+                    var tokenPassword = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw));
+                    
                     token = tokenPassword; //todo remove this in future, fix to avoic frontend changes, 
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
                         newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink,
@@ -378,7 +386,9 @@ namespace ITBees.UserManager.Services.Registration
             var user = await _userManager.FindByEmailAsync(email);
             var userLanguage = _userAccountRoRepo.GetData(x => x.Email == email, x => x.Language).First();
 
-            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var emailConfirmationTokenRaw = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var emailConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmationTokenRaw));
+
             var emailMessage =
                 _registrationEmailComposer.ComposeEmailConfirmation(
                     new NewUserRegistrationIm() { Email = email, Language = userLanguage.Language.Code },
