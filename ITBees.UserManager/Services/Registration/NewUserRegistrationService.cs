@@ -354,6 +354,7 @@ namespace ITBees.UserManager.Services.Registration
 
                     CreateNewUserInvitationDbRecord(companyGuid, newUser, currentUser,
                         newUserRegistrationIm.UserRoleGuid);
+                    
                     var newUserCompany =
                         CreateCompanyAndAddCurrentUser(string.Empty, newUser, newUser.Id, userLanguage);
                     
@@ -363,7 +364,6 @@ namespace ITBees.UserManager.Services.Registration
                     var raw = await _userManager.GeneratePasswordResetTokenAsync(newUser);
                     var tokenPassword = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw));
                     
-                    token = tokenPassword; //todo remove this in future, fix to avoic frontend changes, 
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
                         newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink,
                         tokenPassword);
