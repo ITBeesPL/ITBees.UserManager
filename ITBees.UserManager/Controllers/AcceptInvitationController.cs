@@ -10,6 +10,7 @@ namespace ITBees.UserManager.Controllers
 {
     public class AcceptInvitationController : RestfulControllerBase<AcceptInvitationController>
     {
+        private readonly ILogger<AcceptInvitationController> _logger;
         private readonly IAcceptInvitationService _acceptInvitationService;
         private readonly IPlatformSettingsService _platformSettingsService;
 
@@ -17,6 +18,7 @@ namespace ITBees.UserManager.Controllers
             IAcceptInvitationService acceptInvitationService, 
             IPlatformSettingsService platformSettingsService) : base(logger)
         {
+            _logger = logger;
             _acceptInvitationService = acceptInvitationService;
             _platformSettingsService = platformSettingsService;
         }
@@ -25,8 +27,7 @@ namespace ITBees.UserManager.Controllers
         [Produces(typeof(AcceptInvitationResultVm))]
         public IActionResult Get(bool emailInvitation, string email, Guid companyGuid)
         {
-            var acceptResult = _acceptInvitationService.Accept(emailInvitation, email, companyGuid);
-            return Redirect(_platformSettingsService.GetSetting("ApplicationSiteUrl"));
+            return ReturnOkResult(() => _acceptInvitationService.Accept(emailInvitation, email, companyGuid));
         }
     }
 }
