@@ -151,11 +151,7 @@ namespace ITBees.UserManager.Services
                             Console.WriteLine("OnAuthenticationFailed: " + context.Exception.Message);
                             return Task.CompletedTask;
                         },
-                        OnTokenValidated = context =>
-                        {
-                            Console.WriteLine("OnTokenValidated: " + context.SecurityToken);
-                            return Task.CompletedTask;
-                        }
+                        OnTokenValidated = context => Task.CompletedTask
                     };
                 });
         }
