@@ -78,7 +78,7 @@ public class MyAccountUpdateService : IMyAccountUpdateService
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message, e);
+            _logger.LogError("UpdateMyAccount error : " + e.Message, e);
             throw;
         }
     }

@@ -196,7 +196,7 @@ namespace ITBees.UserManager.Services.Registration
             }
             catch (Exception e)
             {
-                _logger.LogError(e, e.Message);
+                _logger.LogError("CreateNewUser error : " + e.Message, e);
                 _logger.LogError("Error occurred while creating new user");
                 var user = new UserAccount()
                 {
