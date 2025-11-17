@@ -21,7 +21,7 @@
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.26" />
     <PackageReference Include="ITBees.Models" Version="8.0.93" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.17" />
-    <PackageReference Include="ITBees.Mailing" Version="8.0.85" />
+    <PackageReference Include="ITBees.Mailing" Version="8.0.86" />
     <PackageReference Include="ITBees.Translations" Version="8.0.139" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.58" />
     <PackageReference Include="MailKit" Version="4.8.0" />
