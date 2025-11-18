@@ -21,8 +21,8 @@
     <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.26" />
     <PackageReference Include="ITBees.Models" Version="8.0.94" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.17" />
-    <PackageReference Include="ITBees.Mailing" Version="8.0.88" />
-    <PackageReference Include="ITBees.Translations" Version="8.0.141" />
+    <PackageReference Include="ITBees.Mailing" Version="8.0.89" />
+    <PackageReference Include="ITBees.Translations" Version="8.0.142" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.59" />
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
