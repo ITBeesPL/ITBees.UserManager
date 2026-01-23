@@ -18,7 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="ITBees.Interfaces" Version="8.0.71" />
-    <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.26" />
+    <PackageReference Include="ITBees.RestfulApiControllers" Version="8.0.27" />
     <PackageReference Include="ITBees.Models" Version="8.0.94" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.17" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.92" />
