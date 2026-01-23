@@ -31,6 +31,7 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
     {
         try
         {
+            _logger.LogInformation("Accepting user account: " + x.Email);
             var user = await _userManager.FindByEmailAsync(x.Email);
             var tokenDecodedFromBase64 = WebEncoders.Base64UrlDecode(x.TokenAuth!);
             var token = Encoding.UTF8.GetString(tokenDecodedFromBase64);
@@ -47,6 +48,7 @@ public class AcceptAccountService<T> : IAcceptAccountService<T> where T : Identi
             await _loginService.ConfirmEmail(x.Email);
             _acceptInvitationService.AcceptAllAwaitingInvitations(x.Email);
             var jwttoken = await _loginService.LoginAfterEmailConfirmation(x.Email, x.Lang);
+            _logger.LogInformation("User account accepted: " + x.Email + "with no errors.");
             return new AcceptAccountResultVm(true, jwttoken, null);
         }
         catch (Exception e)
