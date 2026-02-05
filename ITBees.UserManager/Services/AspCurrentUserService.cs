@@ -17,12 +17,13 @@ namespace ITBees.UserManager.Services
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IReadOnlyRepository<UsersInCompany> _usersInCompanyRoRepository;
 
-        public AspCurrentUserService(IHttpContextAccessor _contextAccessor, 
+        public AspCurrentUserService(IHttpContextAccessor _contextAccessor,
             IReadOnlyRepository<UsersInCompany> usersInCompanyRoRepository)
         {
             this._contextAccessor = _contextAccessor;
             _usersInCompanyRoRepository = usersInCompanyRoRepository;
         }
+
         public Guid? GetCurrentUserGuid()
         {
             var claimsIdentity = (_contextAccessor.HttpContext.User?.Identity as ClaimsIdentity);
@@ -43,15 +44,17 @@ namespace ITBees.UserManager.Services
             if (claimsIdentity.IsAuthenticated)
             {
                 var claim = claimsIdentity.Claims.First();
-                var LastUsedCompanyGuid = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "LastUsedCompanyGuid").Value;
+                var LastUsedCompanyGuid =
+                    claimsIdentity.Claims.FirstOrDefault(x => x.Type == "LastUsedCompanyGuid").Value;
                 var displayName = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "DisplayName").Value;
                 var email = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "Email")!.Value;
                 var language = claimsIdentity.Claims.FirstOrDefault(x => x.Type == "Language").Value;
-                var userRoles = claimsIdentity.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x=>x.Value).ToArray();
+                var userRoles = claimsIdentity.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x => x.Value)
+                    .ToArray();
                 return new CurrentUser()
                 {
-                    Guid = new Guid(claim.Value), 
-                    LastUsedCompanyGuid = new Guid(LastUsedCompanyGuid), 
+                    Guid = new Guid(claim.Value),
+                    LastUsedCompanyGuid = new Guid(LastUsedCompanyGuid),
                     Language = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language),
                     DisplayName = displayName,
                     UserRoles = userRoles,
@@ -75,7 +78,8 @@ namespace ITBees.UserManager.Services
         public TypeOfOperation GetMyAcceessToCompany(Guid companyGuid)
         {
             var currentUserGuid = GetCurrentUserGuid();
-            var userInCompany = _usersInCompanyRoRepository.GetData(x => x.UserAccountGuid == currentUserGuid && x.CompanyGuid == companyGuid).FirstOrDefault();
+            var userInCompany = _usersInCompanyRoRepository
+                .GetData(x => x.UserAccountGuid == currentUserGuid && x.CompanyGuid == companyGuid).FirstOrDefault();
             if (userInCompany == null)
             {
                 throw new AuthorizationException(AuthorizationExceptionMessages.You_dont_have_any_acceess_to_company);
@@ -91,7 +95,8 @@ namespace ITBees.UserManager.Services
                 return true;
             }
 
-            throw new AuthorizationException(AuthorizationExceptionMessages.You_dont_have_acceess_enough_right_for_specified_company);
+            throw new AuthorizationException(AuthorizationExceptionMessages
+                .You_dont_have_acceess_enough_right_for_specified_company);
         }
 
         public bool CurrentUserIsPlatformOperator()
@@ -115,20 +120,19 @@ namespace ITBees.UserManager.Services
             var currentUser = GetCurrentUser();
             if (currentUser == null)
                 return false;
-            
+
             var currentUserGuid = currentUser.Guid;
             if (currentUserGuid == null)
                 return false;
 
             var userInCompany = _usersInCompanyRoRepository
-                .GetData(x => x.UserAccountGuid == currentUserGuid && x.CompanyGuid == companyGuid)
+                .GetData(x => x.UserAccountGuid == currentUserGuid && x.CompanyGuid == companyGuid, x => x.IdentityRole)
                 .FirstOrDefault();
 
             if (userInCompany == null)
                 return false;
 
-            return true;
+            return userInCompany.IdentityRole.Name!.ToLower() == role.ToLower();
         }
-
     }
 }
