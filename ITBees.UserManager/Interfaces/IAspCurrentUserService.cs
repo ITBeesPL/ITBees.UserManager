@@ -20,5 +20,6 @@ namespace ITBees.UserManager.Interfaces
 
         bool CurrentUserIsPlatformOperator();
         bool CurrentUserIsInRole(string role);
+        bool CurrentUserIsInRole(string role, Guid companyGuid);
     }
 }

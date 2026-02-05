@@ -109,5 +109,26 @@ namespace ITBees.UserManager.Services
 
             return false;
         }
+
+        public bool CurrentUserIsInRole(string role, Guid companyGuid)
+        {
+            var currentUser = GetCurrentUser();
+            if (currentUser == null)
+                return false;
+            
+            var currentUserGuid = currentUser.Guid;
+            if (currentUserGuid == null)
+                return false;
+
+            var userInCompany = _usersInCompanyRoRepository
+                .GetData(x => x.UserAccountGuid == currentUserGuid && x.CompanyGuid == companyGuid)
+                .FirstOrDefault();
+
+            if (userInCompany == null)
+                return false;
+
+            return true;
+        }
+
     }
 }
