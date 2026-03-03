@@ -14,6 +14,7 @@ using ITBees.Models.Users;
 using ITBees.RestfulApiControllers.Exceptions;
 using ITBees.RestfulApiControllers.Models;
 using ITBees.Translations;
+using ITBees.UserManager.Controllers;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
@@ -128,7 +129,7 @@ namespace ITBees.UserManager.Services.Registration
             if (sendConfirmationEmail)
             {
                 var raw = await _userManager.GenerateEmailConfirmationTokenAsync(currentUserGuid);
-                emailConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw)); 
+                emailConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(raw));
             }
 
             if (inviteToSetPassword)
@@ -354,21 +355,43 @@ namespace ITBees.UserManager.Services.Registration
 
                     CreateNewUserInvitationDbRecord(companyGuid, newUser, currentUser,
                         newUserRegistrationIm.UserRoleGuid);
-                    
+
                     var newUserCompany =
                         CreateCompanyAndAddCurrentUser(string.Empty, newUser, newUser.Id, userLanguage);
-                    
+
                     var rawEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                     var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawEmailToken));
-                    _logger.LogInformation("Email confirmation token generated for user {email}: {token}, rawEmailToken : {rawEmailToken}", newUserRegistrationIm.Email, token, rawEmailToken);
-                    
+                    var emailTokenB64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawEmailToken));
+
+                    _logger.LogInformation(
+                        "Email token generated for {email}. b64Len={b64Len}, b64Sha={b64Sha}, b64Prefix={b64Prefix}, rawLen={rawLen}, rawSha={rawSha}, rawPrefix={rawPrefix}",
+                        newUserRegistrationIm.Email,
+                        emailTokenB64.Length,
+                        TokenLogHelper.Sha256(emailTokenB64),
+                        TokenLogHelper.Prefix(emailTokenB64),
+                        rawEmailToken.Length,
+                        TokenLogHelper.Sha256(rawEmailToken),
+                        TokenLogHelper.Prefix(rawEmailToken)
+                    );
+
+                    // Password reset token
                     var rawPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(newUser);
-                    var tokenPassword = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawPasswordToken));
-                    _logger.LogInformation("Password confirmation token generated for user {email}: {tokenPass}, rawPasswordToken : {rawPasswordToken}", newUserRegistrationIm.Email, tokenPassword, rawPasswordToken);
-                    
+                    var passTokenB64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawPasswordToken));
+
+                    _logger.LogInformation(
+                        "Password reset token generated for {email}. b64Len={b64Len}, b64Sha={b64Sha}, b64Prefix={b64Prefix}, rawLen={rawLen}, rawSha={rawSha}, rawPrefix={rawPrefix}",
+                        newUserRegistrationIm.Email,
+                        passTokenB64.Length,
+                        TokenLogHelper.Sha256(passTokenB64),
+                        TokenLogHelper.Prefix(passTokenB64),
+                        rawPasswordToken.Length,
+                        TokenLogHelper.Sha256(rawPasswordToken),
+                        TokenLogHelper.Prefix(rawPasswordToken)
+                    );
+
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
-                        newUserRegistrationIm, targetCompanyName, token, userLanguage, accountEmailActivationBaseLink,
-                        tokenPassword);
+                        newUserRegistrationIm, targetCompanyName, emailTokenB64, userLanguage,
+                        accountEmailActivationBaseLink, passTokenB64);
 
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);

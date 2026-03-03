@@ -77,27 +77,45 @@ namespace ITBees.UserManager.Services.Mailing
             return accountEmailActivationBaseLink;
         }
 
-        public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
-            string companyCompanyName, string token, Language userLanguage, string accountEmailActivationBaseLink = "", string tokenPassword= "")
+        public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(
+            NewUserRegistrationWithInvitationIm userSavedData,
+            string companyCompanyName,
+            string token, // email token (Base64Url)
+            Language userLanguage,
+            string accountEmailActivationBaseLink = "",
+            string tokenPassword = "" // password reset token (Base64Url)
+        )
         {
             companyCompanyName = userSavedData.InvitationToCompany ?? companyCompanyName;
             var invitorName = userSavedData.InvitationCreatorName ?? " ";
             accountEmailActivationBaseLink = GetBaseUrl(accountEmailActivationBaseLink);
-            
-            var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationSubject, userSavedData.Language);
+
+            var translatedSubject = Translate.Get(
+                () => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationSubject,
+                userSavedData.Language);
+
             translatedSubject = translatedSubject
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
-                .Replace("[[INVITING_NAME]]", companyCompanyName)
-                ;
+                .Replace("[[INVITING_NAME]]", companyCompanyName);
 
-            var translatedBodyHtml = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationBody, userSavedData.Language); ;
+            var translatedBodyHtml = Translate.Get(
+                () => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationBody,
+                userSavedData.Language);
+
+            // IMPORTANT: UrlEncode tokenAuth too
+            var parameters =
+                "?emailInvitation=true" +
+                "&token=" + HttpUtility.UrlEncode(token) +
+                "&email=" + HttpUtility.UrlEncode(userSavedData.Email) +
+                "&tokenAuth=" + HttpUtility.UrlEncode(tokenPassword) +
+                "&company=" + HttpUtility.UrlEncode(companyCompanyName);
+
             translatedBodyHtml = translatedBodyHtml
                 .Replace("[[INVITING_NAME]]", invitorName)
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
                 .Replace("[[PLATFORM_NAME]]", _userManagerSettings.PLATFORM_NAME)
                 .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
-                .Replace("[[CONFIRMATION_PARAMETERS]]",
-                    $"?emailInvitation=true&token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(userSavedData.Email)}&tokenAuth={tokenPassword}&company={HttpUtility.UrlEncode(companyCompanyName)}");
+                .Replace("[[CONFIRMATION_PARAMETERS]]", parameters);
 
             return new EmailMessage()
             {
