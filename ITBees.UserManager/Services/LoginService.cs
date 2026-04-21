@@ -28,6 +28,7 @@ namespace ITBees.UserManager.Services
         private readonly IWriteOnlyRepository<UserAccount> _userWriteOnlyRepository;
         private readonly IConfigurationRoot _configurationRoot;
         private readonly ICurrentDateTimeService _currentDateTimeService;
+        private readonly ICompanyBootstrapService _companyBootstrapService;
         private readonly ILogger<LoginService<T>> _logger;
 
         public LoginService(
@@ -37,6 +38,7 @@ namespace ITBees.UserManager.Services
             IConfigurationRoot configurationRoot,
             IWriteOnlyRepository<UserAccount> userWriteOnlyRepository,
             ICurrentDateTimeService currentDateTimeService,
+            ICompanyBootstrapService companyBootstrapService,
             ILogger<LoginService<T>> logger)
         {
             _userManager = userManager;
@@ -45,6 +47,7 @@ namespace ITBees.UserManager.Services
             _configurationRoot = configurationRoot;
             _userWriteOnlyRepository = userWriteOnlyRepository;
             _currentDateTimeService = currentDateTimeService;
+            _companyBootstrapService = companyBootstrapService;
             _logger = logger;
         }
 
@@ -188,25 +191,56 @@ namespace ITBees.UserManager.Services
                 throw new ArgumentException($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, lang)} {email}");
             }
 
-            try
+            if (userAccount.LastUsedCompanyGuid == null || userAccount.LastUsedCompanyGuid == Guid.Empty)
             {
-                if (userAccount.LastUsedCompanyGuid == null || userAccount.LastUsedCompanyGuid == new Guid("00000000-0000-0000-0000-000000000000"))
-                {
-                    var usersInCompanies =
-                        _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
-                    if (usersInCompanies.Count == 0)
-                    {
-                        throw new Exception(
-                            $"Could not find any users in company company, last used company guid is null, user guid : {userAccount.Guid}");
-                    }
+                var usersInCompanies =
+                    _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
 
+                if (usersInCompanies.Count == 0)
+                {
+                    _logger.LogWarning(
+                        "User {email} (guid {userGuid}) has no UsersInCompany entries. Attempting self-heal by creating a default private company.",
+                        email, userAccount.Guid);
+
+                    try
+                    {
+                        var createdCompany = _companyBootstrapService.EnsureUserHasCompany(
+                            userAccount.Guid, null, userAccount.Language);
+
+                        if (createdCompany != null)
+                        {
+                            userAccount.LastUsedCompanyGuid = createdCompany.Guid;
+                        }
+                        else
+                        {
+                            usersInCompanies =
+                                _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
+                            if (usersInCompanies.Count > 0)
+                            {
+                                userAccount.LastUsedCompanyGuid = usersInCompanies.First().CompanyGuid;
+                            }
+                            else
+                            {
+                                _logger.LogError(
+                                    "Self-heal failed for user {email} (guid {userGuid}) - bootstrap service returned no company and no UsersInCompany rows exist.",
+                                    email, userAccount.Guid);
+                                throw new Exception(
+                                    $"User account {email} has no company assigned and platform was unable to create a default one.");
+                            }
+                        }
+                    }
+                    catch (Exception bootstrapEx)
+                    {
+                        _logger.LogError(bootstrapEx,
+                            "Failed to bootstrap default company for user {email} (guid {userGuid}): {message}",
+                            email, userAccount.Guid, bootstrapEx.Message);
+                        throw;
+                    }
+                }
+                else
+                {
                     userAccount.LastUsedCompanyGuid = usersInCompanies.First().CompanyGuid;
                 }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("Error during getting last used company guid for email {email}, message : {message}", email, e.Message);
-                throw new Exception($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, new En())} {email} , {e.Message}");
             }
 
             return userAccount;

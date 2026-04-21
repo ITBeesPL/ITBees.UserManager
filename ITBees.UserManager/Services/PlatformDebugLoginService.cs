@@ -19,9 +19,11 @@ public class PlatformDebugLoginService<T> : LoginService<T> where T : IdentityUs
         IReadOnlyRepository<UsersInCompany> usersInCompanyReadOnlyRepository,
         IConfigurationRoot configurationRoot,
         IWriteOnlyRepository<UserAccount> userWriteOnlyRepository,
-        ICurrentDateTimeService currentDateTimeService, ILogger<PlatformDebugLoginService<T>> logger) : base(
+        ICurrentDateTimeService currentDateTimeService,
+        ICompanyBootstrapService companyBootstrapService,
+        ILogger<PlatformDebugLoginService<T>> logger) : base(
         userManager, userReadOnlyRepository, usersInCompanyReadOnlyRepository, configurationRoot,
-        userWriteOnlyRepository, currentDateTimeService, logger)
+        userWriteOnlyRepository, currentDateTimeService, companyBootstrapService, logger)
     {
 #if NOTDEBUG
        throw new Exception("You are not allowed to use Platform debug login service in production environment");

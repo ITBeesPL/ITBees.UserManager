@@ -197,20 +197,50 @@ namespace ITBees.UserManager.Services.Registration
             }
             catch (Exception e)
             {
-                _logger.LogError("CreateNewUser error : " + e.Message, e);
-                _logger.LogError("Error occurred while creating new user");
-                var user = new UserAccount()
+                _logger.LogError(e, "CreateNewUser error : {message}", e.Message);
+
+                if (userSavedData != null && company == null)
                 {
-                    Email = newUserRegistrationIm.Email,
-                    Guid = newUser.Id
-                };
+                    _logger.LogError(
+                        "Registration failed after UserAccount {userGuid} ({email}) was created but before company assignment - rolling back to avoid orphaned user.",
+                        newUser.Id, newUserRegistrationIm.Email);
+
+                    try
+                    {
+                        _userAccountWriteOnlyRepository.DeleteData(x => x.Guid == newUser.Id);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogError(cleanupEx,
+                            "Rollback of UserAccount {userGuid} failed after company creation error: {message}",
+                            newUser.Id, cleanupEx.Message);
+                    }
+
+                    try
+                    {
+                        var identityToDelete = await _userManager.FindByEmailAsync(newUserRegistrationIm.Email);
+                        if (identityToDelete != null)
+                        {
+                            await _userManager.DeleteAccount(false, identityToDelete.Id);
+                        }
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogError(cleanupEx,
+                            "Rollback of IdentityUser for email {email} failed: {message}",
+                            newUserRegistrationIm.Email, cleanupEx.Message);
+                    }
+
+                    throw new Exception($"Registration failed and was rolled back: {e.Message}", e);
+                }
 
                 if (userSavedData == null)
                 {
                     throw new Exception(e.Message);
                 }
 
-                return new NewUserRegistrationResult(userSavedData.Guid, e.Message, invoiceDataGuid, company.Guid);
+                return new NewUserRegistrationResult(userSavedData.Guid, e.Message, invoiceDataGuid,
+                    company?.Guid ?? Guid.Empty);
             }
 
             _logger.LogInformation("New user created with email {email} and guid {guid}", newUserRegistrationIm.Email,
