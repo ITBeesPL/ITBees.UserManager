@@ -503,11 +503,23 @@ namespace ITBees.UserManager.Services.Registration
         private Language GetUserLanguage(IVmWithLanguageDefined newUserRegistrationIm)
         {
             Language userLanguage = null;
-            userLanguage = newUserRegistrationIm.Language != null
-                ? new DerivedAsTFromStringClassResolver<Language>().GetInstance(newUserRegistrationIm.Language)
-                : new En();
 
-            return userLanguage;
+            if (!string.IsNullOrEmpty(newUserRegistrationIm.Language))
+            {
+                try
+                {
+                    userLanguage = new DerivedAsTFromStringClassResolver<Language>()
+                        .GetInstance(newUserRegistrationIm.Language);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Unable to resolve Language instance for code '{code}' - falling back to En.",
+                        newUserRegistrationIm.Language);
+                }
+            }
+
+            return userLanguage ?? new Pl();
         }
 
         private void AddNewUserToCompany(
@@ -551,10 +563,12 @@ namespace ITBees.UserManager.Services.Registration
         private TCompany CreateCompanyAndAddCurrentUser(string companyName, T newUser,
             Guid? currentUserGuid, Language userLanguage)
         {
+            var safeLanguage = userLanguage ?? new Pl();
+
             if (string.IsNullOrEmpty(companyName))
             {
                 companyName = Translate.Get(
-                    () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, userLanguage);
+                    () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, safeLanguage);
             }
 
             var company = _companyWoRepository.InsertData(new TCompany()
