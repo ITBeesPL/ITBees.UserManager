@@ -29,7 +29,7 @@ namespace ITBees.UserManager.Services.Passwords
 
             if (user == null)
             {
-                throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.CurrentUserNotExits, new En()));
+                throw new UnauthorizedAccessException(Translate.Get(() => Translations.UserManager.ResetPassword.CurrentUserNotExits, new En()));
             }
 
             if (await _userManager.CheckPasswordAsync(user, changePasswordIm.CurrentPass))
@@ -49,7 +49,7 @@ namespace ITBees.UserManager.Services.Passwords
             }
             else
             {
-                throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.CurrentPasswordIsIncorrect, new En()));
+                throw new UnauthorizedAccessException(Translate.Get(() => Translations.UserManager.ResetPassword.CurrentPasswordIsIncorrect, new En()));
             };
         }
     }

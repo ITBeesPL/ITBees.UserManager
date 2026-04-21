@@ -40,11 +40,26 @@ namespace ITBees.UserManager.Services.Registration
                 return null;
             }
 
-            var companyName = string.IsNullOrEmpty(desiredCompanyName)
-                ? Translate.Get(
-                    () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName,
-                    userLanguage ?? new En())
-                : desiredCompanyName;
+            var companyName = desiredCompanyName;
+            if (string.IsNullOrEmpty(companyName))
+            {
+                try
+                {
+                    companyName = Translate.Get(
+                        () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName,
+                        userLanguage ?? new En());
+                }
+                catch (Exception translateEx)
+                {
+                    _logger.LogWarning(translateEx,
+                        "Translate.Get failed for DefaultPrivateCompanyName - using hardcoded fallback.");
+                }
+
+                if (string.IsNullOrEmpty(companyName))
+                {
+                    companyName = "Private";
+                }
+            }
 
             var company = _companyWoRepo.InsertData(new TCompany()
             {

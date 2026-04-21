@@ -567,8 +567,21 @@ namespace ITBees.UserManager.Services.Registration
 
             if (string.IsNullOrEmpty(companyName))
             {
-                companyName = Translate.Get(
-                    () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, safeLanguage);
+                try
+                {
+                    companyName = Translate.Get(
+                        () => Translations.UserManager.NewUserRegistration.DefaultPrivateCompanyName, safeLanguage);
+                }
+                catch (Exception translateEx)
+                {
+                    _logger.LogWarning(translateEx,
+                        "Translate.Get failed for DefaultPrivateCompanyName - using hardcoded fallback.");
+                }
+
+                if (string.IsNullOrEmpty(companyName))
+                {
+                    companyName = "Prywatna";
+                }
             }
 
             var company = _companyWoRepository.InsertData(new TCompany()
