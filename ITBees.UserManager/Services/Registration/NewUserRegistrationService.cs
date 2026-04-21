@@ -104,7 +104,7 @@ namespace ITBees.UserManager.Services.Registration
             if (result.Succeeded == false)
             {
                 if (result.Errors.Any(x => x.Code == "DuplicateUserName"))
-                    throw new Exception(
+                    throw new ArgumentException(
                         Translate.Get(() => Translations.UserManager.NewUserRegistration.EmailAlreadyRegistered,
                             userLanguage) + $" : {newUserRegistrationIm.Email}");
                 StringBuilder translatedErrors = new StringBuilder();
