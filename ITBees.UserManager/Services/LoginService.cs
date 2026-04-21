@@ -162,17 +162,25 @@ namespace ITBees.UserManager.Services
 
             var identityUser = await _userManager.FindByEmailAsync(email);
 
-            if (!await _userManager.CheckPasswordAsync(identityUser, pass)) throw new UnauthorizedAccessException(Translate.Get(() => Translations.UserManager.UserLogin.IncorrectEmailOrPassword, userAccount.Language));
+            if (identityUser == null)
+            {
+                _logger.LogWarning("Failed login attempt - identity user missing for {email}", email);
+                throw new UnauthorizedAccessException(Translate.Get(
+                    () => Translations.UserManager.UserLogin.IncorrectEmailOrPassword, userAccount.Language));
+            }
+
+            if (!await _userManager.CheckPasswordAsync(identityUser, pass))
+            {
+                _logger.LogWarning("Failed login attempt - incorrect password for {email}", email);
+                throw new UnauthorizedAccessException(Translate.Get(
+                    () => Translations.UserManager.UserLogin.IncorrectEmailOrPassword, userAccount.Language));
+            }
+
             if (identityUser.EmailConfirmed) return userAccount;
-            if (identityUser.EmailConfirmed == false)
-                throw new Authorization403ForbiddenException
-                    (Translate.Get(() => Translations.UserManager.UserLogin.EmailNotConfirmed, userAccount.Language));
 
-            var tmpToken = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-
-            await _userManager.ConfirmEmailAsync(identityUser, tmpToken);
-
-            return userAccount;
+            _logger.LogWarning("Failed login attempt - email not confirmed for {email}", email);
+            throw new Authorization403ForbiddenException(Translate.Get(
+                () => Translations.UserManager.UserLogin.EmailNotConfirmed, userAccount.Language));
         }
 
         private UserAccount GetUserAccount(string email, string lang)
@@ -187,7 +195,7 @@ namespace ITBees.UserManager.Services
 
             if (userAccount == null)
             {
-                _logger.LogError("Could not find user account for email {email}", email);
+                _logger.LogWarning("Failed login attempt - no user account for {email}", email);
                 throw new ArgumentException($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, lang)} {email}");
             }
 
