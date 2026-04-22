@@ -3,6 +3,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ITBees.Models.Languages;
+using ITBees.RestfulApiControllers.Exceptions;
+using ITBees.RestfulApiControllers.Models;
 using ITBees.Translations;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
@@ -38,6 +40,16 @@ namespace ITBees.UserManager.Services
                     confirmRegistrationIm.Email, tokenAgeInfo);
                 throw new ArgumentException(
                     Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, new En()));
+            }
+
+            if (user.EmailConfirmed)
+            {
+                _logger.LogInformation(
+                    "Email confirmation link used for already-active account {email}. {tokenAge}",
+                    confirmRegistrationIm.Email, tokenAgeInfo);
+                throw new FasApiErrorException(new FasApiErrorVm(
+                    Translate.Get(() => Translations.UserManager.UserLogin.AccountAlreadyActive, new En()),
+                    409, ""));
             }
 
             var token = DecodeConfirmationToken(confirmRegistrationIm.Token);
