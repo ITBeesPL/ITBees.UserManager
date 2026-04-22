@@ -197,13 +197,54 @@ namespace ITBees.UserManager.Services.Registration
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "CreateNewUser error : {message}", e.Message);
+                var isInvalidRecipientEmail = IsSmtpRecipientRejection(e);
 
-                if (userSavedData != null && company == null)
+                if (isInvalidRecipientEmail)
                 {
-                    _logger.LogError(
-                        "Registration failed after UserAccount {userGuid} ({email}) was created but before company assignment - rolling back to avoid orphaned user.",
-                        newUser.Id, newUserRegistrationIm.Email);
+                    _logger.LogWarning(
+                        "Registration rejected - invalid recipient email {email}: {message}. Rolling back created records.",
+                        newUserRegistrationIm.Email, e.Message);
+                }
+                else
+                {
+                    _logger.LogError(e, "CreateNewUser error : {message}", e.Message);
+                }
+
+                if (userSavedData != null && (company == null || isInvalidRecipientEmail))
+                {
+                    if (isInvalidRecipientEmail)
+                    {
+                        if (company != null)
+                        {
+                            try
+                            {
+                                _usersInCompanyWoRepo.DeleteData(x => x.UserAccountGuid == newUser.Id);
+                            }
+                            catch (Exception cleanupEx)
+                            {
+                                _logger.LogError(cleanupEx,
+                                    "Rollback of UsersInCompany for user {userGuid} failed: {message}",
+                                    newUser.Id, cleanupEx.Message);
+                            }
+
+                            try
+                            {
+                                _companyWoRepository.DeleteData(x => x.Guid == company.Guid);
+                            }
+                            catch (Exception cleanupEx)
+                            {
+                                _logger.LogError(cleanupEx,
+                                    "Rollback of Company {companyGuid} failed: {message}",
+                                    company.Guid, cleanupEx.Message);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError(
+                            "Registration failed after UserAccount {userGuid} ({email}) was created but before company assignment - rolling back to avoid orphaned user.",
+                            newUser.Id, newUserRegistrationIm.Email);
+                    }
 
                     try
                     {
@@ -212,7 +253,7 @@ namespace ITBees.UserManager.Services.Registration
                     catch (Exception cleanupEx)
                     {
                         _logger.LogError(cleanupEx,
-                            "Rollback of UserAccount {userGuid} failed after company creation error: {message}",
+                            "Rollback of UserAccount {userGuid} failed: {message}",
                             newUser.Id, cleanupEx.Message);
                     }
 
@@ -229,6 +270,15 @@ namespace ITBees.UserManager.Services.Registration
                         _logger.LogError(cleanupEx,
                             "Rollback of IdentityUser for email {email} failed: {message}",
                             newUserRegistrationIm.Email, cleanupEx.Message);
+                    }
+
+                    if (isInvalidRecipientEmail)
+                    {
+                        var userLang = GetUserLanguage(newUserRegistrationIm);
+                        var invalidEmailMsg = Translate.Get(
+                            () => Translations.UserManager.NewUserRegistration.Errors.InvalidEmail, userLang);
+                        throw new ArgumentException(
+                            $"{invalidEmailMsg} : {newUserRegistrationIm.Email}", e);
                     }
 
                     throw new Exception($"Registration failed and was rolled back: {e.Message}", e);
@@ -257,6 +307,27 @@ namespace ITBees.UserManager.Services.Registration
         {
             return await CreateNewUser(newUserRegistrationInputDto, sendConfirmationEmail, additionalInvoiceDataIm,
                 invitationEmailCreator, inviteToSetPassword);
+        }
+
+        private static bool IsSmtpRecipientRejection(Exception e)
+        {
+            var ex = e;
+            while (ex != null)
+            {
+                var msg = ex.Message ?? string.Empty;
+                if (msg.IndexOf("Recipient address rejected", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    msg.IndexOf("Domain not found", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    msg.IndexOf("Invalid recipient", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    msg.IndexOf("No such user", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    msg.StartsWith("5.1.1", StringComparison.OrdinalIgnoreCase) ||
+                    msg.StartsWith("5.1.2", StringComparison.OrdinalIgnoreCase) ||
+                    msg.StartsWith("5.1.3", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                ex = ex.InnerException;
+            }
+            return false;
         }
 
         private static string GenerateRandomPassword()

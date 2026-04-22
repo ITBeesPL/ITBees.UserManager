@@ -47,9 +47,19 @@ namespace ITBees.UserManager.Services
                 _logger.LogInformation(
                     "Email confirmation link used for already-active account {email}. {tokenAge}",
                     confirmRegistrationIm.Email, tokenAgeInfo);
-                throw new FasApiErrorException(new FasApiErrorVm(
-                    Translate.Get(() => Translations.UserManager.UserLogin.AccountAlreadyActive, new En()),
-                    409, ""));
+
+                string alreadyActiveMessage;
+                try
+                {
+                    alreadyActiveMessage = Translate.Get(
+                        () => Translations.UserManager.UserLogin.AccountAlreadyActive, new En());
+                }
+                catch
+                {
+                    alreadyActiveMessage = "Your account is already active, you can log in";
+                }
+
+                throw new FasApiErrorException(new FasApiErrorVm(alreadyActiveMessage, 409, ""));
             }
 
             var token = DecodeConfirmationToken(confirmRegistrationIm.Token);
