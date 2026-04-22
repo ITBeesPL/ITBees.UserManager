@@ -29,16 +29,18 @@ namespace ITBees.UserManager.Services
         public async Task<TokenVm> ConfirmRegistrationEmailAndGetSessionToken(
             ConfirmRegistrationIm confirmRegistrationIm)
         {
+            var tokenAgeInfo = BuildTokenAgeInfo(confirmRegistrationIm.IssuedAt);
+
             var user = await _userManager.FindByEmailAsync(confirmRegistrationIm.Email);
             if (user == null)
             {
-                _logger.LogError($"User {confirmRegistrationIm.Email} not found");
-                throw new Exception(
+                _logger.LogWarning("Email confirmation failed - user {email} not found. {tokenAge}",
+                    confirmRegistrationIm.Email, tokenAgeInfo);
+                throw new ArgumentException(
                     Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, new En()));
             }
 
-            var tokenBytes = WebEncoders.Base64UrlDecode(confirmRegistrationIm.Token);
-            var token = Encoding.UTF8.GetString(tokenBytes);
+            var token = DecodeConfirmationToken(confirmRegistrationIm.Token);
             var confirmResult = await _userManager.ConfirmEmailAsync(user, token);
             if (confirmResult.Succeeded)
             {
@@ -47,14 +49,45 @@ namespace ITBees.UserManager.Services
             }
 
             var errors = string.Join(";", confirmResult.Errors.Select(x => x.Description));
-            
-            _logger.LogError("Error on email confirmation for user {email} with token {token}. Errors: {errors}",
-                confirmRegistrationIm.Email, confirmRegistrationIm.Token, errors);
-            
-            throw new Exception(Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress,
-                                    new En()) +
-                                $"Email :{confirmRegistrationIm.Email} token : {confirmRegistrationIm.Token} " + "(" +
-                                errors + ")");
+
+            _logger.LogWarning(
+                "Email confirmation failed for {email}. Errors: {errors}. {tokenAge}",
+                confirmRegistrationIm.Email, errors, tokenAgeInfo);
+
+            throw new ArgumentException(
+                Translate.Get(() => Translations.UserManager.UserLogin.ErrorOnConfirmationEmailAddress, new En()) +
+                $"Email :{confirmRegistrationIm.Email} (" + errors + ")");
+        }
+
+        private static string DecodeConfirmationToken(string rawInput)
+        {
+            if (string.IsNullOrEmpty(rawInput))
+            {
+                return rawInput;
+            }
+
+            try
+            {
+                var bytes = WebEncoders.Base64UrlDecode(rawInput);
+                return Encoding.UTF8.GetString(bytes);
+            }
+            catch
+            {
+                // Client sent raw identity token (unwrapped base64, with +/= chars) - use as-is.
+                return rawInput;
+            }
+        }
+
+        private static string BuildTokenAgeInfo(long? issuedAtUnixSeconds)
+        {
+            if (!issuedAtUnixSeconds.HasValue)
+            {
+                return "IssuedAt=unknown";
+            }
+
+            var issuedAt = DateTimeOffset.FromUnixTimeSeconds(issuedAtUnixSeconds.Value);
+            var age = DateTimeOffset.UtcNow - issuedAt;
+            return $"IssuedAt={issuedAt:O}, AgeHours={age.TotalHours:F1}";
         }
     }
 }

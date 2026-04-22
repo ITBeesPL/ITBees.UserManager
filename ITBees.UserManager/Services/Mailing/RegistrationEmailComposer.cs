@@ -102,13 +102,16 @@ namespace ITBees.UserManager.Services.Mailing
                 () => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationBody,
                 userSavedData.Language);
 
+            var issuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
             // IMPORTANT: UrlEncode tokenAuth too
             var parameters =
                 "?emailInvitation=true" +
                 "&token=" + HttpUtility.UrlEncode(token) +
                 "&email=" + HttpUtility.UrlEncode(userSavedData.Email) +
                 "&tokenAuth=" + HttpUtility.UrlEncode(tokenPassword) +
-                "&company=" + HttpUtility.UrlEncode(companyCompanyName);
+                "&company=" + HttpUtility.UrlEncode(companyCompanyName) +
+                "&issuedAt=" + issuedAt;
 
             translatedBodyHtml = translatedBodyHtml
                 .Replace("[[INVITING_NAME]]", invitorName)
@@ -130,12 +133,14 @@ namespace ITBees.UserManager.Services.Mailing
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailConfirmationSubject, newUser.Language);
             var translatedBody = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailConfirmationBody, newUser.Language);
 
+            var issuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
             var transformedSubject = ReplaceableValues.Process(translatedSubject, _userManagerSettings);
             var transformedBody = ReplaceableValues.Process(
                 translatedBody,
                 _userManagerSettings,
                 new ReplaceableField("CONFIRMATION_PARAMETERS",
-                    $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}&tokenAuth={HttpUtility.UrlEncode(tokenPassword)}&company={HttpUtility.UrlEncode(companyName)}"));
+                    $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}&tokenAuth={HttpUtility.UrlEncode(tokenPassword)}&company={HttpUtility.UrlEncode(companyName)}&issuedAt={issuedAt}"));
             transformedBody = transformedBody.Replace("[[EMAIL_CONFIRMATION_URL]]", _userManagerSettings.EMAIL_CONFIRMATION_URL);
 
             return new EmailMessage()
