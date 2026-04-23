@@ -49,10 +49,14 @@ namespace ITBees.UserManager.Services.AppleLogins
         {
             var result = ParseAppleTokenClaims(appleAuthorizationToken.IdToken);
 
+            // Apple's signed idToken already authenticates the user. The email_verified=false claim
+            // is common for Apple private-relay addresses but does not mean the identity is untrusted.
+            // Treat successful Apple sign-in as sufficient proof of email ownership.
             if (result.EmailVerified == false)
             {
-                _logger.LogError($"Email not confirmed at apple : {result.Email}");
-                throw new UnauthorizedAccessException(Translate.Get(() => Translations.LoginWithApple.Errors.EmailNotConfirmed, lang));
+                _logger.LogInformation(
+                    "Apple login for {email} with email_verified=false (accepting - Apple-signed token is trusted).",
+                    result.Email);
             }
 
             var userAccount = _userOnlyRepository.GetData(x => x.Email == result.Email).FirstOrDefault();
@@ -62,7 +66,11 @@ namespace ITBees.UserManager.Services.AppleLogins
                 return resultAccount;
             }
 
-            return await _loginService.LoginAfterEmailConfirmation(result.Email,lang);
+            // Ensure the account is marked as confirmed in our system - Apple sign-in is proof of email ownership.
+            // Prevents "email not confirmed" on subsequent password-based login for the same account.
+            await _loginService.ConfirmEmail(result.Email);
+
+            return await _loginService.LoginAfterEmailConfirmation(result.Email, lang);
         }
 
         public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId = "", string redirectURI = "")

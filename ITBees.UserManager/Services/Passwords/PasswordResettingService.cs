@@ -88,7 +88,8 @@ namespace ITBees.UserManager.Services.Passwords
 
             if (user == null)
             {
-                throw new Exception(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegistered, new En()));
+                _logger.LogWarning("Reset password link request for unknown email {email}", email);
+                throw new ArgumentException(Translate.Get(() => Translations.UserManager.ResetPassword.EmailNotRegistered, new En()));
             }
 
             var raw = await _userManager.GeneratePasswordResetTokenAsync(user);
