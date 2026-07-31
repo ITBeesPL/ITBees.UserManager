@@ -8,6 +8,7 @@ public class PlatformUserAccountVm
     public PlatformUserAccountVm(UsersInCompany x)
     {
         Guid = x.UserAccountGuid;
+        CompanyGuid = x.CompanyGuid;
         DisplayName = x.UserAccount.DisplayName;
         FirstName = x.UserAccount.FirstName;
         LastName = x.UserAccount.LastName;
@@ -43,6 +44,7 @@ public class PlatformUserAccountVm
     public DateTime? SubscriptionPlanActiveTo { get; set; }
 
     public Guid Guid { get; set; }
+    public Guid? CompanyGuid { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Email { get; set; }
