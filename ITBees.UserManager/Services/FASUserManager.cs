@@ -84,11 +84,16 @@ namespace ITBees.UserManager.Services
             {
                 var user = await _userManager.FindByIdAsync(userGuid.ToString());
 
-                if (user.Email.StartsWith("DELETED_") || user.Email.Contains("_DELETED_"))
-                    throw new Exception("Error while delete user account");
+                if (user == null)
+                    throw new Exception($"User account {userGuid} not found");
 
                 if (leaveAccountGuidForFutureBillingInformation)
                 {
+                    // Anonymizing an already anonymized account would stack another _DELETED_ suffix on top of the
+                    // previous one. Removing such an account is still allowed, so this check belongs to this branch only.
+                    if (user.Email.StartsWith("DELETED_") || user.Email.Contains("_DELETED_"))
+                        throw new Exception($"User account {userGuid} is already anonymized");
+
                     var newEmail = $"{user.Email}_DELETED_{DateTime.Now.ToString("yyyyMMddHHmm")}";
                     _userAccountRwRepo.UpdateData(x => x.Email == user.Email, x =>
                     {
@@ -110,8 +115,16 @@ namespace ITBees.UserManager.Services
             }
             catch (Exception e)
             {
-                _logger.LogError($"Delete account error, exception : {e.Message}", e);
-                throw new Exception($"Delete account error, exception ");
+                // Entity Framework keeps the real reason (foreign key name, MySql error number) in the inner exception,
+                // so the whole chain is passed on - otherwise the caller only sees "An error occurred while saving the entity changes".
+                var reason = e.Message;
+                for (var inner = e.InnerException; inner != null; inner = inner.InnerException)
+                {
+                    reason += " -> " + inner.Message;
+                }
+
+                _logger.LogError(e, "Delete account {UserGuid} error : {Reason}", userGuid, reason);
+                throw new Exception($"Delete account error, exception : {reason}");
             }
         }
     }
