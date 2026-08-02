@@ -83,13 +83,13 @@ namespace ITBees.UserManager.Services
             try
             {
                 var user = await _userManager.FindByIdAsync(userGuid.ToString());
-                
-                if (user.Email.StartsWith("DELETED_"))
+
+                if (user.Email.StartsWith("DELETED_") || user.Email.Contains("_DELETED_"))
                     throw new Exception("Error while delete user account");
 
                 if (leaveAccountGuidForFutureBillingInformation)
                 {
-                    var newEmail = $"DELETED_{DateTime.Now.ToString("yyyyMMddHHmm")}_{user.Email}";
+                    var newEmail = $"{user.Email}_DELETED_{DateTime.Now.ToString("yyyyMMddHHmm")}";
                     _userAccountRwRepo.UpdateData(x => x.Email == user.Email, x =>
                     {
                         x.Email = newEmail;

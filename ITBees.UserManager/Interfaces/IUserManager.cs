@@ -29,7 +29,7 @@ namespace ITBees.UserManager.Interfaces
         /// Deletes user account in database
         /// </summary>
         /// <param name="leaveAccountGuidForFutureBillingInformation">
-        /// If set to true, it will only lockout account, and change email address by adding "DELETED_yyyyMMddHHmm_" to user email ie : DELETED_202402011820_youremail@yourdomain.com"
+        /// If set to true, it will only lockout account, and change email address by adding "_DELETED_yyyyMMddHHmm" at the end of user email ie : youremail@yourdomain.com_DELETED_202402011820, so the original address can be used for a new registration.
         /// </param>
         /// <param name="userGuid"></param>
         /// <returns></returns>
