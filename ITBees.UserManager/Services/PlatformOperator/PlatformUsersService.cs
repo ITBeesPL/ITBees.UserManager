@@ -66,7 +66,10 @@ public class PlatformUsersService : IPlatformUsersService
                 .GetDataPaginated(x => x.UserAccount.FirstName.ToLower().Contains(search) ||
                                        x.UserAccount.LastName.ToLower().Contains(search) ||
                                        x.UserAccount.Email.ToLower().Contains(search) ||
-                                       x.UserAccount.Phone.ToLower().Contains(search)
+                                       x.UserAccount.Phone.ToLower().Contains(search) ||
+                                       x.Company.CompanyName.ToLower().Contains(search) ||
+                                       x.Company.CompanyShortName.ToLower().Contains(search) ||
+                                       x.Company.Nip.ToLower().Contains(search)
                     , sortOptions,
                     x => x.UserAccount, x => x.Company, x => x.Company.CompanyPlatformSubscription, x => x.IdentityRole)
                 .MapTo(x => new PlatformUserAccountVm(x));
