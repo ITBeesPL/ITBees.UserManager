@@ -12,6 +12,14 @@ namespace ITBees.UserManager.Services
         public static void Register(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PlatformStatus>().HasKey(x => x.Id);
+            modelBuilder.Entity<UserConfirmationUrlParameters>().HasKey(x => x.Id);
+            modelBuilder.Entity<UserConfirmationUrlParameters>()
+                .HasIndex(x => x.UserAccountGuid).IsUnique();
+            modelBuilder.Entity<UserConfirmationUrlParameters>()
+                .HasOne(x => x.UserAccount)
+                .WithMany()
+                .HasForeignKey(x => x.UserAccountGuid)
+                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<UserAccount>().HasKey(x => x.Guid);
             modelBuilder.Entity<EmailAccount>();
             modelBuilder.Entity<Company>().HasKey(x => x.Guid);

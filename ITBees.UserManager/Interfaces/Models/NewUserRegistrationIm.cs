@@ -1,4 +1,6 @@
-﻿namespace ITBees.UserManager.Interfaces.Models
+﻿using System.Collections.Generic;
+
+namespace ITBees.UserManager.Interfaces.Models
 {
     public class NewUserRegistrationIm : IVmWithLanguageDefined
     {
@@ -18,5 +20,7 @@
         public string Phone { get; set; }
 
         public string Language { get; set; }
+
+        public List<ConfirmationUrlParameterIm> ConfirmationUrlParameters { get; set; }
     }
 }

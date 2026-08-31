@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using ITBees.Models.Companies;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces.Models;
