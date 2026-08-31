@@ -11,6 +11,9 @@ using ITBees.Models.Languages;
 using ITBees.Interfaces.Repository;
 using ITBees.Models.Users;
 using ITBees.UserManager.Interfaces;
+using ITBees.UserManager.Interfaces.Models;
+using ITBees.UserManager.Services.Mailing;
+using System.Collections.Generic;
 
 namespace ITBees.UserManager.Services.Passwords
 {
@@ -21,26 +24,31 @@ namespace ITBees.UserManager.Services.Passwords
         private readonly IReadOnlyRepository<UserAccount> _userAccountRoRepository;
         private readonly IUserManagerSettings _userManagerSettings;
         private readonly IPlatformSettingsService _platformSettingsService;
+        private readonly IConfirmationUrlParametersStore _confirmationUrlParametersStore;
 
         public ResetPasswordEmailConstructorService(ILogger<ResetPasswordEmailConstructorService> logger,
             IEmailSendingService emailSendingService,
             IReadOnlyRepository<UserAccount> userAccountRoRepository,
             IUserManagerSettings userManagerSettings,
-            IPlatformSettingsService platformSettingsService)
+            IPlatformSettingsService platformSettingsService,
+            IConfirmationUrlParametersStore confirmationUrlParametersStore)
         {
             _logger = logger;
             _emailSendingService = emailSendingService;
             _userAccountRoRepository = userAccountRoRepository;
             _userManagerSettings = userManagerSettings;
             _platformSettingsService = platformSettingsService;
+            _confirmationUrlParametersStore = confirmationUrlParametersStore;
         }
 
         public GenerateResetPasswordResultVm SendResetEmail(string email, string token)
         {
-            Language userLanguage = _userAccountRoRepository.GetData(x => x.Email == email, x => x.Language).First().Language;
+            var userAccount = _userAccountRoRepository.GetData(x => x.Email == email, x => x.Language).First();
+            Language userLanguage = userAccount.Language;
             try
             {
-                EmailMessage message = GetResetPasswordMessage(email, token, userLanguage);
+                EmailMessage message = GetResetPasswordMessage(email, token, userLanguage,
+                    ReadConfirmationUrlParameters(userAccount.Guid));
                 var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
                 _emailSendingService.SendEmail(platformEmailAccount, message);
                 return new GenerateResetPasswordResultVm { Success = true, Message = ""};
@@ -55,11 +63,28 @@ namespace ITBees.UserManager.Services.Passwords
             }
         }
 
-        private EmailMessage GetResetPasswordMessage(string email, string token, Language userLanguage)
+        private List<ConfirmationUrlParameterIm> ReadConfirmationUrlParameters(Guid userAccountGuid)
+        {
+            try
+            {
+                return _confirmationUrlParametersStore.Get(userAccountGuid);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e,
+                    "Could not read confirmation url parameters for user {userAccountGuid}, sending the password reset link without them.",
+                    userAccountGuid);
+                return null;
+            }
+        }
+
+        private EmailMessage GetResetPasswordMessage(string email, string token, Language userLanguage,
+            List<ConfirmationUrlParameterIm> confirmationUrlParameters)
         {
             var emailBody = Translate.Get(() => Translations.UserManager.ResetPassword.DefaultEmailBodyForPasswordResetStarted, userLanguage);
             var issuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var resetUrl = $"{_userManagerSettings.APPLICATION_SITE_URL}auth/reset?email={HttpUtility.UrlEncode(email)}&token={HttpUtility.UrlEncode(token)}&issuedAt={issuedAt}";
+            var resetUrl = $"{_userManagerSettings.APPLICATION_SITE_URL}auth/reset?email={HttpUtility.UrlEncode(email)}&token={HttpUtility.UrlEncode(token)}&issuedAt={issuedAt}"
+                           + ConfirmationUrlParametersBuilder.Build(confirmationUrlParameters);
             emailBody = emailBody.Replace("[[resetUrl]]", resetUrl).Replace("[[site.Url]]", _userManagerSettings.SITE_URL);
             return new EmailMessage()
             {

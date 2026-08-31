@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ITBees.Interfaces.CodeGeneration;
 
 namespace ITBees.UserManager.Interfaces.Models
@@ -22,5 +23,7 @@ namespace ITBees.UserManager.Interfaces.Models
         public bool SendEmailInvitation { get; set; }
         [NullableStringProperty] public string? InvitationCreatorName { get; set; }
         [NullableStringProperty] public string? InvitationToCompany { get; set; }
+
+        public List<ConfirmationUrlParameterIm> ConfirmationUrlParameters { get; set; }
     }
 }

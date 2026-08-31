@@ -24,6 +24,6 @@ public class ResendActivationLinkController : RestfulControllerBase<ResendActiva
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     public Task<IActionResult> Post(string email)
     {
-        return ReturnOkResultAsync(async()=>await _newUserRegistrationService.ResendConfirmationEmail(email));
+        return ReturnOkResultAsync(async () => await _newUserRegistrationService.ResendConfirmationEmail(email));
     }
 }

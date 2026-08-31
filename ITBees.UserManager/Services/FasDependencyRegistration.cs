@@ -49,6 +49,7 @@ namespace ITBees.UserManager.Services
                 {
                     c.FeatureProviders.Add(new GenericRestControllerFeatureProvider<TIdentityUser>());
                 });
+            services.AddScoped<IConfirmationUrlParametersStore, ConfirmationUrlParametersStore>();
             services.AddScoped(typeof(IPlatformSubscriptionService), typeof(PlatformSubscriptionService));
             services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
             services.AddScoped(typeof(IUserRolesService), typeof(UserRolesService));

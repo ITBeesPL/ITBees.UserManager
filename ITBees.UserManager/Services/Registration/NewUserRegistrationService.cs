@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,6 +47,7 @@ namespace ITBees.UserManager.Services.Registration
         private readonly IReadOnlyRepository<UserAccount> _userAccountRoRepo;
         private readonly IWriteOnlyRepository<InvoiceData> _invoiceDataRwRepo;
         private readonly IWriteOnlyRepository<TCompany> _companyRwRepo;
+        private readonly IConfirmationUrlParametersStore _confirmationUrlParametersStore;
 
         public NewUserRegistrationService(IUserManager<T> userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
@@ -61,7 +63,8 @@ namespace ITBees.UserManager.Services.Registration
             IReadOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRoRepo,
             IWriteOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRwRepo,
             IReadOnlyRepository<UserAccount> userAccountRoRepo,
-            IWriteOnlyRepository<InvoiceData> invoiceDataRwRepo)
+            IWriteOnlyRepository<InvoiceData> invoiceDataRwRepo,
+            IConfirmationUrlParametersStore confirmationUrlParametersStore)
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
@@ -78,6 +81,7 @@ namespace ITBees.UserManager.Services.Registration
             _usersInvitationsToCompaniesRwRepo = usersInvitationsToCompaniesRwRepo;
             _userAccountRoRepo = userAccountRoRepo;
             _invoiceDataRwRepo = invoiceDataRwRepo;
+            _confirmationUrlParametersStore = confirmationUrlParametersStore;
         }
 
         public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm,
@@ -175,6 +179,9 @@ namespace ITBees.UserManager.Services.Registration
                         NIP = additionalInvoiceDataIm.NIP
                     }).Guid;
                 }
+
+                StoreConfirmationUrlParameters(userSavedData.Guid,
+                    newUserRegistrationIm.ConfirmationUrlParameters);
 
                 if (sendConfirmationEmail)
                 {
@@ -490,6 +497,9 @@ namespace ITBees.UserManager.Services.Registration
                         TokenLogHelper.Prefix(rawPasswordToken)
                     );
 
+                    StoreConfirmationUrlParameters(newUser.Id,
+                        newUserRegistrationIm.ConfirmationUrlParameters);
+
                     emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
                         newUserRegistrationIm, targetCompanyName, emailTokenB64, userLanguage,
                         accountEmailActivationBaseLink, passTokenB64);
@@ -507,17 +517,59 @@ namespace ITBees.UserManager.Services.Registration
             }
         }
 
+        private void StoreConfirmationUrlParameters(Guid userAccountGuid,
+            List<ConfirmationUrlParameterIm> confirmationUrlParameters)
+        {
+            if (confirmationUrlParameters == null || confirmationUrlParameters.Count == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                _confirmationUrlParametersStore.Save(userAccountGuid, confirmationUrlParameters);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e,
+                    "Could not store confirmation url parameters for user {userAccountGuid}, a resent activation link will not contain them.",
+                    userAccountGuid);
+            }
+        }
+
+        private List<ConfirmationUrlParameterIm> ReadConfirmationUrlParameters(Guid userAccountGuid)
+        {
+            try
+            {
+                return _confirmationUrlParametersStore.Get(userAccountGuid);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e,
+                    "Could not read confirmation url parameters for user {userAccountGuid}, resending the activation link without them.",
+                    userAccountGuid);
+                return null;
+            }
+        }
+
         public async Task ResendConfirmationEmail(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             var userLanguage = _userAccountRoRepo.GetData(x => x.Email == email, x => x.Language).First();
+
+            var confirmationUrlParameters = ReadConfirmationUrlParameters(user.Id);
 
             var emailConfirmationTokenRaw = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var emailConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmationTokenRaw));
 
             var emailMessage =
                 _registrationEmailComposer.ComposeEmailConfirmation(
-                    new NewUserRegistrationIm() { Email = email, Language = userLanguage.Language.Code },
+                    new NewUserRegistrationIm()
+                    {
+                        Email = email,
+                        Language = userLanguage.Language.Code,
+                        ConfirmationUrlParameters = confirmationUrlParameters
+                    },
                     emailConfirmationToken, "", "");
             var platformEmailAccount = _platformSettingsService.GetPlatformDefaultEmailAccount();
 

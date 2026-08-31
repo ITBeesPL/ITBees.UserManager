@@ -57,7 +57,8 @@ namespace ITBees.UserManager.Services.Mailing
                 .Replace("[[COMPANY_NAME]]", companyCompanyName)
                 .Replace("[[EMAIL_CONFIRMATION_URL]]", accountEmailActivationBaseLink)
                 .Replace("[[CONFIRMATION_PARAMETERS]]",
-                    $"/acceptInvitation?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&companyGuid={userSavedData.CompanyGuid}&key={Guid.NewGuid()}&company={HttpUtility.UrlEncode(companyCompanyName)}")
+                    $"/acceptInvitation?emailInvitation=true&email={HttpUtility.UrlEncode(userSavedData.Email)}&companyGuid={userSavedData.CompanyGuid}&key={Guid.NewGuid()}&company={HttpUtility.UrlEncode(companyCompanyName)}" +
+                    ConfirmationUrlParametersBuilder.Build(userSavedData.ConfirmationUrlParameters))
                 ;
             ;
 
@@ -111,7 +112,8 @@ namespace ITBees.UserManager.Services.Mailing
                 "&email=" + HttpUtility.UrlEncode(userSavedData.Email) +
                 "&tokenAuth=" + HttpUtility.UrlEncode(tokenPassword) +
                 "&company=" + HttpUtility.UrlEncode(companyCompanyName) +
-                "&issuedAt=" + issuedAt;
+                "&issuedAt=" + issuedAt +
+                ConfirmationUrlParametersBuilder.Build(userSavedData.ConfirmationUrlParameters);
 
             translatedBodyHtml = translatedBodyHtml
                 .Replace("[[INVITING_NAME]]", invitorName)
@@ -140,7 +142,8 @@ namespace ITBees.UserManager.Services.Mailing
                 translatedBody,
                 _userManagerSettings,
                 new ReplaceableField("CONFIRMATION_PARAMETERS",
-                    $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}&tokenAuth={HttpUtility.UrlEncode(tokenPassword)}&company={HttpUtility.UrlEncode(companyName)}&issuedAt={issuedAt}"));
+                    $"?token={HttpUtility.UrlEncode(token)}&email={HttpUtility.UrlEncode(newUser.Email)}&tokenAuth={HttpUtility.UrlEncode(tokenPassword)}&company={HttpUtility.UrlEncode(companyName)}&issuedAt={issuedAt}" +
+                    ConfirmationUrlParametersBuilder.Build(newUser.ConfirmationUrlParameters)));
             transformedBody = transformedBody.Replace("[[EMAIL_CONFIRMATION_URL]]", _userManagerSettings.EMAIL_CONFIRMATION_URL);
 
             return new EmailMessage()
