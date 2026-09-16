@@ -71,6 +71,7 @@ namespace ITBees.UserManager.Services
             }
             
             services.AddScoped(typeof(IPlatformUsersService), typeof(PlatformUsersService));
+            services.AddScoped(typeof(IPlatformUserInvoiceDataService), typeof(PlatformUserInvoiceDataService));
             services.AddScoped(typeof(IGoogleLoginService<>), typeof(GoogleLoginService<>));
             services.AddScoped(typeof(IConfirmRegistrationService<>), typeof(ConfirmRegistrationService<>));
             services.AddScoped(typeof(IUserManager<TIdentityUser>), typeof(FASUserManager<TIdentityUser>));
