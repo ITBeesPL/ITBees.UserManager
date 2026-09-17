@@ -34,7 +34,7 @@ namespace ITBees.UserManager.Translations
             /// <summary>
             /// Error message shown when user tries to add different user when he is not owner of this company
             /// </summary>
-            public static readonly string ToAddNewUserYouMustBeCompanyOwner = "To add new user You must be company owner!";
+            public static readonly string ToAddNewUserYouMustBeCompanyOwner = "To add new user You must be company owner";
             /// <summary>
             /// If user try's to register account for another person, and is not logged in, or his token expired
             /// </summary>
