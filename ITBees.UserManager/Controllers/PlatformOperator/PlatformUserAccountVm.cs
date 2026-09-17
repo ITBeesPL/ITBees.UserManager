@@ -10,6 +10,7 @@ public class PlatformUserAccountVm
         Guid = x.UserAccountGuid;
         CompanyGuid = x.CompanyGuid;
         DisplayName = x.UserAccount.DisplayName;
+        Nip = x.UserAccount.Nip;
         FirstName = x.UserAccount.FirstName;
         LastName = x.UserAccount.LastName;
         Email = x.UserAccount.Email;
@@ -49,6 +50,7 @@ public class PlatformUserAccountVm
     public string LastName { get; set; }
     public string Email { get; set; }
     public string Phone { get; set; }
+    public string Nip { get; set; }
     public string PostCode { get; set; }
     public string Street { get; set; }
     public string City { get; set; }

@@ -19,6 +19,8 @@ namespace ITBees.UserManager.Interfaces.Models
 
         public string Phone { get; set; }
 
+        public string Nip { get; set; }
+
         public string Language { get; set; }
 
         public List<ConfirmationUrlParameterIm> ConfirmationUrlParameters { get; set; }
