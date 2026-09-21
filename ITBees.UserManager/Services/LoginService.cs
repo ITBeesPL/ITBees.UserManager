@@ -122,6 +122,12 @@ namespace ITBees.UserManager.Services
             {
                 userAccountUpdate.LastLoginDateTime = _currentDateTimeService.GetCurrentDate();
                 userAccountUpdate.LoginsCount = userAccount.LoginsCount + 1;
+                // GetUserAccount replaces a missing or no longer valid company; it is stored, so the
+                // account stops pointing at a company its user does not belong to.
+                if (userAccountUpdate.LastUsedCompanyGuid != userAccount.LastUsedCompanyGuid)
+                {
+                    userAccountUpdate.LastUsedCompanyGuid = userAccount.LastUsedCompanyGuid;
+                }
             });
 
             var token = new JwtTokenBuilder()
@@ -199,10 +205,28 @@ namespace ITBees.UserManager.Services
                 throw new ArgumentException($"{Translate.Get(() => Translations.UserManager.UserLogin.EmailNotRegistered, lang)} {email}");
             }
 
-            if (userAccount.LastUsedCompanyGuid == null || userAccount.LastUsedCompanyGuid == Guid.Empty)
+            // The company goes into the token and applications scope their data by it, so it has to
+            // be one the user belongs to today - not one he was removed from in the meantime, and not
+            // a guid stored before PUT /MyAccount started to check it. Anything else is treated like
+            // a missing company.
+            var belongsToLastUsedCompany =
+                userAccount.LastUsedCompanyGuid != null &&
+                userAccount.LastUsedCompanyGuid != Guid.Empty &&
+                userAccount.UsersInCompanies != null &&
+                userAccount.UsersInCompanies.Any(x => x.CompanyGuid == userAccount.LastUsedCompanyGuid);
+
+            if (!belongsToLastUsedCompany)
             {
+                if (userAccount.LastUsedCompanyGuid != null && userAccount.LastUsedCompanyGuid != Guid.Empty)
+                {
+                    _logger.LogWarning(
+                        "User {email} (guid {userGuid}) does not belong to the stored LastUsedCompanyGuid {companyGuid}. Falling back to one of the user's companies.",
+                        email, userAccount.Guid, userAccount.LastUsedCompanyGuid);
+                }
+
                 var usersInCompanies =
-                    _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
+                    _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid)
+                        .OrderBy(x => x.AddedDate).ToList();
 
                 if (usersInCompanies.Count == 0)
                 {
@@ -222,7 +246,8 @@ namespace ITBees.UserManager.Services
                         else
                         {
                             usersInCompanies =
-                                _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid);
+                                _usersInCompanyReadOnlyRepository.GetData(x => x.UserAccountGuid == userAccount.Guid)
+                                    .OrderBy(x => x.AddedDate).ToList();
                             if (usersInCompanies.Count > 0)
                             {
                                 userAccount.LastUsedCompanyGuid = usersInCompanies.First().CompanyGuid;

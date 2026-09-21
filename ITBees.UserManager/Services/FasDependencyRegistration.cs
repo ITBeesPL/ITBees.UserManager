@@ -49,6 +49,9 @@ namespace ITBees.UserManager.Services
                 {
                     c.FeatureProviders.Add(new GenericRestControllerFeatureProvider<TIdentityUser>());
                 });
+            // MyAccountController reads RestrictedTokenOptions; an application adds its own claim types
+            // with services.Configure<RestrictedTokenOptions>(...), the defaults need no registration.
+            services.AddOptions();
             services.AddScoped<IConfirmationUrlParametersStore, ConfirmationUrlParametersStore>();
             services.AddScoped(typeof(IPlatformSubscriptionService), typeof(PlatformSubscriptionService));
             services.AddScoped(typeof(IMyAccountServie), typeof(MyAccountService));
