@@ -22,7 +22,7 @@
     <PackageReference Include="ITBees.Models" Version="8.0.95" />
     <PackageReference Include="ITBees.RestClient" Version="8.0.19" />
     <PackageReference Include="ITBees.Mailing" Version="8.0.104" />
-    <PackageReference Include="ITBees.Translations" Version="8.0.151" />
+    <PackageReference Include="ITBees.Translations" Version="8.0.153" />
     <PackageReference Include="ITBees.FAS.ApiInterfaces" Version="8.0.63" />
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
