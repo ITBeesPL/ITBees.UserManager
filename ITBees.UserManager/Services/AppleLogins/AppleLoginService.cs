@@ -23,19 +23,26 @@ namespace ITBees.UserManager.Services.AppleLogins
 {
     public class AppleLoginService<T> : IAppleLoginService<T> where T : IdentityUser<Guid>
     {
+        /// <summary>
+        /// Login provider name under which the Apple "sub" claim is stored in the identity user logins.
+        /// </summary>
+        public const string AppleLoginProvider = "Apple";
+
         private readonly IPlatformSettingsService _platformSettingsService;
         private readonly HttpClient _httpClient;
         private readonly ILoginService<T> _loginService;
         private readonly ILogger<AppleLoginService<T>> _logger;
         private readonly IReadOnlyRepository<UserAccount> _userOnlyRepository;
         private readonly INewUserRegistrationFromApple _newUserRegistrationFromApple;
+        private readonly IUserManager<T> _userManager;
 
         public AppleLoginService(IPlatformSettingsService platformSettingsService,
             HttpClient httpClient,
             ILoginService<T> loginService,
             ILogger<AppleLoginService<T>> logger,
             IReadOnlyRepository<UserAccount> userOnlyRepository,
-            INewUserRegistrationFromApple newUserRegistrationFromApple)
+            INewUserRegistrationFromApple newUserRegistrationFromApple,
+            IUserManager<T> userManager)
         {
             _platformSettingsService = platformSettingsService;
             _httpClient = httpClient;
@@ -43,11 +50,33 @@ namespace ITBees.UserManager.Services.AppleLogins
             _logger = logger;
             _userOnlyRepository = userOnlyRepository;
             _newUserRegistrationFromApple = newUserRegistrationFromApple;
+            _userManager = userManager;
         }
 
         public async Task<TokenVm> LoginOrRegister(AppleTokenResponse appleAuthorizationToken, string lang)
         {
             var result = ParseAppleTokenClaims(appleAuthorizationToken.IdToken);
+
+            // "sub" is the only value Apple puts in every token - the email can be missing (accounts without one,
+            // consents remembered without it) or change later. An account that has already signed in with Apple
+            // is therefore found by "sub" first.
+            var linkedUser = await FindUserLinkedToAppleAccount(result.Subject);
+            if (linkedUser != null)
+            {
+                await _loginService.ConfirmEmail(linkedUser.Email);
+                return await _loginService.LoginAfterEmailConfirmation(linkedUser.Email, lang);
+            }
+
+            if (string.IsNullOrWhiteSpace(result.Email))
+            {
+                _logger.LogWarning(
+                    "Apple login without an email claim and without a linked account (sub {sub}, aud {aud}) - no account can be found or created.",
+                    result.Subject, result.Audience);
+                // The overload with a fallback, so an application that has not added this text to its translation
+                // files yet shows the English one instead of a missing translation error.
+                throw new ArgumentException(Translate.Get(typeof(Translations.UserManager.AppleLogin),
+                    nameof(Translations.UserManager.AppleLogin.AppleDidNotShareEmailAddress), lang, true));
+            }
 
             // Apple's signed idToken already authenticates the user. The email_verified=false claim
             // is common for Apple private-relay addresses but does not mean the identity is untrusted.
@@ -63,6 +92,7 @@ namespace ITBees.UserManager.Services.AppleLogins
             if (userAccount == null)
             {
                 var resultAccount = await _newUserRegistrationFromApple.CreateNewUserAccountFromAppleLogin(result);
+                await LinkAppleAccount(result);
                 return resultAccount;
             }
 
@@ -70,7 +100,54 @@ namespace ITBees.UserManager.Services.AppleLogins
             // Prevents "email not confirmed" on subsequent password-based login for the same account.
             await _loginService.ConfirmEmail(result.Email);
 
-            return await _loginService.LoginAfterEmailConfirmation(result.Email, lang);
+            var token = await _loginService.LoginAfterEmailConfirmation(result.Email, lang);
+            await LinkAppleAccount(result);
+            return token;
+        }
+
+        private async Task<T> FindUserLinkedToAppleAccount(string appleSubject)
+        {
+            if (string.IsNullOrWhiteSpace(appleSubject))
+                return null;
+
+            try
+            {
+                return await _userManager.FindByLoginAsync(AppleLoginProvider, appleSubject);
+            }
+            catch (Exception e)
+            {
+                // Signing in by email worked before the link existed, so a failing lookup must not stop it.
+                _logger.LogError(e, "Could not look up the account linked to Apple sub {sub}: {message}", appleSubject, e.Message);
+                return null;
+            }
+        }
+
+        private async Task LinkAppleAccount(AppleTokenClaims appleTokenClaims)
+        {
+            if (string.IsNullOrWhiteSpace(appleTokenClaims.Subject))
+                return;
+
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(appleTokenClaims.Email);
+                if (user == null)
+                    return;
+
+                var linkResult = await _userManager.AddLoginAsync(user, AppleLoginProvider, appleTokenClaims.Subject);
+                if (linkResult.Succeeded == false)
+                {
+                    _logger.LogWarning("Could not link Apple sub {sub} to the account {email}: {errors}",
+                        appleTokenClaims.Subject, appleTokenClaims.Email,
+                        string.Join("; ", linkResult.Errors.Select(x => x.Description)));
+                }
+            }
+            catch (Exception e)
+            {
+                // The user is already signed in at this point; a missing link only means the next sign in
+                // goes by email again.
+                _logger.LogError(e, "Could not link Apple sub {sub} to the account {email}: {message}",
+                    appleTokenClaims.Subject, appleTokenClaims.Email, e.Message);
+            }
         }
 
         public async Task<AppleTokenResponse> ValidateAuthorizationCodeAsync(string authorizationCode, string clientId = "", string redirectURI = "")

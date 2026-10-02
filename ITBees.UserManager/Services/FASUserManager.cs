@@ -78,6 +78,16 @@ namespace ITBees.UserManager.Services
             return await _userManager.ChangePasswordAsync((T)user, currentPass, newPass);
         }
 
+        public async Task<T> FindByLoginAsync(string loginProvider, string providerKey)
+        {
+            return await _userManager.FindByLoginAsync(loginProvider, providerKey);
+        }
+
+        public async Task<IdentityResult> AddLoginAsync(object user, string loginProvider, string providerKey)
+        {
+            return await _userManager.AddLoginAsync((T)user, new UserLoginInfo(loginProvider, providerKey, loginProvider));
+        }
+
         public async Task DeleteAccount(bool leaveAccountGuidForFutureBillingInformation, Guid userGuid)
         {
             try
@@ -106,7 +116,12 @@ namespace ITBees.UserManager.Services
                     user.Email = newEmail;
                     await _userManager.SetLockoutEnabledAsync(user, true);
 
-                    
+                    // The address is free for a new registration from now on. An external login (ie. Apple) left on
+                    // this account would sign its owner back into the anonymized account instead of a new one.
+                    foreach (var login in await _userManager.GetLoginsAsync(user))
+                    {
+                        await _userManager.RemoveLoginAsync(user, login.LoginProvider, login.ProviderKey);
+                    }
                 }
                 else
                 {

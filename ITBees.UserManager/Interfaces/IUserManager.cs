@@ -26,6 +26,14 @@ namespace ITBees.UserManager.Interfaces
         Task<T> FindByIdAsync(string userIDGuid);
         Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass);
         /// <summary>
+        /// Finds the user linked to an external login (ie. the "sub" of an Apple account). Returns null when nobody is linked.
+        /// </summary>
+        Task<T> FindByLoginAsync(string loginProvider, string providerKey);
+        /// <summary>
+        /// Links an external login (ie. the "sub" of an Apple account) to the user, so the account can be found later without an email address.
+        /// </summary>
+        Task<IdentityResult> AddLoginAsync(object user, string loginProvider, string providerKey);
+        /// <summary>
         /// Deletes user account in database
         /// </summary>
         /// <param name="leaveAccountGuidForFutureBillingInformation">

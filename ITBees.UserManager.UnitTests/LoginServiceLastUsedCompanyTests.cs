@@ -111,6 +111,8 @@ namespace ITBees.UserManager.UnitTests
             public Task<string> GeneratePasswordResetTokenAsync(object user) => throw new NotSupportedException();
             public Task<IdentityUser<Guid>> FindByIdAsync(string userIDGuid) => throw new NotSupportedException();
             public Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass) => throw new NotSupportedException();
+            public Task<IdentityUser<Guid>> FindByLoginAsync(string loginProvider, string providerKey) => throw new NotSupportedException();
+            public Task<IdentityResult> AddLoginAsync(object user, string loginProvider, string providerKey) => throw new NotSupportedException();
             public Task DeleteAccount(bool leaveAccountGuidForFutureBillingInformation, Guid userGuid) => throw new NotSupportedException();
         }
 

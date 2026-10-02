@@ -15,6 +15,14 @@ namespace ITBees.UserManager.Translations
             public static readonly string AccountAlreadyActive = "Your account is already active, you can log in";
         }
 
+        public class AppleLogin : ITranslate
+        {
+            /// <summary>
+            /// Shown when Apple returned a token without an email address and no account is linked to this Apple account yet
+            /// </summary>
+            public static readonly string AppleDidNotShareEmailAddress = "Apple did not share your email address, so we cannot find or create your account. On your device open Settings > Apple Account > Sign in with Apple, choose this app, select \"Stop using Apple Account\" and sign in again.";
+        }
+
         public class ResetPassword : ITranslate
         {
             public static readonly string EmailNotRegistered = "Email not registered!";
