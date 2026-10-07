@@ -62,6 +62,11 @@ namespace ITBees.UserManager.Services.Registration
             }
         }
 
+        public void Delete(Guid userAccountGuid)
+        {
+            _userConfirmationUrlParametersWoRepo.DeleteData(x => x.UserAccountGuid == userAccountGuid);
+        }
+
         public List<ConfirmationUrlParameterIm> Get(Guid userAccountGuid)
         {
             var stored = _userConfirmationUrlParametersRoRepo

@@ -219,50 +219,14 @@ namespace ITBees.UserManager.Services.Registration
 
                 if (userSavedData != null && (company == null || isInvalidRecipientEmail))
                 {
-                    if (isInvalidRecipientEmail)
-                    {
-                        if (company != null)
-                        {
-                            try
-                            {
-                                _usersInCompanyWoRepo.DeleteData(x => x.UserAccountGuid == newUser.Id);
-                            }
-                            catch (Exception cleanupEx)
-                            {
-                                _logger.LogError(cleanupEx,
-                                    "Rollback of UsersInCompany for user {userGuid} failed: {message}",
-                                    newUser.Id, cleanupEx.Message);
-                            }
-
-                            try
-                            {
-                                _companyWoRepository.DeleteData(x => x.Guid == company.Guid);
-                            }
-                            catch (Exception cleanupEx)
-                            {
-                                _logger.LogError(cleanupEx,
-                                    "Rollback of Company {companyGuid} failed: {message}",
-                                    company.Guid, cleanupEx.Message);
-                            }
-                        }
-                    }
-                    else
+                    if (!isInvalidRecipientEmail)
                     {
                         _logger.LogError(
                             "Registration failed after UserAccount {userGuid} ({email}) was created but before company assignment - rolling back to avoid orphaned user.",
                             newUser.Id, newUserRegistrationIm.Email);
                     }
 
-                    try
-                    {
-                        _userAccountWriteOnlyRepository.DeleteData(x => x.Guid == newUser.Id);
-                    }
-                    catch (Exception cleanupEx)
-                    {
-                        _logger.LogError(cleanupEx,
-                            "Rollback of UserAccount {userGuid} failed: {message}",
-                            newUser.Id, cleanupEx.Message);
-                    }
+                    RollBackCreatedRecords(newUser.Id, invoiceDataGuid);
 
                     try
                     {
@@ -314,6 +278,50 @@ namespace ITBees.UserManager.Services.Registration
         {
             return await CreateNewUser(newUserRegistrationInputDto, sendConfirmationEmail, additionalInvoiceDataIm,
                 invitationEmailCreator, inviteToSetPassword);
+        }
+
+        /// <summary>
+        /// Removes what CreateNewUser wrote for the new account, in the order the foreign keys need:
+        /// UserAccount.LastUsedCompanyGuid points at the new company while Company.CreatedByGuid and OwnerGuid
+        /// point back at the account, so neither row can go while the other one still points at it. Until this
+        /// was cleared first both deletes failed, and every refused e-mail address left an account without a
+        /// login and its "Private" company behind - and that address could not register again. The account
+        /// is brand new, so every company it created or owns was created by this registration.
+        /// </summary>
+        private void RollBackCreatedRecords(Guid userGuid, Guid? invoiceDataGuid)
+        {
+            TryRollBack("UserAccount.LastUsedCompanyGuid", userGuid, () =>
+                _userAccountWriteOnlyRepository.UpdateData(x => x.Guid == userGuid,
+                    x => { x.LastUsedCompanyGuid = null; }));
+
+            if (invoiceDataGuid.HasValue)
+            {
+                TryRollBack("InvoiceData", userGuid, () =>
+                    _invoiceDataRwRepo.DeleteData(x => x.Guid == invoiceDataGuid.Value));
+            }
+
+            TryRollBack("UsersInCompany", userGuid, () =>
+                _usersInCompanyWoRepo.DeleteData(x => x.UserAccountGuid == userGuid));
+            TryRollBack("Company", userGuid, () =>
+                _companyWoRepository.DeleteData(x => x.CreatedByGuid == userGuid || x.OwnerGuid == userGuid));
+            TryRollBack("UserConfirmationUrlParameters", userGuid, () =>
+                _confirmationUrlParametersStore.Delete(userGuid));
+            TryRollBack("UserAccount", userGuid, () =>
+                _userAccountWriteOnlyRepository.DeleteData(x => x.Guid == userGuid));
+        }
+
+        private void TryRollBack(string what, Guid userGuid, Action rollBack)
+        {
+            try
+            {
+                rollBack();
+            }
+            catch (Exception cleanupEx)
+            {
+                _logger.LogError(cleanupEx,
+                    "Rollback of {what} for user {userGuid} failed: {message}",
+                    what, userGuid, cleanupEx.Message);
+            }
         }
 
         private static bool IsSmtpRecipientRejection(Exception e)
