@@ -17,6 +17,7 @@ public class PlatformUserCompanyInvoiceDataVm
     {
         CompanyGuid = company.Guid;
         CompanyDisplayName = company.CompanyName;
+        CompanyData = new PlatformUserCompanyDataVm(company);
 
         if (invoiceData == null) return;
 
@@ -36,6 +37,9 @@ public class PlatformUserCompanyInvoiceDataVm
     public Guid CompanyGuid { get; set; }
 
     public string CompanyDisplayName { get; set; }
+
+    /// <summary>Dane firmy z encji Company (nie z płatności) - do podglądu i przepisania do faktury.</summary>
+    public PlatformUserCompanyDataVm CompanyData { get; set; }
 
     /// <summary>Edytowany wiersz InvoiceData; null, gdy firma nie ma jeszcze żadnych danych do faktury.</summary>
     public Guid? InvoiceDataGuid { get; set; }

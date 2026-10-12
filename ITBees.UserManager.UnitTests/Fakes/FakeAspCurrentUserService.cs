@@ -8,10 +8,12 @@ namespace ITBees.UserManager.UnitTests.Fakes
     public class FakeAspCurrentUserService : IAspCurrentUserService
     {
         private readonly CurrentUser _currentUser;
+        private readonly bool _isPlatformOperator;
 
-        public FakeAspCurrentUserService(CurrentUser currentUser)
+        public FakeAspCurrentUserService(CurrentUser currentUser, bool isPlatformOperator = false)
         {
             _currentUser = currentUser;
+            _isPlatformOperator = isPlatformOperator;
         }
 
         public Guid? GetCurrentUserGuid() => _currentUser?.Guid;
@@ -19,7 +21,7 @@ namespace ITBees.UserManager.UnitTests.Fakes
         public CurrentSessionUser GetCurrentSessionUser() => throw new NotSupportedException();
         public TypeOfOperation GetMyAcceessToCompany(Guid companyGuid) => throw new NotSupportedException();
         public bool TryCanIDoForCompany(TypeOfOperation typeOfOperation, Guid companyGuid) => throw new NotSupportedException();
-        public bool CurrentUserIsPlatformOperator() => false;
+        public bool CurrentUserIsPlatformOperator() => _isPlatformOperator;
         public bool CurrentUserIsInRole(string role) => false;
         public bool CurrentUserIsInRole(string role, Guid companyGuid) => false;
     }
