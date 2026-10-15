@@ -9,6 +9,8 @@ using ITBees.Models.Languages;
 using ITBees.UserManager.DbModels;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
+using ITBees.UserManager.Permissions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ITBees.UserManager.Services
 {
@@ -92,6 +94,10 @@ namespace ITBees.UserManager.Services
         {
             if (GetMyAcceessToCompany(companyGuid) == TypeOfOperation.RoRw)
             {
+                // Membership is not enough when the endpoint declares [HasPermission]: the permission has to be
+                // granted in this very company. Resolved lazily to keep the constructor of derived services intact.
+                _contextAccessor.HttpContext?.RequestServices?.GetService<IPermissionService>()
+                    ?.CheckEndpointPermission(companyGuid);
                 return true;
             }
 

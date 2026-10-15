@@ -21,4 +21,7 @@ public class UserRoleVm
     public Guid Guid { get; set; }
     public string RoleName { get; set; }
     public string RoleDescription { get; set; }
+
+    /// <summary>Users holding the role (filled by GET /UserRole only).</summary>
+    public int? AssignedUsersCount { get; set; }
 }
