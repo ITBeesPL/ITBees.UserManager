@@ -23,7 +23,7 @@ namespace ITBees.UserManager.Permissions;
 public class PermissionService : IPermissionService
 {
     private static readonly TimeSpan RolePermissionsCacheTime = TimeSpan.FromSeconds(60);
-    private static readonly HashSet<string> NoPermissions = new(StringComparer.Ordinal);
+    private static readonly Grant NoGrant = new(false, new HashSet<string>(StringComparer.Ordinal));
 
     private readonly IAspCurrentUserService _aspCurrentUserService;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -32,11 +32,10 @@ public class PermissionService : IPermissionService
     private readonly IReadOnlyRepository<RolePermission> _rolePermissionRoRepo;
     private readonly IPermissionCatalog _permissionCatalog;
     private readonly IMemoryCache _memoryCache;
-    private readonly PermissionSettings _permissionSettings;
     private readonly ILogger<PermissionService> _logger;
 
     // The service is scoped, so these live for one request only.
-    private readonly Dictionary<Guid, HashSet<string>> _permissionsPerCompany = new();
+    private readonly Dictionary<Guid, Grant> _grantsPerCompany = new();
     private readonly HashSet<string> _loggedDenials = new(StringComparer.Ordinal);
 
     public PermissionService(IAspCurrentUserService aspCurrentUserService,
@@ -46,7 +45,6 @@ public class PermissionService : IPermissionService
         IReadOnlyRepository<RolePermission> rolePermissionRoRepo,
         IPermissionCatalog permissionCatalog,
         IMemoryCache memoryCache,
-        PermissionSettings permissionSettings,
         ILogger<PermissionService> logger)
     {
         _aspCurrentUserService = aspCurrentUserService;
@@ -56,7 +54,6 @@ public class PermissionService : IPermissionService
         _rolePermissionRoRepo = rolePermissionRoRepo;
         _permissionCatalog = permissionCatalog;
         _memoryCache = memoryCache;
-        _permissionSettings = permissionSettings;
         _logger = logger;
     }
 
@@ -74,16 +71,21 @@ public class PermissionService : IPermissionService
 
     public void RequirePermission(string permissionKey, Guid companyGuid)
     {
-        if (HasPermission(permissionKey, companyGuid))
-            return;
-
-        LogDenied(new[] { permissionKey }, companyGuid, enforced: true);
-        throw new Authorization403ForbiddenException("You don't have permission to perform this operation.");
+        CheckAny(new[] { permissionKey }, companyGuid);
     }
 
     public void CheckEndpointPermission(Guid companyGuid)
     {
-        var permissionKeys = GetEndpointPermissionKeys();
+        CheckAny(GetEndpointPermissionKeys(), companyGuid);
+    }
+
+    public void CheckAnyPermission(Guid companyGuid, params string[] permissionKeys)
+    {
+        CheckAny(permissionKeys ?? Array.Empty<string>(), companyGuid);
+    }
+
+    private void CheckAny(IReadOnlyCollection<string> permissionKeys, Guid companyGuid)
+    {
         if (permissionKeys.Count == 0)
             return;
 
@@ -91,9 +93,8 @@ public class PermissionService : IPermissionService
         if (permissionKeys.Any(permissions.Contains))
             return;
 
-        LogDenied(permissionKeys, companyGuid, _permissionSettings.EnforceEndpointPermissions);
-        if (_permissionSettings.EnforceEndpointPermissions)
-            throw new Authorization403ForbiddenException("You don't have permission to perform this operation.");
+        LogDenied(permissionKeys, companyGuid);
+        throw new Authorization403ForbiddenException("You don't have permission to perform this operation.");
     }
 
     public bool CanEnterEndpoint(IReadOnlyCollection<string> permissionKeys)
@@ -110,53 +111,90 @@ public class PermissionService : IPermissionService
         if (companyGuids.Any(companyGuid => permissionKeys.Any(GetPermissions(companyGuid).Contains)))
             return true;
 
-        LogDenied(permissionKeys, null, _permissionSettings.EnforceEndpointPermissions);
-        return _permissionSettings.EnforceEndpointPermissions == false;
+        LogDenied(permissionKeys, null);
+        return false;
     }
 
-    private HashSet<string> GetPermissions(Guid companyGuid)
+    public bool CanGrantRole(FasIdentityRole role, Guid companyGuid)
     {
-        if (_permissionsPerCompany.TryGetValue(companyGuid, out var permissions))
-            return permissions;
+        if (role == null)
+            return false;
 
-        permissions = ResolvePermissions(companyGuid);
-        _permissionsPerCompany[companyGuid] = permissions;
-        return permissions;
+        if (_aspCurrentUserService.CurrentUserIsPlatformOperator())
+            return true;
+
+        if (IsPlatformOperatorRole(role))
+            return false;
+
+        var granter = GetGrant(companyGuid);
+        var granted = GetRoleGrant(role);
+
+        // A full-access role also holds every key added later, so only someone with full access may hand it out.
+        return granted.FullAccess ? granter.FullAccess : granted.Keys.IsSubsetOf(granter.Keys);
     }
 
-    private HashSet<string> ResolvePermissions(Guid companyGuid)
+    public void CheckRoleGrant(FasIdentityRole role, Guid companyGuid)
+    {
+        if (CanGrantRole(role, companyGuid))
+            return;
+
+        _logger.LogWarning(
+            "Role grant denied: user {UserGuid}, company {CompanyGuid}, role {RoleName} holds permissions the user does not hold",
+            _aspCurrentUserService.GetCurrentUserGuid(),
+            companyGuid,
+            role?.Name);
+
+        throw new Authorization403ForbiddenException("You cannot grant a role with permissions you do not hold.");
+    }
+
+    private HashSet<string> GetPermissions(Guid companyGuid) => GetGrant(companyGuid).Keys;
+
+    private Grant GetGrant(Guid companyGuid)
+    {
+        if (_grantsPerCompany.TryGetValue(companyGuid, out var grant))
+            return grant;
+
+        grant = ResolveGrant(companyGuid);
+        _grantsPerCompany[companyGuid] = grant;
+        return grant;
+    }
+
+    private Grant ResolveGrant(Guid companyGuid)
     {
         var userGuid = _aspCurrentUserService.GetCurrentUserGuid();
         if (userGuid == null)
-            return NoPermissions;
+            return NoGrant;
 
         if (_aspCurrentUserService.CurrentUserIsPlatformOperator())
-            return new HashSet<string>(_permissionCatalog.AllKeys, StringComparer.Ordinal);
+            return FullAccessGrant();
 
         var memberships = _usersInCompanyRoRepo
             .GetData(x => x.UserAccountGuid == userGuid && x.CompanyGuid == companyGuid, x => x.IdentityRole)
             .ToList();
         if (memberships.Count == 0)
-            return NoPermissions;
+            return NoGrant;
 
         var company = _companyRoRepo.GetFirst(x => x.Guid == companyGuid);
         if (company != null && company.OwnerGuid == userGuid)
-            return new HashSet<string>(_permissionCatalog.AllKeys, StringComparer.Ordinal);
+            return FullAccessGrant();
 
+        var fullAccess = false;
         var permissions = new HashSet<string>(StringComparer.Ordinal);
         foreach (var role in memberships.Where(x => x.IdentityRole != null).Select(x => x.IdentityRole))
         {
-            permissions.UnionWith(GetRolePermissions(role));
+            var roleGrant = GetRoleGrant(role);
+            fullAccess |= roleGrant.FullAccess;
+            permissions.UnionWith(roleGrant.Keys);
         }
 
-        return permissions;
+        return new Grant(fullAccess, permissions);
     }
 
-    private HashSet<string> GetRolePermissions(FasIdentityRole role)
+    private Grant GetRoleGrant(FasIdentityRole role)
     {
         // The platform operator role cannot be restricted, also when it is held as a company role.
-        if (string.Equals(role.Name, Role.PlatformOperator, StringComparison.OrdinalIgnoreCase))
-            return new HashSet<string>(_permissionCatalog.AllKeys, StringComparer.Ordinal);
+        if (IsPlatformOperatorRole(role))
+            return FullAccessGrant();
 
         return _memoryCache.GetOrCreate(GetRoleCacheKey(role.Id), entry =>
         {
@@ -167,12 +205,22 @@ public class PermissionService : IPermissionService
                 .Select(x => x.PermissionKey)
                 .ToList();
             if (storedKeys.Contains(RolePermission.FullAccessKey))
-                return new HashSet<string>(_permissionCatalog.AllKeys, StringComparer.Ordinal);
+                return FullAccessGrant();
 
             // Keys removed from the code catalog stop working even if they are still stored.
-            return new HashSet<string>(storedKeys.Where(_permissionCatalog.Contains), StringComparer.Ordinal);
+            return new Grant(false,
+                new HashSet<string>(storedKeys.Where(_permissionCatalog.Contains), StringComparer.Ordinal));
         });
     }
+
+    private Grant FullAccessGrant() =>
+        new(true, new HashSet<string>(_permissionCatalog.AllKeys, StringComparer.Ordinal));
+
+    private static bool IsPlatformOperatorRole(FasIdentityRole role) =>
+        string.Equals(role.Name, Role.PlatformOperator, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Keys held in a company or by a role; FullAccess also covers the keys added in the future.</summary>
+    private sealed record Grant(bool FullAccess, HashSet<string> Keys);
 
     private IReadOnlyCollection<string> GetEndpointPermissionKeys()
     {
@@ -182,7 +230,7 @@ public class PermissionService : IPermissionService
         return attribute?.PermissionKeys ?? Array.Empty<string>();
     }
 
-    private void LogDenied(IReadOnlyCollection<string> permissionKeys, Guid? companyGuid, bool enforced)
+    private void LogDenied(IReadOnlyCollection<string> permissionKeys, Guid? companyGuid)
     {
         // Several company checks of one request report the same denial once.
         if (_loggedDenials.Add($"{companyGuid}|{string.Join(",", permissionKeys)}") == false)
@@ -190,8 +238,7 @@ public class PermissionService : IPermissionService
 
         var request = _httpContextAccessor.HttpContext?.Request;
         _logger.LogWarning(
-            "Permission denied{Mode}: user {UserGuid}, company {CompanyGuid}, required any of [{PermissionKeys}], endpoint {Method} {Path}",
-            enforced ? string.Empty : " (shadow mode - request allowed)",
+            "Permission denied: user {UserGuid}, company {CompanyGuid}, required any of [{PermissionKeys}], endpoint {Method} {Path}",
             _aspCurrentUserService.GetCurrentUserGuid(),
             companyGuid?.ToString() ?? "any",
             string.Join(", ", permissionKeys),

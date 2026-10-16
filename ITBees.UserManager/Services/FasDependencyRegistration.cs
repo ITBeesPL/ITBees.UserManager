@@ -96,7 +96,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IFacebookLoginService<TIdentityUser>, FacebookLoginService<TIdentityUser>>();
             services.AddScoped<IMyAccountUpdateService, MyAccountUpdateService>();
             services.AddScoped<IPlatformStatusService, PlatformStatusService>();
-            RegisterPermissions(services, configurationRoot);
+            RegisterPermissions(services);
             services.AddScoped<HttpClient>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             CheckForUsereDeleteAccountServiceImplementation(services);
@@ -165,17 +165,12 @@ namespace ITBees.UserManager.Services
                 });
         }
 
-        private static void RegisterPermissions(IServiceCollection services, IConfigurationRoot configurationRoot)
+        private static void RegisterPermissions(IServiceCollection services)
         {
             // Applications and libraries add their permission keys with
             // services.AddSingleton<IPermissionCatalogContributor, TheirCatalog>(); names, groups and role grants are
             // seeded by the application's migration and managed in the admin panel.
-            var enforceEndpointPermissions = bool.TryParse(
-                configurationRoot.GetSection(PermissionSettings.EnforceEndpointPermissionsConfigKey).Value,
-                out var enforce) && enforce;
-
             services.AddMemoryCache();
-            services.AddSingleton(new PermissionSettings(enforceEndpointPermissions));
             services.AddSingleton<IPermissionCatalog, PermissionCatalog>();
             services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IMyPermissionsService, MyPermissionsService>();

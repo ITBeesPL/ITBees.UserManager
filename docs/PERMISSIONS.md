@@ -94,19 +94,32 @@ attribute replaces the controller-level one (use it when e.g. GET is open to eve
 For a check inside a service that must always apply, call
 `_permissionService.RequirePermission(key, companyGuid)` (or `HasPermission`).
 
-### 4. Shadow mode
+When the permission depends on the request rather than on the endpoint (e.g. a list filter that also shows
+closed sessions), call `_permissionService.CheckAnyPermission(companyGuid, keyA, keyB)` - it behaves like
+`[HasPermission]`.
 
-| Config key | Default | Effect |
-|---|---|---|
-| `PermissionsEnforceEndpoints` | `false` | `[HasPermission]` denials are only logged: `Permission denied (shadow mode - request allowed): user ..., company ..., required any of [...], endpoint ...` |
-| | `true` | `[HasPermission]` denials answer 403 |
+### 4. Denials
 
-`RequirePermission` / `HasPermission` called in code are enforced in both modes.
+Every denial answers 403 and is logged as a warning
+(`Permission denied: user ..., company ..., required any of [...], endpoint ...`), so a role missing a grant
+shows up in the logs. There is no switch that only logs: the starting grants of a migration must reproduce what
+each role could do before.
 
 ### 5. Frontend
 
 `GET /MyPermissions?companyGuid=` returns the effective keys of the current user in the company (empty
 for a non-member). Panels only **hide** what the user may not use; the API decides.
+
+### 6. Granting roles
+
+A user may give someone else only a role that holds nothing they do not hold themselves in that company
+(a full-access role needs full access, the `PlatformOperator` role a platform operator). Without this rule an
+employee allowed to add employees could hand out any role, including a full-access one.
+
+- Before a role is granted by a user (invitation, membership change), call
+  `_permissionService.CheckRoleGrant(role, companyGuid)` - a denial is logged and answered 403.
+- A role picker offers only the roles for which `CanGrantRole(role, companyGuid)` is true.
+- Server-to-server flows (no logged-in user) and the platform operator's admin panel do not need it.
 
 ## Endpoints
 
@@ -129,7 +142,9 @@ operator's e-mail and the keys before and after.
 - Never compare role names in code (`CurrentUserIsInRole("Worker")`, `UserRoles.Contains("Osk")`) to
   decide what an employee may do - declare a key and check it.
 - Never decide authorization on a `CompanyGuid` taken from a request model; load the entity and use its
-  company.
+  company. `[HasPermission]` is checked in a company only when the service makes that company check - an
+  endpoint whose service never calls it is open to anyone holding the key in any of their companies.
+- Granting a role from a user's request goes through `CheckRoleGrant`.
 - Never check permissions only in the frontend.
 - New permission: constant in the permissions class + the frontend mirror of the key + a migration that
   inserts its `Permission` row and grants it to the roles that should keep their current abilities.

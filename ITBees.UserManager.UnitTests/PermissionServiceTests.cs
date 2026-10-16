@@ -51,14 +51,13 @@ namespace ITBees.UserManager.UnitTests
             _httpContext = new DefaultHttpContext();
         }
 
-        private PermissionService CreateService(bool enforce = false, bool isPlatformOperator = false)
+        private PermissionService CreateService(bool isPlatformOperator = false)
         {
             var catalog = new PermissionCatalog(new[] { new TestCatalog() });
             var currentUser = new CurrentUser { Guid = _userGuid, LastUsedCompanyGuid = _companyGuid };
             return new PermissionService(new FakeAspCurrentUserService(currentUser, isPlatformOperator),
                 new HttpContextAccessor { HttpContext = _httpContext }, _memberships, _companies, _rolePermissions,
-                catalog, new MemoryCache(new MemoryCacheOptions()), new PermissionSettings(enforce),
-                NullLogger<PermissionService>.Instance);
+                catalog, new MemoryCache(new MemoryCacheOptions()), NullLogger<PermissionService>.Instance);
         }
 
         private void SetEndpoint(params string[] permissionKeys)
@@ -151,29 +150,21 @@ namespace ITBees.UserManager.UnitTests
         }
 
         [Test]
-        public void RequirePermission_is_enforced_even_in_shadow_mode()
+        public void RequirePermission_refuses_a_permission_missing_in_the_company()
         {
-            var service = CreateService(enforce: false);
+            var service = CreateService();
 
             Assert.DoesNotThrow(() => service.RequirePermission(OpenBarrier, _companyGuid));
             Assert.Throws<Authorization403ForbiddenException>(() => service.RequirePermission(EditTariff, _companyGuid));
         }
 
         [Test]
-        public void An_endpoint_permission_missing_in_the_company_is_refused_when_enforced()
+        public void An_endpoint_permission_missing_in_the_company_is_refused()
         {
             SetEndpoint(EditTariff);
 
             Assert.Throws<Authorization403ForbiddenException>(
-                () => CreateService(enforce: true).CheckEndpointPermission(_companyGuid));
-        }
-
-        [Test]
-        public void An_endpoint_permission_missing_in_the_company_is_only_logged_in_shadow_mode()
-        {
-            SetEndpoint(EditTariff);
-
-            Assert.DoesNotThrow(() => CreateService(enforce: false).CheckEndpointPermission(_companyGuid));
+                () => CreateService().CheckEndpointPermission(_companyGuid));
         }
 
         [Test]
@@ -181,28 +172,93 @@ namespace ITBees.UserManager.UnitTests
         {
             SetEndpoint(EditTariff, OpenBarrier);
 
-            Assert.DoesNotThrow(() => CreateService(enforce: true).CheckEndpointPermission(_companyGuid));
+            Assert.DoesNotThrow(() => CreateService().CheckEndpointPermission(_companyGuid));
         }
 
         [Test]
         public void An_endpoint_without_HasPermission_needs_only_the_membership()
         {
-            Assert.DoesNotThrow(() => CreateService(enforce: true).CheckEndpointPermission(_otherCompanyGuid));
+            Assert.DoesNotThrow(() => CreateService().CheckEndpointPermission(_otherCompanyGuid));
+        }
+
+        [Test]
+        public void CheckAnyPermission_accepts_any_of_the_keys_in_the_company()
+        {
+            Assert.DoesNotThrow(() => CreateService().CheckAnyPermission(_companyGuid, EditTariff, OpenBarrier));
+            Assert.Throws<Authorization403ForbiddenException>(
+                () => CreateService().CheckAnyPermission(_companyGuid, EditTariff));
+            Assert.Throws<Authorization403ForbiddenException>(
+                () => CreateService().CheckAnyPermission(_otherCompanyGuid, OpenBarrier));
         }
 
         [Test]
         public void CanEnterEndpoint_needs_the_permission_in_at_least_one_company_of_the_user()
         {
-            var service = CreateService(enforce: true);
+            var service = CreateService();
 
             Assert.That(service.CanEnterEndpoint(new[] { OpenBarrier }), Is.True);
             Assert.That(service.CanEnterEndpoint(new[] { EditTariff }), Is.False);
         }
 
         [Test]
-        public void CanEnterEndpoint_lets_the_request_through_in_shadow_mode()
+        public void A_member_may_grant_a_role_holding_only_permissions_the_member_holds()
         {
-            Assert.That(CreateService(enforce: false).CanEnterEndpoint(new[] { EditTariff }), Is.True);
+            var limitedRole = RoleWith(OpenBarrier);
+
+            Assert.That(CreateService().CanGrantRole(limitedRole, _companyGuid), Is.True);
+            Assert.That(CreateService().CanGrantRole(_gateOpener, _companyGuid), Is.True);
+            Assert.That(CreateService().CanGrantRole(RoleWith(), _companyGuid), Is.True);
+        }
+
+        [Test]
+        public void A_member_may_not_grant_a_role_holding_more_than_the_member()
+        {
+            var widerRole = RoleWith(OpenBarrier, EditTariff);
+
+            Assert.That(CreateService().CanGrantRole(widerRole, _companyGuid), Is.False);
+            Assert.That(CreateService().CanGrantRole(widerRole, _otherCompanyGuid), Is.False);
+        }
+
+        [Test]
+        public void A_full_access_role_needs_full_access_also_when_every_current_key_is_held()
+        {
+            _rolePermissions.Items.Clear();
+            foreach (var key in new[] { OpenBarrier, EditTariff, ViewPayments })
+                _rolePermissions.Items.Add(new RolePermission { RoleId = _gateOpener.Id, PermissionKey = key });
+            var fullAccessRole = RoleWith(RolePermission.FullAccessKey);
+
+            Assert.That(CreateService().CanGrantRole(fullAccessRole, _companyGuid), Is.False);
+
+            _companies.Items[0].OwnerGuid = _userGuid;
+            Assert.That(CreateService().CanGrantRole(fullAccessRole, _companyGuid), Is.True);
+        }
+
+        [Test]
+        public void Only_a_platform_operator_may_grant_the_platform_operator_role()
+        {
+            _companies.Items[0].OwnerGuid = _userGuid;
+            var platformOperator = new FasIdentityRole("PlatformOperator") { Id = Guid.NewGuid() };
+
+            Assert.That(CreateService().CanGrantRole(platformOperator, _companyGuid), Is.False);
+            Assert.That(CreateService(isPlatformOperator: true).CanGrantRole(platformOperator, _companyGuid), Is.True);
+        }
+
+        [Test]
+        public void CheckRoleGrant_refuses_a_role_holding_more_than_the_granter()
+        {
+            var widerRole = RoleWith(OpenBarrier, EditTariff);
+
+            Assert.Throws<Authorization403ForbiddenException>(
+                () => CreateService().CheckRoleGrant(widerRole, _companyGuid));
+            Assert.DoesNotThrow(() => CreateService().CheckRoleGrant(_gateOpener, _companyGuid));
+        }
+
+        private FasIdentityRole RoleWith(params string[] permissionKeys)
+        {
+            var role = new FasIdentityRole("Role" + _rolePermissions.Items.Count) { Id = Guid.NewGuid() };
+            foreach (var key in permissionKeys)
+                _rolePermissions.Items.Add(new RolePermission { RoleId = role.Id, PermissionKey = key });
+            return role;
         }
 
         [Test]

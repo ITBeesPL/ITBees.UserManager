@@ -14,8 +14,7 @@ namespace ITBees.UserManager.Permissions;
 /// 1. before the action runs - the user must hold the permission in at least one of their companies;
 /// 2. by every company access check made while the request runs (IAspCurrentUserService.TryCanIDoForCompany)
 ///    - the user must hold the permission in exactly that company.
-/// An action-level attribute replaces the controller-level one. In shadow mode (PermissionSettings) denials
-/// are only logged.
+/// An action-level attribute replaces the controller-level one. A denial is answered 403 and logged.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public class HasPermissionAttribute : Attribute, IAuthorizationFilter
