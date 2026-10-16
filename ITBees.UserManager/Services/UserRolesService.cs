@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ITBees.Interfaces.Repository;
+using ITBees.Models.Roles;
 using ITBees.Models.Users;
 using ITBees.RestfulApiControllers.Authorization;
 using ITBees.RestfulApiControllers.Exceptions;
@@ -111,7 +112,7 @@ public class UserRolesService : IUserRolesService
         var roleToDelete = allRoles.FirstOrDefault(x => x.Id == roleGuid);
         if (roleToDelete == null)
             throw new FasApiErrorException(new FasApiErrorVm("Role not exists", 400, ""));
-        if (roleToDelete.Name == "PlatformOperator")
+        if (string.Equals(roleToDelete.Name, Role.PlatformOperator, StringComparison.OrdinalIgnoreCase))
             throw new FasApiErrorException(new FasApiErrorVm("Role Platform operator could not be deleted", 400, ""));
 
         // Users holding the role must not be left with a dangling role: they move to the replacement role.
@@ -128,7 +129,7 @@ public class UserRolesService : IUserRolesService
             if (replacementRole == null || replacementRole.Id == roleToDelete.Id)
                 throw new FasApiErrorException(new FasApiErrorVm("Replacement role not found", 400, ""));
             // Deleting a role must never become a way of handing out platform-wide rights.
-            if (string.Equals(replacementRole.Name, "PlatformOperator", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(replacementRole.Name, Role.PlatformOperator, StringComparison.OrdinalIgnoreCase))
                 throw new FasApiErrorException(new FasApiErrorVm(
                     "The platform operator role cannot be given as a replacement", 400, ""));
 
@@ -142,7 +143,10 @@ public class UserRolesService : IUserRolesService
         _identityRoleRwRepo.DeleteData(x => x.Id == roleToDelete.Id);
     }
 
-    /// <summary>Users holding the role in a company, in a pending invitation or as a global Identity role.</summary>
+    /// <summary>
+    /// Users holding the role in a company, as a global Identity role, or through an invitation - applied ones too,
+    /// because their row keeps referencing the role and would be left dangling by the delete.
+    /// </summary>
     private HashSet<Guid> GetAssignedUserGuids(Guid roleId)
     {
         var userGuids = new HashSet<Guid>(_usersInCompanyRoRepo
@@ -159,6 +163,7 @@ public class UserRolesService : IUserRolesService
 
     private void MoveAssignments(Guid roleId, Guid replacementRoleId)
     {
+        RemoveMembershipsTheMoveWouldDuplicate(roleId, replacementRoleId);
         _usersInCompanyWoRepo.UpdateData(x => x.IdentityRoleId == roleId, x => x.IdentityRoleId = replacementRoleId);
         _usersInvitationsToCompaniesWoRepo.UpdateData(x => x.IdentityRoleId == roleId,
             x => x.IdentityRoleId = replacementRoleId);
@@ -178,5 +183,31 @@ public class UserRolesService : IUserRolesService
         if (missing.Count > 0)
             _identityUserRoleWoRepo.InsertData(missing);
         _identityUserRoleWoRepo.DeleteData(x => x.RoleId == roleId);
+    }
+
+    /// <summary>
+    /// A user already holding the replacement role in the same company would end up with two identical membership
+    /// rows (nothing in the schema stops it), so the row that is about to become the duplicate is dropped instead.
+    /// </summary>
+    private void RemoveMembershipsTheMoveWouldDuplicate(Guid roleId, Guid replacementRoleId)
+    {
+        var withReplacementRole = _usersInCompanyRoRepo
+            .GetData(x => x.IdentityRoleId == replacementRoleId)
+            .Select(x => (x.UserAccountGuid, x.CompanyGuid))
+            .ToHashSet();
+        if (withReplacementRole.Count == 0)
+            return;
+
+        var duplicateGuids = _usersInCompanyRoRepo
+            .GetData(x => x.IdentityRoleId == roleId)
+            .Where(x => withReplacementRole.Contains((x.UserAccountGuid, x.CompanyGuid)))
+            .Select(x => x.Guid)
+            .ToList();
+        if (duplicateGuids.Count == 0)
+            return;
+
+        _logger.LogCritical("{Count} memberships are removed instead of moved to role {ReplacementRoleId} - " +
+                            "the users already hold it in the same company", duplicateGuids.Count, replacementRoleId);
+        _usersInCompanyWoRepo.DeleteData(x => duplicateGuids.Contains(x.Guid));
     }
 }

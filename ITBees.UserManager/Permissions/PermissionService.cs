@@ -37,6 +37,7 @@ public class PermissionService : IPermissionService
     // The service is scoped, so these live for one request only.
     private readonly Dictionary<Guid, Grant> _grantsPerCompany = new();
     private readonly HashSet<string> _loggedDenials = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _loggedUnknownKeys = new(StringComparer.Ordinal);
 
     public PermissionService(IAspCurrentUserService aspCurrentUserService,
         IHttpContextAccessor httpContextAccessor,
@@ -66,7 +67,7 @@ public class PermissionService : IPermissionService
 
     public bool HasPermission(string permissionKey, Guid companyGuid)
     {
-        return GetPermissions(companyGuid).Contains(permissionKey);
+        return GetGrant(companyGuid).Allows(permissionKey);
     }
 
     public void RequirePermission(string permissionKey, Guid companyGuid)
@@ -81,16 +82,23 @@ public class PermissionService : IPermissionService
 
     public void CheckAnyPermission(Guid companyGuid, params string[] permissionKeys)
     {
-        CheckAny(permissionKeys ?? Array.Empty<string>(), companyGuid);
+        // An empty list would silently allow everything - a caller asking for "any of nothing" is a mistake.
+        if (permissionKeys == null || permissionKeys.Length == 0)
+            throw new ArgumentException("At least one permission key is required.", nameof(permissionKeys));
+
+        CheckAny(permissionKeys, companyGuid);
     }
 
     private void CheckAny(IReadOnlyCollection<string> permissionKeys, Guid companyGuid)
     {
+        // Endpoints without [HasPermission] need only the membership, so an empty list passes here.
         if (permissionKeys.Count == 0)
             return;
 
-        var permissions = GetPermissions(companyGuid);
-        if (permissionKeys.Any(permissions.Contains))
+        WarnAboutKeysOutsideTheCatalog(permissionKeys);
+
+        var grant = GetGrant(companyGuid);
+        if (permissionKeys.Any(grant.Allows))
             return;
 
         LogDenied(permissionKeys, companyGuid);
@@ -99,16 +107,34 @@ public class PermissionService : IPermissionService
 
     public bool CanEnterEndpoint(IReadOnlyCollection<string> permissionKeys)
     {
-        var userGuid = _aspCurrentUserService.GetCurrentUserGuid();
-        if (userGuid == null || permissionKeys.Count == 0 || _aspCurrentUserService.CurrentUserIsPlatformOperator())
+        if (permissionKeys.Count == 0)
             return true;
 
-        var companyGuids = _usersInCompanyRoRepo.GetData(x => x.UserAccountGuid == userGuid)
-            .Select(x => x.CompanyGuid)
-            .Distinct()
+        if (_aspCurrentUserService.CurrentUserIsPlatformOperator())
+            return true;
+
+        var userGuid = _aspCurrentUserService.GetCurrentUserGuid();
+        if (userGuid == null)
+            return false;
+
+        WarnAboutKeysOutsideTheCatalog(permissionKeys);
+
+        // One query for every company of the user; the role grants behind it are cached per role.
+        var memberships = _usersInCompanyRoRepo
+            .GetData(x => x.UserAccountGuid == userGuid, x => x.IdentityRole)
             .ToList();
 
-        if (companyGuids.Any(companyGuid => permissionKeys.Any(GetPermissions(companyGuid).Contains)))
+        var roleHoldsIt = memberships
+            .Select(x => x.IdentityRole)
+            .Where(x => x != null)
+            .DistinctBy(x => x.Id)
+            .Any(role => permissionKeys.Any(GetRoleGrant(role).Allows));
+        if (roleHoldsIt)
+            return true;
+
+        // The owner of a company holds every permission in it, with or without a role.
+        var companyGuids = memberships.Select(x => x.CompanyGuid).Distinct().ToList();
+        if (_companyRoRepo.HasData(x => companyGuids.Contains(x.Guid) && x.OwnerGuid == userGuid))
             return true;
 
         LogDenied(permissionKeys, null);
@@ -220,7 +246,14 @@ public class PermissionService : IPermissionService
         string.Equals(role.Name, Role.PlatformOperator, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Keys held in a company or by a role; FullAccess also covers the keys added in the future.</summary>
-    private sealed record Grant(bool FullAccess, HashSet<string> Keys);
+    private sealed record Grant(bool FullAccess, HashSet<string> Keys)
+    {
+        /// <summary>
+        /// Full access holds a key even when the catalog does not know it yet (or any more), so a key that no
+        /// contributor declares does not lock out the platform operator, the company owner and full-access roles.
+        /// </summary>
+        public bool Allows(string permissionKey) => FullAccess || Keys.Contains(permissionKey);
+    }
 
     private IReadOnlyCollection<string> GetEndpointPermissionKeys()
     {
@@ -228,6 +261,23 @@ public class PermissionService : IPermissionService
         var attribute = _httpContextAccessor.HttpContext?.GetEndpoint()?.Metadata
             .GetMetadata<HasPermissionAttribute>();
         return attribute?.PermissionKeys ?? Array.Empty<string>();
+    }
+
+    /// <summary>
+    /// A required key that no contributor declares can only ever be held through full access, so a typo in
+    /// [HasPermission] or a contributor that is not registered would quietly refuse every ordinary role. Reported
+    /// as an error instead, once per request.
+    /// </summary>
+    private void WarnAboutKeysOutsideTheCatalog(IReadOnlyCollection<string> permissionKeys)
+    {
+        var unknownKeys = permissionKeys.Where(x => _permissionCatalog.Contains(x) == false).ToList();
+        if (unknownKeys.Count == 0 || _loggedUnknownKeys.Add(string.Join(",", unknownKeys)) == false)
+            return;
+
+        _logger.LogError(
+            "Permission keys [{PermissionKeys}] are required but not declared by any IPermissionCatalogContributor - " +
+            "no role can hold them. Check the key and the registration of the contributor.",
+            string.Join(", ", unknownKeys));
     }
 
     private void LogDenied(IReadOnlyCollection<string> permissionKeys, Guid? companyGuid)

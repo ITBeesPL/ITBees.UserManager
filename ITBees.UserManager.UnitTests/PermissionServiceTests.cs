@@ -253,6 +253,47 @@ namespace ITBees.UserManager.UnitTests
             Assert.DoesNotThrow(() => CreateService().CheckRoleGrant(_gateOpener, _companyGuid));
         }
 
+        [Test]
+        public void A_key_no_contributor_declares_is_still_held_through_full_access()
+        {
+            // A typo in [HasPermission] or a contributor that is not registered must not lock out the operator too.
+            const string undeclared = "test.undeclared.key";
+
+            Assert.That(CreateService(isPlatformOperator: true).HasPermission(undeclared, _companyGuid), Is.True);
+            Assert.DoesNotThrow(() => CreateService(isPlatformOperator: true)
+                .CheckAnyPermission(_companyGuid, undeclared));
+            Assert.Throws<Authorization403ForbiddenException>(
+                () => CreateService().CheckAnyPermission(_companyGuid, undeclared));
+        }
+
+        [Test]
+        public void CheckAnyPermission_without_a_key_is_refused_instead_of_allowing_everything()
+        {
+            Assert.Throws<ArgumentException>(() => CreateService().CheckAnyPermission(_companyGuid));
+            Assert.Throws<ArgumentException>(() => new HasPermissionAttribute());
+        }
+
+        [Test]
+        public void CanEnterEndpoint_accepts_the_owner_of_a_company_without_a_role()
+        {
+            _companies.Items[0].OwnerGuid = _userGuid;
+            _memberships.Items[0].IdentityRole = null;
+            _memberships.Items[0].IdentityRoleId = null;
+
+            Assert.That(CreateService().CanEnterEndpoint(new[] { EditTariff }), Is.True);
+        }
+
+        [Test]
+        public void CanEnterEndpoint_refuses_a_request_without_a_current_user()
+        {
+            var service = new PermissionService(new FakeAspCurrentUserService(null),
+                new HttpContextAccessor { HttpContext = _httpContext }, _memberships, _companies, _rolePermissions,
+                new PermissionCatalog(new[] { new TestCatalog() }), new MemoryCache(new MemoryCacheOptions()),
+                NullLogger<PermissionService>.Instance);
+
+            Assert.That(service.CanEnterEndpoint(new[] { OpenBarrier }), Is.False);
+        }
+
         private FasIdentityRole RoleWith(params string[] permissionKeys)
         {
             var role = new FasIdentityRole("Role" + _rolePermissions.Items.Count) { Id = Guid.NewGuid() };

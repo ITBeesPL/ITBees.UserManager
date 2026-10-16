@@ -85,17 +85,23 @@ public class UserRolePermissionsService : IUserRolePermissionsService
             throw new FasApiErrorException(new FasApiErrorVm(
                 "Unknown permission keys: " + string.Join(", ", unknownKeys), 400, ""));
 
+        // There is no transaction around the two statements, so only the difference is written: a failure in the
+        // middle leaves the role with fewer permissions, never with none of them.
         var previousKeys = GetStoredKeys(role.Id);
-        _rolePermissionWoRepo.DeleteData(x => x.RoleId == role.Id);
-        if (permissionKeys.Count > 0)
+        var keysToRemove = previousKeys.Except(permissionKeys, StringComparer.Ordinal).ToList();
+        var keysToAdd = permissionKeys.Except(previousKeys, StringComparer.Ordinal).ToList();
+
+        if (keysToRemove.Count > 0)
+            _rolePermissionWoRepo.DeleteData(x => x.RoleId == role.Id && keysToRemove.Contains(x.PermissionKey));
+        if (keysToAdd.Count > 0)
         {
-            _rolePermissionWoRepo.InsertData(permissionKeys
+            _rolePermissionWoRepo.InsertData(keysToAdd
                 .Select(x => new RolePermission { RoleId = role.Id, PermissionKey = x })
                 .ToList());
         }
         _memoryCache.Remove(PermissionService.GetRoleCacheKey(role.Id));
 
-        _logger.LogWarning("Permissions of role {RoleName} ({RoleGuid}) changed by {UserEmail}: [{PreviousKeys}] -> [{PermissionKeys}]",
+        _logger.LogCritical("Permissions of role {RoleName} ({RoleGuid}) changed by {UserEmail}: [{PreviousKeys}] -> [{PermissionKeys}]",
             role.Name, role.Id, _aspCurrentUserService.GetCurrentUser()?.Email,
             string.Join(", ", previousKeys), string.Join(", ", permissionKeys));
 

@@ -69,6 +69,22 @@ namespace ITBees.UserManager.UnitTests
         }
 
         [Test]
+        public void Saving_writes_only_the_difference_so_a_failure_cannot_clear_the_role()
+        {
+            var kept = new RolePermission { RoleId = _worker.Id, PermissionKey = OpenBarrier };
+            _rolePermissions.Items.Add(kept);
+
+            CreateService().Update(new UserRolePermissionsUm
+            {
+                RoleGuid = _worker.Id, PermissionKeys = new List<string> { OpenBarrier, EditTariff }
+            });
+
+            Assert.That(_rolePermissions.Items.Select(x => x.PermissionKey),
+                Is.EquivalentTo(new[] { OpenBarrier, EditTariff }));
+            Assert.That(_rolePermissions.Items, Does.Contain(kept), "the row that stays is not deleted and re-inserted");
+        }
+
+        [Test]
         public void Saving_an_empty_list_leaves_the_role_without_permissions()
         {
             _rolePermissions.Items.Add(new RolePermission { RoleId = _worker.Id, PermissionKey = OpenBarrier });

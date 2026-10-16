@@ -21,7 +21,11 @@ public class HasPermissionAttribute : Attribute, IAuthorizationFilter
 {
     public HasPermissionAttribute(params string[] permissionKeys)
     {
-        PermissionKeys = permissionKeys ?? Array.Empty<string>();
+        // Without a key the attribute would let everyone in while looking like a guard.
+        if (permissionKeys == null || permissionKeys.Length == 0)
+            throw new ArgumentException("At least one permission key is required.", nameof(permissionKeys));
+
+        PermissionKeys = permissionKeys;
     }
 
     public IReadOnlyCollection<string> PermissionKeys { get; }

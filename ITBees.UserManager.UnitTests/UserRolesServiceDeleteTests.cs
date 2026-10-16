@@ -76,6 +76,28 @@ namespace ITBees.UserManager.UnitTests
         }
 
         [Test]
+        public void A_user_already_holding_the_replacement_role_keeps_one_membership()
+        {
+            var companyGuid = Guid.NewGuid();
+            _memberships.Items.Clear();
+            _memberships.Items.Add(new UsersInCompany
+            {
+                Guid = Guid.NewGuid(), UserAccountGuid = _employee, CompanyGuid = companyGuid,
+                IdentityRoleId = _cashier.Id
+            });
+            _memberships.Items.Add(new UsersInCompany
+            {
+                Guid = Guid.NewGuid(), UserAccountGuid = _employee, CompanyGuid = companyGuid,
+                IdentityRoleId = _worker.Id
+            });
+
+            CreateService().Delete(_cashier.Id, _worker.Id);
+
+            Assert.That(_memberships.Items.Count, Is.EqualTo(1));
+            Assert.That(_memberships.Items.Single().IdentityRoleId, Is.EqualTo(_worker.Id));
+        }
+
+        [Test]
         public void The_platform_operator_role_cannot_be_the_replacement()
         {
             Assert.Throws<FasApiErrorException>(() => CreateService().Delete(_cashier.Id, _platformOperator.Id));

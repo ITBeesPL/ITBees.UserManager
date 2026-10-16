@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 namespace ITBees.UserManager.Permissions;
 
 /// <summary>
-/// Collects the permission keys of all registered contributors and refuses an invalid catalog, so a typo or a
-/// duplicated key stops the application instead of silently granting or denying access.
+/// Collects the permission keys of all registered contributors and refuses an invalid catalog, so a badly formatted
+/// or duplicated key throws when the catalog is first used instead of silently granting or denying access.
 /// </summary>
 public class PermissionCatalog : IPermissionCatalog
 {

@@ -14,13 +14,18 @@ limited role may call, or before adding a new permission.
 | **Assignment** | `UsersInCompany.IdentityRoleId` | a user has a role **in a company** (unchanged) |
 
 Effective permissions of the current user in company C (`IPermissionService`), always resolved on the
-server for a request (never read from the JWT):
+server for a request (the keys are never read from the JWT - only the global `PlatformOperator` role is,
+like everywhere else in the UserManager):
 
 1. global Identity role `PlatformOperator` -> every key;
 2. not a member of C (`UsersInCompany`) -> nothing;
 3. owner of C (`Company.OwnerGuid`) -> every key;
 4. otherwise the keys stored for the user's role(s) in C (`*` = every key; a role named `PlatformOperator`
    is never restricted); keys no longer declared in code are ignored; a role without rows holds nothing.
+
+Every key means every key, also one that no contributor declares (a typo in `[HasPermission]`, a contributor
+that is not registered): such a key is logged as an error and refused to every ordinary role, but full access
+still holds it, so a mistake does not lock the platform operator out of the application.
 
 Role permissions are cached for 60 s per process; a change made in AdminApi reaches another API process
 within that time.
@@ -84,12 +89,17 @@ public class OpenGateController : RestfulControllerBase<OpenGateController> { ..
 
 1. before the action - the user must hold the permission in **at least one** of their companies;
 2. by **every company access check** made while the request runs
-   (`IAspCurrentUserService.TryCanIDoForCompany`, and app wrappers that call
+   (`IAspCurrentUserService.GetMyAcceessToCompany`, so `TryCanIDoForCompany` too, and app wrappers that call
    `IPermissionService.CheckEndpointPermission`) - the user must hold it in **that** company.
 
 So the service keeps doing what it already does - load the entity and check access to the entity's
 company - and the permission is checked against the right company automatically. An action-level
 attribute replaces the controller-level one (use it when e.g. GET is open to everyone and PUT is not).
+
+An endpoint that declares `[HasPermission]` and reaches a company check in an application where the
+permission services are not registered throws instead of passing the check: a missing registration must not
+silently turn the per-company check off. `[HasPermission]` and `CheckAnyPermission` need at least one key -
+an empty list would allow everything while looking like a guard, so it is refused.
 
 For a check inside a service that must always apply, call
 `_permissionService.RequirePermission(key, companyGuid)` (or `HasPermission`).
@@ -128,10 +138,10 @@ employee allowed to add employees could hand out any role, including a full-acce
 | `GET /MyPermissions?companyGuid` | any logged-in user | own permissions in a company (last used company when omitted) |
 | `GET /PermissionCatalog` | PlatformOperator | keys declared in code, grouped and named from the database, with the roles holding them |
 | `GET /UserRolePermissions?roleGuid` | PlatformOperator | permissions of a role (`fullAccess` or `permissionKeys`) |
-| `PUT /UserRolePermissions` | PlatformOperator | save them (unknown keys -> 400; `*` only through `fullAccess`) |
+| `PUT /UserRolePermissions` | PlatformOperator | save them (unknown keys -> 400; `*` only through `fullAccess`; only the difference is written, so a failed save never clears the role) |
 | `POST /UserRole?roleName` | PlatformOperator | create a role (sets `NormalizedName`; a name already used is refused) |
-| `GET /UserRole?roleGuid` | PlatformOperator | a role with `assignedUsersCount` (company memberships, pending invitations, global roles) |
-| `DELETE /UserRole?roleGuid&replacementRoleGuid` | PlatformOperator | delete a role; when someone holds it, `replacementRoleGuid` is required and they get that role (never `PlatformOperator`) |
+| `GET /UserRole?roleGuid` | PlatformOperator | a role with `assignedUsersCount` (company memberships, invitations - applied ones too, because their row keeps referencing the role - and global roles) |
+| `DELETE /UserRole?roleGuid&replacementRoleGuid` | PlatformOperator | delete a role; when someone holds it, `replacementRoleGuid` is required and they get that role (never `PlatformOperator`); a user already holding the replacement in that company keeps one membership |
 
 Applications with an explicit controller list (Octopark `ControllersRegistration.cs`) must add these
 controllers there. The `PlatformOperator` role cannot be restricted. Every change is logged with the

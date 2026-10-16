@@ -16,5 +16,6 @@ public class Permission
     /// <summary>Orders the permissions in the role editor.</summary>
     public int SortOrder { get; set; }
 
-    public DateTime Created { get; set; }
+    /// <summary>Initialised here, so a row inserted without it does not land on a date MySQL refuses.</summary>
+    public DateTime Created { get; set; } = DateTime.UtcNow;
 }
