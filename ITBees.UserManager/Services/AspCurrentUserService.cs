@@ -9,6 +9,8 @@ using ITBees.Models.Languages;
 using ITBees.UserManager.DbModels;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
+using ITBees.UserManager.Permissions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ITBees.UserManager.Services
 {
@@ -85,6 +87,8 @@ namespace ITBees.UserManager.Services
                 throw new AuthorizationException(AuthorizationExceptionMessages.You_dont_have_any_acceess_to_company);
             }
 
+            CheckEndpointPermission(companyGuid);
+
             return TypeOfOperation.RoRw;
         }
 
@@ -97,6 +101,27 @@ namespace ITBees.UserManager.Services
 
             throw new AuthorizationException(AuthorizationExceptionMessages
                 .You_dont_have_acceess_enough_right_for_specified_company);
+        }
+
+        /// <summary>
+        /// Membership is not enough when the endpoint declares [HasPermission]: the permission has to be granted in
+        /// this very company. Resolved lazily to keep the constructor of derived services intact - but an endpoint
+        /// that declares a permission must never pass this check only because the services are not registered.
+        /// </summary>
+        private void CheckEndpointPermission(Guid companyGuid)
+        {
+            var httpContext = _contextAccessor.HttpContext;
+            if (httpContext?.GetEndpoint()?.Metadata.GetMetadata<HasPermissionAttribute>() == null)
+                return;
+
+            var permissionService = httpContext.RequestServices?.GetService<IPermissionService>();
+            if (permissionService == null)
+                throw new InvalidOperationException(
+                    "The endpoint declares [HasPermission] but IPermissionService is not registered, so the " +
+                    "permission cannot be checked for the company. Register the permission services " +
+                    "(FasDependencyRegistration.Register).");
+
+            permissionService.CheckEndpointPermission(companyGuid);
         }
 
         public bool CurrentUserIsPlatformOperator()

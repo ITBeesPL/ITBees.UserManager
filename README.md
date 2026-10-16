@@ -29,3 +29,8 @@ Tokens marked in another way are added in the application:
 ```csharp
 services.Configure<RestrictedTokenOptions>(o => o.ClaimTypes.Add("MyClaimType"));
 ```
+
+## Roles and permissions
+
+A role is a name plus a set of permissions; applications and libraries declare their permissions in
+code and protect endpoints with `[HasPermission]`. See [docs/PERMISSIONS.md](docs/PERMISSIONS.md).

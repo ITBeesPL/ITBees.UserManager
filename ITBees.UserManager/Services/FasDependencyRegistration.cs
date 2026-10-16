@@ -22,6 +22,7 @@ using ITBees.Models.Users;
 using ITBees.UserManager.Controllers.GenericControllersAttributes;
 using ITBees.UserManager.Controllers.PlatformOperator;
 using ITBees.UserManager.Interfaces;
+using ITBees.UserManager.Permissions;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.AppleLogins;
 using ITBees.UserManager.Services.FacebookLogins;
@@ -29,6 +30,7 @@ using ITBees.UserManager.Services.GoogleLogins;
 using ITBees.UserManager.Services.Invitations;
 using ITBees.UserManager.Services.Mailing;
 using ITBees.UserManager.Services.Passwords;
+using ITBees.UserManager.Services.Permissions;
 using ITBees.UserManager.Services.PlatformOperator;
 using ITBees.UserManager.Services.Registration;
 
@@ -94,6 +96,7 @@ namespace ITBees.UserManager.Services
             services.AddScoped<IFacebookLoginService<TIdentityUser>, FacebookLoginService<TIdentityUser>>();
             services.AddScoped<IMyAccountUpdateService, MyAccountUpdateService>();
             services.AddScoped<IPlatformStatusService, PlatformStatusService>();
+            RegisterPermissions(services);
             services.AddScoped<HttpClient>();
             services.AddScoped(typeof(UserManager<TIdentityUser>));
             CheckForUsereDeleteAccountServiceImplementation(services);
@@ -160,6 +163,19 @@ namespace ITBees.UserManager.Services
                         OnTokenValidated = context => Task.CompletedTask
                     };
                 });
+        }
+
+        private static void RegisterPermissions(IServiceCollection services)
+        {
+            // Applications and libraries add their permission keys with
+            // services.AddSingleton<IPermissionCatalogContributor, TheirCatalog>(); names, groups and role grants are
+            // seeded by the application's migration and managed in the admin panel.
+            services.AddMemoryCache();
+            services.AddSingleton<IPermissionCatalog, PermissionCatalog>();
+            services.AddScoped<IPermissionService, PermissionService>();
+            services.AddScoped<IMyPermissionsService, MyPermissionsService>();
+            services.AddScoped<IUserRolePermissionsService, UserRolePermissionsService>();
+            services.AddScoped<IPermissionCatalogService, PermissionCatalogService>();
         }
 
         private static void CheckForUsereDeleteAccountServiceImplementation(IServiceCollection services)

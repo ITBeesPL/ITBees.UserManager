@@ -44,6 +44,7 @@ namespace ITBees.UserManager.Services
                 .HasForeignKey(uic => uic.IdentityRoleId);
 
             modelBuilder.Entity<UsersInvitationsToCompanies>().HasKey(x => x.Guid);
+            RegisterPermissions(modelBuilder);
             modelBuilder.Entity<Language>().HasKey(x => x.Id);
             modelBuilder.Entity<Language>().HasDiscriminator<string>("LanguageType")
                 .HasValue<Aa>(nameof(Aa) + "Type")
@@ -230,6 +231,27 @@ namespace ITBees.UserManager.Services
                 .HasValue<Za>(nameof(Za) + "Type")
                 .HasValue<Zh>(nameof(Zh) + "Type")
                 .HasValue<Zu>(nameof(Zu) + "Type");
+        }
+
+        /// <summary>
+        /// Permission catalog and role permission tables. Called by Register; an application that configures the
+        /// UserManager entities by itself calls only this method.
+        /// </summary>
+        public static void RegisterPermissions(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Permission>().HasKey(x => x.Key);
+            modelBuilder.Entity<Permission>().Property(x => x.Key).HasMaxLength(128);
+            modelBuilder.Entity<Permission>().Property(x => x.Name).HasMaxLength(256).IsRequired();
+            modelBuilder.Entity<Permission>().Property(x => x.GroupName).HasMaxLength(128).IsRequired();
+            modelBuilder.Entity<Permission>().Property(x => x.Description).HasMaxLength(512);
+
+            modelBuilder.Entity<RolePermission>().HasKey(x => new { x.RoleId, x.PermissionKey });
+            modelBuilder.Entity<RolePermission>().Property(x => x.PermissionKey).HasMaxLength(128).IsRequired();
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(x => x.Role)
+                .WithMany()
+                .HasForeignKey(x => x.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

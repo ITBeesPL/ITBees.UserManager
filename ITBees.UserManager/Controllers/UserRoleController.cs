@@ -34,8 +34,8 @@ public class UserRoleController : RestfulControllerBase<UserRoleController>
     }
 
     [HttpDelete]
-    public IActionResult Del(Guid roleGuid)
+    public IActionResult Del(Guid roleGuid, Guid? replacementRoleGuid)
     {
-        return ReturnOkResult(() => _userRolesService.Delete(roleGuid));
+        return ReturnOkResult(() => _userRolesService.Delete(roleGuid, replacementRoleGuid));
     }
 }
