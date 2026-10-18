@@ -131,6 +131,48 @@ employee allowed to add employees could hand out any role, including a full-acce
 - A role picker offers only the roles for which `CanGrantRole(role, companyGuid)` is true.
 - Server-to-server flows (no logged-in user) and the platform operator's admin panel do not need it.
 
+### 7. Inviting people to a company
+
+`INewUserRegistrationService.CreateAndInviteNewUserToCompany` (and `POST /NewInvitedUserRegistration`, which
+calls it) checks two things before it creates the account or the invitation:
+
+1. **Who invites** - with the default security service (no `IExternalSecurityService` passed),
+   `IAccessControlService.CanDo` allows the platform operator, the owner of the target company and its members,
+   and refuses everybody else with 403. Up to 8.0.411 it allowed every logged-in user, to any company.
+2. **Which role** - when `UserRoleGuid` is set and a user is logged in, whatever security service was passed:
+   the platform operator gives any role, the owner any role but `PlatformOperator`, any other member only a role
+   passing `CheckRoleGrant` (section 6). An unknown `UserRoleGuid` is answered 400.
+   Without a logged-in user (a background job, a server-to-server flow with its own `IExternalSecurityService`)
+   the role is not checked - the caller vouches for it.
+
+The owner here is `CompanyOwnership.IsOwner`: `Company.OwnerGuid`, or `CreatedByGuid` of a company without it -
+**member of the company or not**, because Kilometrówka creates companies without adding the owner to
+`UsersInCompany`. Both checks above use it, so an owner who may invite may also give the roles. (`IPermissionService`
+is unchanged: there the owner holds every key only as a member, and only through `OwnerGuid`.)
+
+An application with a stricter rule (e.g. only members holding its "team" key may invite) registers its own
+`IAccessControlService` after `FasDependencyRegistration.Register`, or checks the key in its own endpoint and
+passes its own `IExternalSecurityService`.
+
+`GET /AcceptInvitation?companyGuid&email` needs a logged-in user and accepts only **their own** invitation to
+the company (`UsersInvitationsToCompanies.UserAccountGuid` = the logged-in user). The link of the invitation
+e-mail holds nothing secret (the e-mail address and the company), so up to 8.0.411 anyone who knew both could
+accept the invitation for that person, without logging in. `email`, when given, must be the logged-in user's
+e-mail - otherwise nothing is accepted and `message` says which account to log in with. The page behind the
+link (fas-auth `auth/acceptInvitationExistingUser`) has to log the user in first and call it with their token.
+Without `accountEmailActivationBaseLink` the link points at the API itself (`DefaultApiUrl`), which a click in
+the e-mail cannot accept any more - pass the address of that page.
+A new user accepts all their invitations by setting the password (`POST /AcceptAccount`, which checks the
+password-reset token from the e-mail).
+
+An account that exists but has no confirmed e-mail (invited before, never set the password) cannot log in to
+accept, so `CreateAndInviteNewUserToCompany` sends it the "set the password" e-mail again, like to a new user
+(`ComposeEmailWithUserCreationAndInvitationToOrganization`, fresh tokens); setting the password accepts the
+invitations. Both e-mails use the same `accountEmailActivationBaseLink`: a new or unconfirmed account gets
+`{link}?emailInvitation=true&token=...` (the fas-auth page `auth/acceptInvitation`), a registered one
+`{link}/acceptInvitation?...` (`auth/acceptInvitationExistingUser`) - an application that knows which one it
+invites passes the matching page; with `SendEmailInvitation = false` it sends its own e-mail.
+
 ## Endpoints
 
 | Route | Access | Purpose |
@@ -142,6 +184,8 @@ employee allowed to add employees could hand out any role, including a full-acce
 | `POST /UserRole?roleName` | PlatformOperator | create a role (sets `NormalizedName`; a name already used is refused) |
 | `GET /UserRole?roleGuid` | PlatformOperator | a role with `assignedUsersCount` (company memberships, invitations - applied ones too, because their row keeps referencing the role - and global roles) |
 | `DELETE /UserRole?roleGuid&replacementRoleGuid` | PlatformOperator | delete a role; when someone holds it, `replacementRoleGuid` is required and they get that role (never `PlatformOperator`); a user already holding the replacement in that company keeps one membership |
+| `POST /NewInvitedUserRegistration` | PlatformOperator, owner or member of `companyGuid` | invite an e-mail to the company; a member gives only a role passing `CheckRoleGrant`, the owner any but `PlatformOperator` (section 7) |
+| `GET /AcceptInvitation?companyGuid&email` | the invited user, logged in | accept their own invitation to the company (section 7) |
 
 Applications with an explicit controller list (Octopark `ControllersRegistration.cs`) must add these
 controllers there. The `PlatformOperator` role cannot be restricted. Every change is logged with the
@@ -155,6 +199,8 @@ operator's e-mail and the keys before and after.
   company. `[HasPermission]` is checked in a company only when the service makes that company check - an
   endpoint whose service never calls it is open to anyone holding the key in any of their companies.
 - Granting a role from a user's request goes through `CheckRoleGrant`.
+- Never accept an invitation (or anything else that makes someone a member) on data from a link that is not
+  secret - the e-mail and the company are not; tie it to the logged-in user or to a token checked on the server.
 - Never check permissions only in the frontend.
 - New permission: constant in the permissions class + the frontend mirror of the key + a migration that
   inserts its `Permission` row and grants it to the roles that should keep their current abilities.

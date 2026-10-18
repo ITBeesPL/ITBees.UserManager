@@ -3,11 +3,17 @@ using ITBees.Interfaces.Platforms;
 using ITBees.RestfulApiControllers;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.UserManager.Controllers
 {
+    /// <summary>
+    /// The logged-in user accepts his own invitation to a company (the link of an invitation e-mail to a registered
+    /// user). A new user accepts his invitations by setting the password (POST /AcceptAccount).
+    /// </summary>
+    [Authorize]
     public class AcceptInvitationController : RestfulControllerBase<AcceptInvitationController>
     {
         private readonly ILogger<AcceptInvitationController> _logger;

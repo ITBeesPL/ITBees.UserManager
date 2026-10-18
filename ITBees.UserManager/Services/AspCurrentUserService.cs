@@ -26,10 +26,11 @@ namespace ITBees.UserManager.Services
             _usersInCompanyRoRepository = usersInCompanyRoRepository;
         }
 
+        // Without an HTTP request (a background job, a server-to-server flow) nobody is logged in.
         public Guid? GetCurrentUserGuid()
         {
-            var claimsIdentity = (_contextAccessor.HttpContext.User?.Identity as ClaimsIdentity);
-            if (claimsIdentity.IsAuthenticated)
+            var claimsIdentity = (_contextAccessor.HttpContext?.User?.Identity as ClaimsIdentity);
+            if (claimsIdentity?.IsAuthenticated == true)
             {
                 var claim = claimsIdentity.Claims.First();
                 return new Guid(claim.Value);
@@ -42,8 +43,8 @@ namespace ITBees.UserManager.Services
 
         public CurrentUser GetCurrentUser()
         {
-            var claimsIdentity = (_contextAccessor.HttpContext.User?.Identity as ClaimsIdentity);
-            if (claimsIdentity.IsAuthenticated)
+            var claimsIdentity = (_contextAccessor.HttpContext?.User?.Identity as ClaimsIdentity);
+            if (claimsIdentity?.IsAuthenticated == true)
             {
                 var claim = claimsIdentity.Claims.First();
                 var LastUsedCompanyGuid =

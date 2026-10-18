@@ -16,6 +16,7 @@ using ITBees.Translations;
 using ITBees.UserManager.DbModels;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
+using ITBees.UserManager.Permissions;
 using ITBees.UserManager.Services;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.Mailing;
@@ -163,7 +164,9 @@ namespace ITBees.UserManager.UnitTests
                 _userAccounts,
                 _invoiceData,
                 new ConfirmationUrlParametersStore(_confirmationUrlParameters, _confirmationUrlParameters,
-                    NullLogger<ConfirmationUrlParametersStore>.Instance));
+                    NullLogger<ConfirmationUrlParametersStore>.Instance),
+                Stub.Of<IPermissionService>(),
+                new FakeRepository<FasIdentityRole>());
 
             return service.CreateNewUser(new NewUserRegistrationIm
             {
@@ -209,65 +212,6 @@ namespace ITBees.UserManager.UnitTests
 
             void IWriteOnlyRepository<T>.DeleteData(Expression<Func<T, bool>> predicate,
                 params Expression<Func<T, object>>[] includeProperties) => DeleteData(predicate);
-        }
-
-        private class FakeIdentity : IUserManager<IdentityUser<Guid>>
-        {
-            public List<IdentityUser<Guid>> Users { get; } = new();
-
-            public Task<IdentityResult> CreateAsync(object user, string password)
-            {
-                var identityUser = (IdentityUser<Guid>)user;
-                if (Users.Any(x => x.Email == identityUser.Email))
-                    return Task.FromResult(IdentityResult.Failed(new IdentityError { Code = "DuplicateUserName" }));
-                identityUser.Id = Guid.NewGuid();
-                Users.Add(identityUser);
-                return Task.FromResult(IdentityResult.Success);
-            }
-
-            public Task<IdentityUser<Guid>> FindByEmailAsync(string email) =>
-                Task.FromResult(Users.FirstOrDefault(x => x.Email == email));
-
-            public Task<string> GenerateEmailConfirmationTokenAsync(dynamic user) => Task.FromResult("confirm");
-            public Task<string> GeneratePasswordResetTokenAsync(object user) => Task.FromResult("reset");
-
-            public Task DeleteAccount(bool leaveAccountGuidForFutureBillingInformation, Guid userGuid)
-            {
-                Users.RemoveAll(x => x.Id == userGuid);
-                return Task.CompletedTask;
-            }
-
-            public Task<bool> CheckPasswordAsync(object user, string password) => throw new NotSupportedException();
-            public Task<IdentityResult> ConfirmEmailAsync(object user, string token) => throw new NotSupportedException();
-            public Task<IdentityResult> AddToRoleAsync(object user, string role) => throw new NotSupportedException();
-            public Task<IList<string>> GetRolesAsync(object user) => throw new NotSupportedException();
-            public Task<IdentityResult> ResetPasswordAsync(object user, string token, string newPassword) => throw new NotSupportedException();
-            public Task<IdentityUser<Guid>> FindByIdAsync(string userIDGuid) => throw new NotSupportedException();
-            public Task<IdentityResult> ChangePasswordAsync(object user, string currentPass, string newPass) => throw new NotSupportedException();
-            public Task<IdentityUser<Guid>> FindByLoginAsync(string loginProvider, string providerKey) => throw new NotSupportedException();
-            public Task<IdentityResult> AddLoginAsync(object user, string loginProvider, string providerKey) => throw new NotSupportedException();
-        }
-
-        /// <summary>An interface stand-in that answers the named methods and returns defaults for the rest.</summary>
-        private class Stub : DispatchProxy
-        {
-            private Dictionary<string, Func<object[], object>> _handlers = new();
-
-            public static T Of<T>(params (string Method, Func<object[], object> Handler)[] handlers) where T : class
-            {
-                var proxy = Create<T, Stub>();
-                ((Stub)(object)proxy)._handlers = handlers.ToDictionary(x => x.Method, x => x.Handler);
-                return proxy;
-            }
-
-            protected override object Invoke(MethodInfo targetMethod, object[] args)
-            {
-                if (_handlers.TryGetValue(targetMethod.Name, out var handler))
-                    return handler(args);
-                return targetMethod.ReturnType.IsValueType && targetMethod.ReturnType != typeof(void)
-                    ? Activator.CreateInstance(targetMethod.ReturnType)
-                    : null;
-            }
         }
     }
 }
