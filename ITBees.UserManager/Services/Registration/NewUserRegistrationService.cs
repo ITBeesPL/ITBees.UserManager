@@ -12,6 +12,7 @@ using ITBees.Models.Companies;
 using ITBees.Models.EmailMessages;
 using ITBees.Models.Languages;
 using ITBees.Models.Users;
+using ITBees.RestfulApiControllers.Authorization;
 using ITBees.RestfulApiControllers.Exceptions;
 using ITBees.RestfulApiControllers.Models;
 using ITBees.Translations;
@@ -19,6 +20,7 @@ using ITBees.UserManager.Controllers;
 using ITBees.UserManager.Controllers.Models;
 using ITBees.UserManager.Interfaces;
 using ITBees.UserManager.Interfaces.Models;
+using ITBees.UserManager.Permissions;
 using ITBees.UserManager.Services.Acl;
 using ITBees.UserManager.Services.Mailing;
 using Microsoft.AspNetCore.Identity;
@@ -48,6 +50,8 @@ namespace ITBees.UserManager.Services.Registration
         private readonly IWriteOnlyRepository<InvoiceData> _invoiceDataRwRepo;
         private readonly IWriteOnlyRepository<TCompany> _companyRwRepo;
         private readonly IConfirmationUrlParametersStore _confirmationUrlParametersStore;
+        private readonly IPermissionService _permissionService;
+        private readonly IReadOnlyRepository<FasIdentityRole> _identityRoleRoRepo;
 
         public NewUserRegistrationService(IUserManager<T> userManager,
             IWriteOnlyRepository<UserAccount> userAccountWriteOnlyRepository,
@@ -64,7 +68,9 @@ namespace ITBees.UserManager.Services.Registration
             IWriteOnlyRepository<UsersInvitationsToCompanies> usersInvitationsToCompaniesRwRepo,
             IReadOnlyRepository<UserAccount> userAccountRoRepo,
             IWriteOnlyRepository<InvoiceData> invoiceDataRwRepo,
-            IConfirmationUrlParametersStore confirmationUrlParametersStore)
+            IConfirmationUrlParametersStore confirmationUrlParametersStore,
+            IPermissionService permissionService,
+            IReadOnlyRepository<FasIdentityRole> identityRoleRoRepo)
         {
             _userManager = userManager;
             _userAccountWriteOnlyRepository = userAccountWriteOnlyRepository;
@@ -82,6 +88,8 @@ namespace ITBees.UserManager.Services.Registration
             _userAccountRoRepo = userAccountRoRepo;
             _invoiceDataRwRepo = invoiceDataRwRepo;
             _confirmationUrlParametersStore = confirmationUrlParametersStore;
+            _permissionService = permissionService;
+            _identityRoleRoRepo = identityRoleRoRepo;
         }
 
         public async Task<NewUserRegistrationResult> CreateNewUser(NewUserRegistrationIm newUserRegistrationIm,
@@ -396,7 +404,9 @@ namespace ITBees.UserManager.Services.Registration
                     nameof(this.CreateAndInviteNewUserToCompany), companyGuid.Value);
 
                 if (accessControlResult.CanDoResult == false)
-                    throw new Exception(accessControlResult.Message);
+                    throw new Authorization403ForbiddenException(accessControlResult.Message);
+
+                CheckRoleGrant(newUserRegistrationIm.UserRoleGuid, companyGuid.Value);
 
                 var newUser = new T()
                 {
@@ -436,10 +446,15 @@ namespace ITBees.UserManager.Services.Registration
                                 newUserRegistrationIm.UserRoleGuid);
                         }
 
-
-                        emailMessage = _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(
-                            newUserRegistrationIm, targetCompanyName, inviterName, userLanguage,
-                            accountEmailActivationBaseLink);
+                        // Invited before but has never set the password (or never confirmed the e-mail): the "accept"
+                        // link of a registered user needs logging in, which he cannot do - he gets the "set the
+                        // password" e-mail again, with fresh tokens. Setting it accepts his invitations (AcceptAccount).
+                        emailMessage = alreadyRegisteredUser.EmailConfirmed
+                            ? _registrationEmailComposer.ComposeEmailWithInvitationToOrganization(
+                                newUserRegistrationIm, targetCompanyName, inviterName, userLanguage,
+                                accountEmailActivationBaseLink)
+                            : await ComposeSetPasswordInvitation(alreadyRegisteredUser, newUserRegistrationIm,
+                                targetCompanyName, userLanguage, accountEmailActivationBaseLink);
 
                         if (newUserRegistrationIm.SendEmailInvitation)
                             _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
@@ -475,42 +490,8 @@ namespace ITBees.UserManager.Services.Registration
                     var newUserCompany =
                         CreateCompanyAndAddCurrentUser(string.Empty, newUser, newUser.Id, userLanguage);
 
-                    var rawEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-                    var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawEmailToken));
-                    var emailTokenB64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawEmailToken));
-
-                    _logger.LogInformation(
-                        "Email token generated for {email}. b64Len={b64Len}, b64Sha={b64Sha}, b64Prefix={b64Prefix}, rawLen={rawLen}, rawSha={rawSha}, rawPrefix={rawPrefix}",
-                        newUserRegistrationIm.Email,
-                        emailTokenB64.Length,
-                        TokenLogHelper.Sha256(emailTokenB64),
-                        TokenLogHelper.Prefix(emailTokenB64),
-                        rawEmailToken.Length,
-                        TokenLogHelper.Sha256(rawEmailToken),
-                        TokenLogHelper.Prefix(rawEmailToken)
-                    );
-
-                    // Password reset token
-                    var rawPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(newUser);
-                    var passTokenB64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawPasswordToken));
-
-                    _logger.LogInformation(
-                        "Password reset token generated for {email}. b64Len={b64Len}, b64Sha={b64Sha}, b64Prefix={b64Prefix}, rawLen={rawLen}, rawSha={rawSha}, rawPrefix={rawPrefix}",
-                        newUserRegistrationIm.Email,
-                        passTokenB64.Length,
-                        TokenLogHelper.Sha256(passTokenB64),
-                        TokenLogHelper.Prefix(passTokenB64),
-                        rawPasswordToken.Length,
-                        TokenLogHelper.Sha256(rawPasswordToken),
-                        TokenLogHelper.Prefix(rawPasswordToken)
-                    );
-
-                    StoreConfirmationUrlParameters(newUser.Id,
-                        newUserRegistrationIm.ConfirmationUrlParameters);
-
-                    emailMessage = _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
-                        newUserRegistrationIm, targetCompanyName, emailTokenB64, userLanguage,
-                        accountEmailActivationBaseLink, passTokenB64);
+                    emailMessage = await ComposeSetPasswordInvitation(newUser, newUserRegistrationIm,
+                        targetCompanyName, userLanguage, accountEmailActivationBaseLink);
 
                     if (newUserRegistrationIm.SendEmailInvitation)
                         _emailSendingService.SendEmail(platformDefaultEmailAccount, emailMessage);
@@ -523,6 +504,68 @@ namespace ITBees.UserManager.Services.Registration
                 Console.WriteLine(e);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// The invitation of an account without a password: fresh e-mail confirmation and password-reset tokens in the
+        /// link where the invited person sets the password (POST /AcceptAccount, which also accepts his invitations).
+        /// </summary>
+        private async Task<EmailMessage> ComposeSetPasswordInvitation(T user,
+            NewUserRegistrationWithInvitationIm newUserRegistrationIm, string targetCompanyName, Language userLanguage,
+            string accountEmailActivationBaseLink)
+        {
+            var rawEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var emailTokenB64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawEmailToken));
+
+            _logger.LogInformation(
+                "Email token generated for {email}. b64Len={b64Len}, b64Sha={b64Sha}, b64Prefix={b64Prefix}, rawLen={rawLen}, rawSha={rawSha}, rawPrefix={rawPrefix}",
+                newUserRegistrationIm.Email,
+                emailTokenB64.Length,
+                TokenLogHelper.Sha256(emailTokenB64),
+                TokenLogHelper.Prefix(emailTokenB64),
+                rawEmailToken.Length,
+                TokenLogHelper.Sha256(rawEmailToken),
+                TokenLogHelper.Prefix(rawEmailToken)
+            );
+
+            // Password reset token
+            var rawPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var passTokenB64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawPasswordToken));
+
+            _logger.LogInformation(
+                "Password reset token generated for {email}. b64Len={b64Len}, b64Sha={b64Sha}, b64Prefix={b64Prefix}, rawLen={rawLen}, rawSha={rawSha}, rawPrefix={rawPrefix}",
+                newUserRegistrationIm.Email,
+                passTokenB64.Length,
+                TokenLogHelper.Sha256(passTokenB64),
+                TokenLogHelper.Prefix(passTokenB64),
+                rawPasswordToken.Length,
+                TokenLogHelper.Sha256(rawPasswordToken),
+                TokenLogHelper.Prefix(rawPasswordToken)
+            );
+
+            StoreConfirmationUrlParameters(user.Id, newUserRegistrationIm.ConfirmationUrlParameters);
+
+            return _registrationEmailComposer.ComposeEmailWithUserCreationAndInvitationToOrganization(
+                newUserRegistrationIm, targetCompanyName, emailTokenB64, userLanguage,
+                accountEmailActivationBaseLink, passTokenB64);
+        }
+
+        /// <summary>
+        /// The rule of docs/PERMISSIONS.md ("Granting roles"): a logged-in user gives only a role holding nothing they do
+        /// not hold in the company. Without it anybody allowed to invite could invite anyone - himself too - with a
+        /// full-access or the PlatformOperator role. The platform operator passes; a flow without a logged-in user
+        /// (server-to-server, with its own IExternalSecurityService) is not checked here.
+        /// </summary>
+        private void CheckRoleGrant(Guid? roleGuid, Guid companyGuid)
+        {
+            if (roleGuid == null || _aspCurrentUserService.GetCurrentUserGuid() == null)
+                return;
+
+            var role = _identityRoleRoRepo.GetFirst(x => x.Id == roleGuid.Value);
+            if (role == null)
+                throw new FasApiErrorException("The role of the invitation does not exist.", 400);
+
+            _permissionService.CheckRoleGrant(role, companyGuid);
         }
 
         private void StoreConfirmationUrlParameters(Guid userAccountGuid,
