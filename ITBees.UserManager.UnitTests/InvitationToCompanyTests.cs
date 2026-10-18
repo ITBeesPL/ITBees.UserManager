@@ -174,6 +174,49 @@ namespace ITBees.UserManager.UnitTests
         }
 
         [Test]
+        public async Task The_owner_who_is_not_a_member_gives_a_full_access_role()
+        {
+            // Kilometrówka creates a company without adding its owner to UsersInCompany.
+            _memberships.Items.Clear();
+            _companies.Items[0].OwnerGuid = _employeeGuid;
+
+            await Invite(Employee(), _fullAccess.Id);
+
+            Assert.That(_invitations.Items.Single().IdentityRoleId, Is.EqualTo(_fullAccess.Id));
+        }
+
+        [Test]
+        public async Task The_creator_of_a_company_without_an_owner_gives_a_full_access_role()
+        {
+            _companies.Items[0].OwnerGuid = null;
+            _companies.Items[0].CreatedByGuid = _employeeGuid;
+
+            await Invite(Employee(), _fullAccess.Id);
+
+            Assert.That(_invitations.Items.Single().IdentityRoleId, Is.EqualTo(_fullAccess.Id));
+        }
+
+        [Test]
+        public void The_creator_of_a_company_owned_by_someone_else_gives_only_what_he_holds()
+        {
+            _companies.Items[0].CreatedByGuid = _employeeGuid;
+
+            Assert.ThrowsAsync<Authorization403ForbiddenException>(() => Invite(Employee(), _fullAccess.Id));
+
+            AssertNothingCreated();
+        }
+
+        [Test]
+        public void The_owner_cannot_give_the_platform_operator_role()
+        {
+            _companies.Items[0].OwnerGuid = _employeeGuid;
+
+            Assert.ThrowsAsync<Authorization403ForbiddenException>(() => Invite(Employee(), _platformOperator.Id));
+
+            AssertNothingCreated();
+        }
+
+        [Test]
         public async Task A_registered_user_gets_the_link_accepting_the_invitation()
         {
             _identity.Users.Add(new IdentityUser<Guid> { Id = Guid.NewGuid(), Email = InvitedEmail, EmailConfirmed = true });

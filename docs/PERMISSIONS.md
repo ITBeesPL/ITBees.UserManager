@@ -137,14 +137,18 @@ employee allowed to add employees could hand out any role, including a full-acce
 calls it) checks two things before it creates the account or the invitation:
 
 1. **Who invites** - with the default security service (no `IExternalSecurityService` passed),
-   `IAccessControlService.CanDo` allows the platform operator, the owner of the target company (`OwnerGuid`, or
-   `CreatedByGuid` when it is empty) and its members, and refuses everybody else with 403. Up to 8.0.411 it
-   allowed every logged-in user, to any company.
-2. **Which role** - when `UserRoleGuid` is set and a user is logged in, the role goes through
-   `CheckRoleGrant` (section 6), whatever security service was passed: a member gives only a role holding nothing
-   they do not hold there; the platform operator gives any role. An unknown `UserRoleGuid` is answered 400.
+   `IAccessControlService.CanDo` allows the platform operator, the owner of the target company and its members,
+   and refuses everybody else with 403. Up to 8.0.411 it allowed every logged-in user, to any company.
+2. **Which role** - when `UserRoleGuid` is set and a user is logged in, whatever security service was passed:
+   the platform operator gives any role, the owner any role but `PlatformOperator`, any other member only a role
+   passing `CheckRoleGrant` (section 6). An unknown `UserRoleGuid` is answered 400.
    Without a logged-in user (a background job, a server-to-server flow with its own `IExternalSecurityService`)
    the role is not checked - the caller vouches for it.
+
+The owner here is `CompanyOwnership.IsOwner`: `Company.OwnerGuid`, or `CreatedByGuid` of a company without it -
+**member of the company or not**, because Kilometrówka creates companies without adding the owner to
+`UsersInCompany`. Both checks above use it, so an owner who may invite may also give the roles. (`IPermissionService`
+is unchanged: there the owner holds every key only as a member, and only through `OwnerGuid`.)
 
 An application with a stricter rule (e.g. only members holding its "team" key may invite) registers its own
 `IAccessControlService` after `FasDependencyRegistration.Register`, or checks the key in its own endpoint and
@@ -180,7 +184,7 @@ invites passes the matching page; with `SendEmailInvitation = false` it sends it
 | `POST /UserRole?roleName` | PlatformOperator | create a role (sets `NormalizedName`; a name already used is refused) |
 | `GET /UserRole?roleGuid` | PlatformOperator | a role with `assignedUsersCount` (company memberships, invitations - applied ones too, because their row keeps referencing the role - and global roles) |
 | `DELETE /UserRole?roleGuid&replacementRoleGuid` | PlatformOperator | delete a role; when someone holds it, `replacementRoleGuid` is required and they get that role (never `PlatformOperator`); a user already holding the replacement in that company keeps one membership |
-| `POST /NewInvitedUserRegistration` | PlatformOperator, owner or member of `companyGuid` | invite an e-mail to the company; `userRoleGuid` only a role passing `CheckRoleGrant` (section 7) |
+| `POST /NewInvitedUserRegistration` | PlatformOperator, owner or member of `companyGuid` | invite an e-mail to the company; a member gives only a role passing `CheckRoleGrant`, the owner any but `PlatformOperator` (section 7) |
 | `GET /AcceptInvitation?companyGuid&email` | the invited user, logged in | accept their own invitation to the company (section 7) |
 
 Applications with an explicit controller list (Octopark `ControllersRegistration.cs`) must add these

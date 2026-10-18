@@ -11,6 +11,7 @@ using ITBees.Mailing.Interfaces;
 using ITBees.Models.Companies;
 using ITBees.Models.EmailMessages;
 using ITBees.Models.Languages;
+using ITBees.Models.Roles;
 using ITBees.Models.Users;
 using ITBees.RestfulApiControllers.Authorization;
 using ITBees.RestfulApiControllers.Exceptions;
@@ -553,17 +554,24 @@ namespace ITBees.UserManager.Services.Registration
         /// <summary>
         /// The rule of docs/PERMISSIONS.md ("Granting roles"): a logged-in user gives only a role holding nothing they do
         /// not hold in the company. Without it anybody allowed to invite could invite anyone - himself too - with a
-        /// full-access or the PlatformOperator role. The platform operator passes; a flow without a logged-in user
-        /// (server-to-server, with its own IExternalSecurityService) is not checked here.
+        /// full-access or the PlatformOperator role. The platform operator passes; the owner of the company - the same
+        /// owner AccessControlService lets invite (CompanyOwnership), member or not - gives any role but PlatformOperator;
+        /// a flow without a logged-in user (server-to-server, with its own IExternalSecurityService) is not checked here.
         /// </summary>
         private void CheckRoleGrant(Guid? roleGuid, Guid companyGuid)
         {
-            if (roleGuid == null || _aspCurrentUserService.GetCurrentUserGuid() == null)
+            var userGuid = _aspCurrentUserService.GetCurrentUserGuid();
+            if (roleGuid == null || userGuid == null)
                 return;
 
             var role = _identityRoleRoRepo.GetFirst(x => x.Id == roleGuid.Value);
             if (role == null)
                 throw new FasApiErrorException("The role of the invitation does not exist.", 400);
+
+            var isPlatformOperatorRole = string.Equals(role.Name, Role.PlatformOperator, StringComparison.OrdinalIgnoreCase);
+            if (isPlatformOperatorRole == false &&
+                CompanyOwnership.IsOwner(_companyRoRepository, companyGuid, userGuid.Value))
+                return;
 
             _permissionService.CheckRoleGrant(role, companyGuid);
         }

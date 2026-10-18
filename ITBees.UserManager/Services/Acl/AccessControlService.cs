@@ -43,11 +43,8 @@ namespace ITBees.UserManager.Services.Acl
             if (getCurrentUser.UserRoles != null && getCurrentUser.UserRoles.Contains(Role.PlatformOperator))
                 return new AccessControlResult(true, string.Empty);
 
-            // Older companies have no OwnerGuid - their creator owns them (as in Kilometrówka).
             if (_usersInCompanyRoRepo.HasData(x => x.UserAccountGuid == getCurrentUser.Guid && x.CompanyGuid == companyGuid) ||
-                _companyRoRepo.HasData(x => x.Guid == companyGuid &&
-                                            (x.OwnerGuid == getCurrentUser.Guid ||
-                                             (x.OwnerGuid == null && x.CreatedByGuid == getCurrentUser.Guid))))
+                CompanyOwnership.IsOwner(_companyRoRepo, companyGuid, getCurrentUser.Guid))
                 return new AccessControlResult(true, string.Empty);
 
             _logger.LogWarning("Access denied: user {UserGuid} is not a member of company {CompanyGuid}, {Type}.{Method}",
