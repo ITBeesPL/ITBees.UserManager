@@ -202,6 +202,7 @@ namespace ITBees.UserManager.Services
             feature.Controllers.Add(typeof(AppleLoginController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(FacebookLoginController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(MyAccountController<>).MakeGenericType(typeof(T)).GetTypeInfo());
+            feature.Controllers.Add(typeof(RefreshTokenController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(AccountDeleteController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(TokenAsController<>).MakeGenericType(typeof(T)).GetTypeInfo());
             feature.Controllers.Add(typeof(LoginAsParamController<>).MakeGenericType(typeof(T)).GetTypeInfo());
