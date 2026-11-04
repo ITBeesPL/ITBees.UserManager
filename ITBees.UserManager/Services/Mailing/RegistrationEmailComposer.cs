@@ -43,7 +43,8 @@ namespace ITBees.UserManager.Services.Mailing
             string companyCompanyName, string nameOfInviter, Language userLanguage,
             string accountEmailActivationBaseLink = "")
         {
-            accountEmailActivationBaseLink = GetBaseUrl(accountEmailActivationBaseLink);
+            accountEmailActivationBaseLink = InvitationPageUrl(accountEmailActivationBaseLink,
+                AcceptInvitationExistingUserUrlSetting, "acceptInvitationExistingUser");
             
             var translatedSubject = Translate.Get(() => NewUserRegistrationEmail.ComposeEmailWithInvitationToOrganizationSubject, userSavedData.Language);
             translatedSubject = translatedSubject
@@ -70,12 +71,34 @@ namespace ITBees.UserManager.Services.Mailing
             };
         }
 
-        private string GetBaseUrl(string accountEmailActivationBaseLink)
+        /// <summary>
+        /// The platform settings (config.json) naming the pages behind the links of the invitation e-mails, used when
+        /// the caller passes no accountEmailActivationBaseLink: the page where a new (or never confirmed) account sets
+        /// its password, and the page where a registered user logs in and accepts the invitation.
+        /// </summary>
+        public const string AcceptInvitationUrlSetting = "AcceptInvitationUrl";
+        public const string AcceptInvitationExistingUserUrlSetting = "AcceptInvitationExistingUserUrl";
+
+        /// <summary>
+        /// Where the link of an invitation e-mail points. The address the caller passes wins; without it the platform
+        /// setting of that e-mail, else the fas-auth page under APPLICATION_SITE_URL (auth/acceptInvitation,
+        /// auth/acceptInvitationExistingUser); with no site URL either, DefaultApiUrl as up to 8.0.413 - a link a
+        /// click in the e-mail cannot accept, since GET /AcceptInvitation needs the token of the logged-in user.
+        /// </summary>
+        private string InvitationPageUrl(string accountEmailActivationBaseLink, string settingName, string fasAuthPage)
         {
-            if(string.IsNullOrEmpty(accountEmailActivationBaseLink))
-                return _platformSettingsService.GetSetting("DefaultApiUrl");
-            
-            return accountEmailActivationBaseLink;
+            if (string.IsNullOrEmpty(accountEmailActivationBaseLink) == false)
+                return accountEmailActivationBaseLink;
+
+            var configured = _platformSettingsService.GetSetting(settingName);
+            if (string.IsNullOrWhiteSpace(configured) == false)
+                return configured.Trim();
+
+            var applicationSiteUrl = _userManagerSettings.APPLICATION_SITE_URL;
+            if (string.IsNullOrWhiteSpace(applicationSiteUrl) == false)
+                return $"{applicationSiteUrl.Trim().TrimEnd('/')}/auth/{fasAuthPage}";
+
+            return _platformSettingsService.GetSetting("DefaultApiUrl");
         }
 
         public EmailMessage ComposeEmailWithUserCreationAndInvitationToOrganization(
@@ -89,7 +112,8 @@ namespace ITBees.UserManager.Services.Mailing
         {
             companyCompanyName = userSavedData.InvitationToCompany ?? companyCompanyName;
             var invitorName = userSavedData.InvitationCreatorName ?? " ";
-            accountEmailActivationBaseLink = GetBaseUrl(accountEmailActivationBaseLink);
+            accountEmailActivationBaseLink = InvitationPageUrl(accountEmailActivationBaseLink,
+                AcceptInvitationUrlSetting, "acceptInvitation");
 
             var translatedSubject = Translate.Get(
                 () => NewUserRegistrationEmail.ComposeEmailWithUserCreationAndInvitationToOrganizationSubject,

@@ -13,7 +13,8 @@ namespace ITBees.UserManager.Services.Mailing
         /// <param name="companyCompanyName"></param>
         /// <param name="nameOfInviter"></param>
         /// <param name="userLanguage"></param>
-        /// <param name="accountEmailActivationBaseLink"></param>
+        /// <param name="accountEmailActivationBaseLink">Base of the page accepting the invitation; the library appends
+        /// "/acceptInvitation?...". Empty: the default of RegistrationEmailComposer.InvitationPageUrl.</param>
         /// <returns></returns>
         EmailMessage ComposeEmailWithInvitationToOrganization(NewUserRegistrationWithInvitationIm userSavedData,
             string companyCompanyName, string nameOfInviter, Language userLanguage,
