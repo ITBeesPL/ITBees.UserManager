@@ -1,4 +1,4 @@
-﻿# ITBees.UserManager
+# ITBees.UserManager
 
 ## Security notes for applications
 

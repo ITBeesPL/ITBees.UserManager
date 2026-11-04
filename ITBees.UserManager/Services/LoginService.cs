@@ -97,7 +97,7 @@ namespace ITBees.UserManager.Services
 
         public async Task<MyAccountWithTokenVm> GetMyAccountWithTokenWithoutAuthorization(MyAccountVm myAccount, string language)
         {
-            var token = await this.LoginAfterEmailConfirmation(myAccount.Email, language);
+            var token = await this.RefreshToken(myAccount.Email, language);
             return new MyAccountWithTokenVm(myAccount, token);
         }
 
