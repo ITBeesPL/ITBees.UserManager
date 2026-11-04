@@ -77,7 +77,7 @@ namespace ITBees.UserManager.Services
             }
             catch (Exception e)
             {
-                _logger.LogError($"Error while accepting user invitation for user {currentUser.Email} in company guid {companyGuid}", e);
+                _logger.LogError(e, "Error while accepting user invitation for user {Email} in company guid {CompanyGuid}", currentUser.Email, companyGuid);
                 return new AcceptInvitationResultVm() { Accepted = false, Message = $"{Translate.Get(() => UserInvitation.ErrorWhileAcceptingUserInvitation, new En())}" + e.Message };
             }
 
@@ -114,7 +114,7 @@ namespace ITBees.UserManager.Services
             }
             catch (Exception e)
             {
-                _logger.LogError("Error while accepting all user invitations for user {email}", e);
+                _logger.LogError(e, "Error while accepting all user invitations for user {Email}", email);
                 return new AcceptInvitationResultVm() { Accepted = false, Message = $"{Translate.Get(() => UserInvitation.ErrorWhileAcceptingUserInvitation, new En())}" + e.Message };
             }
 

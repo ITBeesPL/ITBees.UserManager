@@ -208,6 +208,7 @@ namespace ITBees.UserManager.UnitTests
 
             public Task<ConfirmEmailResult> ConfirmEmail(string email) => Task.FromResult(new ConfirmEmailResult { Success = true });
             public Task<TokenVm> Login(string email, string pass, string lang) => throw new NotSupportedException();
+            public Task<TokenVm> RefreshToken(string email, string lang) => throw new NotSupportedException();
             public Task<MyAccountWithTokenVm> GetMyAccountWithTokenWithoutAuthorization(MyAccountVm email, string language) => throw new NotSupportedException();
         }
 

@@ -59,7 +59,18 @@ namespace ITBees.UserManager.Services
         public async Task<TokenVm> LoginAfterEmailConfirmation(string email, string lang)
         {
             var userAccount = GetUserAccount(email, lang);
-            return await GetTokenVm(email, userAccount);
+            return await GetTokenVm(email, userAccount, countAsLogin: true);
+        }
+
+        /// <summary>
+        /// A fresh login token for an account whose holder already has a valid one - see ILoginService. The
+        /// claims come from the account as it is now, so a changed language or company, and a company the user
+        /// was removed from in the meantime, are reflected in the refreshed token.
+        /// </summary>
+        public async Task<TokenVm> RefreshToken(string email, string lang)
+        {
+            var userAccount = GetUserAccount(email, lang);
+            return await GetTokenVm(email, userAccount, countAsLogin: false);
         }
 
         /// <summary>
@@ -86,7 +97,7 @@ namespace ITBees.UserManager.Services
 
         public async Task<MyAccountWithTokenVm> GetMyAccountWithTokenWithoutAuthorization(MyAccountVm myAccount, string language)
         {
-            var token = await this.LoginAfterEmailConfirmation(myAccount.Email, language);
+            var token = await this.RefreshToken(myAccount.Email, language);
             return new MyAccountWithTokenVm(myAccount, token);
         }
 
@@ -94,10 +105,14 @@ namespace ITBees.UserManager.Services
         {
             var userAccount = await GetUserIdAfterThePasswordCheck(email, pass, lang);
 
-            return await GetTokenVm(email, userAccount);
+            return await GetTokenVm(email, userAccount, countAsLogin: true);
         }
 
-        private async Task<TokenVm> GetTokenVm(string email, UserAccount userAccount)
+        /// <param name="countAsLogin">
+        /// A login bumps LoginsCount; a token refresh is not a login and only moves LastLoginDateTime, which
+        /// then reads as the last activity of the account.
+        /// </param>
+        private async Task<TokenVm> GetTokenVm(string email, UserAccount userAccount, bool countAsLogin)
         {
             var expiryInMinutes = Convert.ToInt32((string)_configurationRoot.GetSection("TokenLifeTime").Value);
             var tokenSecretKey = _configurationRoot.GetSection("TokenSecretKey").Value;
@@ -121,7 +136,10 @@ namespace ITBees.UserManager.Services
             _userWriteOnlyRepository.UpdateData(u => u.Email == email, userAccountUpdate =>
             {
                 userAccountUpdate.LastLoginDateTime = _currentDateTimeService.GetCurrentDate();
-                userAccountUpdate.LoginsCount = userAccount.LoginsCount + 1;
+                if (countAsLogin)
+                {
+                    userAccountUpdate.LoginsCount = userAccount.LoginsCount + 1;
+                }
                 // GetUserAccount replaces a missing or no longer valid company; it is stored, so the
                 // account stops pointing at a company its user does not belong to.
                 if (userAccountUpdate.LastUsedCompanyGuid != userAccount.LastUsedCompanyGuid)

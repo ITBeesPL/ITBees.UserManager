@@ -135,6 +135,7 @@ namespace ITBees.UserManager.UnitTests
 
             public Task<TokenVm> Login(string email, string pass, string lang) => throw new NotSupportedException();
             public Task<TokenVm> LoginAfterEmailConfirmation(string email, string lang) => throw new NotSupportedException();
+            public Task<TokenVm> RefreshToken(string email, string lang) => throw new NotSupportedException();
             public Task<ConfirmEmailResult> ConfirmEmail(string googlePayloadEmail) => throw new NotSupportedException();
         }
     }
