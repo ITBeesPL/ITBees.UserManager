@@ -160,8 +160,10 @@ e-mail holds nothing secret (the e-mail address and the company), so up to 8.0.4
 accept the invitation for that person, without logging in. `email`, when given, must be the logged-in user's
 e-mail - otherwise nothing is accepted and `message` says which account to log in with. The page behind the
 link (fas-auth `auth/acceptInvitationExistingUser`) has to log the user in first and call it with their token.
-Without `accountEmailActivationBaseLink` the link points at the API itself (`DefaultApiUrl`), which a click in
-the e-mail cannot accept any more - pass the address of that page.
+Without `accountEmailActivationBaseLink` the link points at the fas-auth page under `APPLICATION_SITE_URL`
+(`{APPLICATION_SITE_URL}/auth/acceptInvitationExistingUser`), or at the page named by the platform setting
+`AcceptInvitationExistingUserUrl` - README, "Links of the invitation e-mails". Up to 8.0.413 it pointed at the API
+itself (`DefaultApiUrl`), which a click in the e-mail cannot accept any more.
 A new user accepts all their invitations by setting the password (`POST /AcceptAccount`, which checks the
 password-reset token from the e-mail).
 
